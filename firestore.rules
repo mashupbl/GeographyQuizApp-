@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===================================================================
+    // HELPER FUNCTIONS & ROLE VERIFICATION
+    // ===================================================================
+
+    // Check if the request is from an authenticated user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user is a verified administrator.
+    // Verified securely via:
+    // 1. Firebase Custom Claims `request.auth.token.admin == true` (tamper-proof, set server-side) OR
+    // 2. An entry in the protected `/admins/{uid}` document collection (writeable ONLY via Firebase Console or Admin SDK)
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // ===================================================================
+    // 1. QUESTIONS COLLECTION
+    // ===================================================================
+    // - Authenticated students can read published questions for quiz practice.
+    // - Only verified administrators can create, update, or delete questions.
+    // - Public unauthenticated writes are strictly DENIED.
+    match /questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ===================================================================
+    // 2. ATTEMPTS COLLECTION (Quiz & Exam Records)
+    // ===================================================================
+    // - A student can ONLY create an attempt stamped with their own request.auth.uid.
+    // - A student can ONLY read their own attempts.
+    // - Students CANNOT update or modify past attempts (immutable historical records).
+    // - Verified administrators can read and query all attempts for practice monitoring.
+    // - Only administrators can delete attempts.
+    match /attempts/{attemptId} {
+      // Create: Student must be authenticated and studentUid must match their auth UID
+      allow create: if isAuthenticated() &&
+        request.resource.data.studentUid == request.auth.uid;
+      
+      // Read: A student can only read their own attempts; verified admin can read all
+      allow read: if isAuthenticated() && (
+        resource.data.studentUid == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Attempts are immutable audit records: updates are strictly forbidden
+      allow update: if false;
+
+      // Only verified administrators can delete attempts
+      allow delete: if isAdmin();
+    }
+
+    // ===================================================================
+    // 3. STUDENTS COLLECTION
+    // ===================================================================
+    // - Keyed by student UID: `/students/{studentUid}`
+    // - Students can ONLY read and update their own profile.
+    // - Verified administrators can read student profiles for monitoring.
+    match /students/{studentUid} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == studentUid ||
+        isAdmin()
+      );
+      allow create, update: if isAuthenticated() && (
+        request.auth.uid == studentUid ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ===================================================================
+    // 4. PROTECTED ADMINS COLLECTION
+    // ===================================================================
+    // - Document ID is the administrator's Firebase Auth UID.
+    // - Any client-side write is strictly DENIED (prevents privilege escalation).
+    // - Can only be populated by project owner via Firebase Console or Admin SDK.
+    match /admins/{adminUid} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // ===================================================================
+    // 5. CONFIG COLLECTION
+    // ===================================================================
+    // - Read allowed for authenticated users.
+    // - Write strictly restricted to verified administrators.
+    match /config/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

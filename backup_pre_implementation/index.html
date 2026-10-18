@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Geography Quiz Practice and Performance Tracking Web App">
+  <title>GeoQuiz Explorer | Continent Practice & Tracking</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top App Navigation & Header -->
+  <header class="app-header" role="banner">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🌍</span>
+        <div>
+          <h1 class="brand-title">GeoQuiz Explorer</h1>
+          <p class="brand-subtitle">Continent Practice &amp; Knowledge Tracker</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <span id="header-student-badge" class="badge badge-student" style="display: none;">
+          <span aria-hidden="true">👤</span>
+          <span id="header-student-name">Student</span>
+        </span>
+        <span id="header-mode-badge" class="badge badge-mode" style="display: none;">
+          <span id="header-mode-text">Practice Mode</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Views -->
+  <main class="main-container" role="main">
+
+    <!-- VIEW 1: REGISTRATION & MODE SELECTION -->
+    <section id="view-registration" class="view active" aria-labelledby="reg-title">
+      <div class="card">
+        <header class="card-header">
+          <h2 id="reg-title" class="card-title">Student Profile &amp; Mode</h2>
+          <p class="card-desc">Enter your student information to begin your geography practice session.</p>
+        </header>
+
+        <form id="form-registration" novalidate>
+          <div class="form-group">
+            <label for="input-student-name" class="form-label">Full Name <span aria-hidden="true" style="color:var(--danger)">*</span></label>
+            <input type="text" id="input-student-name" class="form-input" placeholder="e.g. Maya Lin" required autocomplete="name">
+            <p class="form-hint">Used to label your practice attempts and scorecard.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="input-student-id" class="form-label">Student ID <span aria-hidden="true" style="color:var(--danger)">*</span></label>
+            <input type="text" id="input-student-id" class="form-input" placeholder="e.g. STU-2026" required autocomplete="off">
+            <p class="form-hint">Your unique school or classroom identifier.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Select Quiz Mode</label>
+            <div class="mode-grid" role="radiogroup" aria-label="Select Quiz Mode">
+              
+              <label class="mode-option selected" id="mode-opt-practice">
+                <input type="radio" name="quiz-mode" value="practice" checked>
+                <span class="mode-title">
+                  <span aria-hidden="true">💡</span> Practice Mode
+                </span>
+                <span class="mode-desc">Instant feedback after each question with educational explanations. Best for learning.</span>
+              </label>
+
+              <label class="mode-option" id="mode-opt-exam">
+                <input type="radio" name="quiz-mode" value="exam">
+                <span class="mode-title">
+                  <span aria-hidden="true">📝</span> Exam Mode
+                </span>
+                <span class="mode-desc">Answers are locked silently. Scores and explanations are revealed only after submission.</span>
+              </label>
+
+            </div>
+          </div>
+
+          <button type="submit" id="btn-to-selection" class="btn btn-primary btn-block">
+            Choose Continent &amp; Difficulty →
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW 2: CONTINENT & DIFFICULTY SELECTION -->
+    <section id="view-selection" class="view" aria-labelledby="selection-title">
+      <div class="card">
+        <header class="card-header">
+          <h2 id="selection-title" class="card-title">Select Continent &amp; Difficulty</h2>
+          <p class="card-desc">Choose a continent category and your preferred challenge level.</p>
+        </header>
+
+        <!-- Continent Selector -->
+        <div class="form-group">
+          <label class="form-label">1. Choose a Continent (7 Categories)</label>
+          <div class="continent-grid" role="group" aria-label="Continents">
+            <button type="button" class="continent-chip active" data-continent="Asia">
+              <span class="continent-icon" aria-hidden="true">🌏</span>
+              <span>Asia</span>
+            </button>
+            <button type="button" class="continent-chip" data-continent="Africa">
+              <span class="continent-icon" aria-hidden="true">🌍</span>
+              <span>Africa</span>
+            </button>
+            <button type="button" class="continent-chip" data-continent="Europe">
+              <span class="continent-icon" aria-hidden="true">🏰</span>
+              <span>Europe</span>
+            </button>
+            <button type="button" class="continent-chip" data-continent="North America">
+              <span class="continent-icon" aria-hidden="true">🗽</span>
+              <span>North America</span>
+            </button>
+            <button type="button" class="continent-chip" data-continent="South America">
+              <span class="continent-icon" aria-hidden="true">🦜</span>
+              <span>South America</span>
+            </button>
+            <button type="button" class="continent-chip" data-continent="Australia/Oceania">
+              <span class="continent-icon" aria-hidden="true">🦘</span>
+              <span>Australia/Oceania</span>
+            </button>
+            <button type="button" class="continent-chip" data-continent="Antarctica">
+              <span class="continent-icon" aria-hidden="true">❄️</span>
+              <span>Antarctica</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Difficulty Selector -->
+        <div class="form-group">
+          <label class="form-label">2. Choose Difficulty Level</label>
+          <div class="difficulty-selector" role="group" aria-label="Difficulty Levels">
+            <button type="button" class="difficulty-btn active" data-difficulty="Easy">
+              Easy
+            </button>
+            <button type="button" class="difficulty-btn" data-difficulty="Medium">
+              Medium
+            </button>
+            <button type="button" class="difficulty-btn" data-difficulty="Hard">
+              Hard
+            </button>
+          </div>
+        </div>
+
+        <!-- Selection Summary Indicator -->
+        <div class="form-group">
+          <div id="selection-preview-badge" class="badge badge-student" style="padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+            Questions Available: <span id="selection-count-text">Loading...</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
+          <button type="button" id="btn-back-to-reg" class="btn btn-secondary">
+            ← Change Profile
+          </button>
+          <button type="button" id="btn-start-quiz" class="btn btn-primary" style="flex: 1;">
+            Start Quiz 🚀
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: ACTIVE QUIZ VIEW -->
+    <section id="view-quiz" class="view" aria-labelledby="quiz-question-text">
+      <!-- Top meta info -->
+      <div class="quiz-topbar">
+        <div class="quiz-meta">
+          <span id="quiz-progress-text">Question 1 of 5</span>
+          <span>•</span>
+          <span id="quiz-topic-text">Asia (Easy)</span>
+        </div>
+        <div class="timer-box" aria-label="Quiz Timer">
+          <span aria-hidden="true">⏱️</span>
+          <span id="quiz-timer-display">00:00</span>
+        </div>
+      </div>
+
+      <!-- Accessible Progress Bar -->
+      <div class="progress-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="quiz-progress-wrapper">
+        <div id="quiz-progress-bar" class="progress-bar"></div>
+      </div>
+
+      <!-- Question Card -->
+      <article class="card">
+        <div class="question-badge" id="quiz-card-badge">Continent Quiz</div>
+        <h2 id="quiz-question-text" class="question-text">Loading Question...</h2>
+
+        <!-- 4 Multiple Choice Options -->
+        <div id="quiz-options-container" class="options-grid" role="group" aria-label="Multiple Choice Options">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Practice Mode Feedback Alert -->
+        <div id="quiz-feedback-box" class="feedback-box" role="status" aria-live="polite">
+          <div id="quiz-feedback-heading" class="feedback-heading"></div>
+          <div id="quiz-feedback-text" class="feedback-text"></div>
+        </div>
+
+        <!-- Navigation Next / Submit Button -->
+        <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+          <button type="button" id="btn-next-question" class="btn btn-primary" disabled>
+            Next Question →
+          </button>
+        </div>
+      </article>
+    </section>
+
+    <!-- VIEW 4: RESULTS & PERFORMANCE SUMMARY -->
+    <section id="view-results" class="view" aria-labelledby="results-title">
+      <div class="card results-card">
+        <header>
+          <h2 id="results-title" class="sr-only">Quiz Results</h2>
+          <div class="score-circle">
+            <span id="results-score-value" class="score-value">0/0</span>
+            <span class="score-total">Score</span>
+          </div>
+          <h3 id="results-verdict" class="score-verdict">Quiz Completed!</h3>
+          <p id="results-subtitle" class="card-desc">Here is your performance summary for this attempt.</p>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="score-stats">
+          <div class="stat-item">
+            <div class="stat-label">Student</div>
+            <div id="stat-student-name" class="stat-val">-</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Student ID</div>
+            <div id="stat-student-id" class="stat-val">-</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Accuracy</div>
+            <div id="stat-accuracy" class="stat-val">0%</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Time Taken</div>
+            <div id="stat-time" class="stat-val">00:00</div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="results-actions">
+          <button type="button" id="btn-retake-quiz" class="btn btn-secondary" style="flex:1;">
+            🔄 Retake Quiz
+          </button>
+          <button type="button" id="btn-new-quiz" class="btn btn-primary" style="flex:1;">
+            🗺️ Choose Another Topic
+          </button>
+        </div>
+
+        <!-- Detailed Question Review Section -->
+        <section class="review-section" aria-labelledby="review-heading">
+          <h3 id="review-heading" class="review-heading">Detailed Question Review</h3>
+          <div id="results-review-container">
+            <!-- Dynamically populated review cards -->
+          </div>
+        </section>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Application Footer -->
+  <footer class="app-footer" role="contentinfo">
+    <p>Geography Quiz Practice &amp; Performance Tracking • Milestone 1 Local Prototype</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

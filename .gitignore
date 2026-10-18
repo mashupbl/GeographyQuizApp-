@@ -1,0 +1,13 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Python bytecode and test artifacts
+__pycache__/
+*.pyc
+
+# IDE / Editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
