@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Navigation Header -->
+  <!-- Header Navigation -->
   <header class="navbar">
     <div class="nav-brand">
       <span class="brand-icon">🌍</span>
@@ -25,10 +25,10 @@
         <button id="btnNavAdmin" class="nav-tab" data-portal="admin">Admin Console</button>
       </div>
       <div class="user-session" id="userSessionBadge">
-        <span class="user-avatar" id="navAvatar">S</span>
+        <span class="user-avatar" id="navAvatar">?</span>
         <div class="user-details">
-          <span class="user-name" id="navUserName">Guest Student</span>
-          <span class="user-role" id="navUserRole">Student ID: GUEST-01</span>
+          <span class="user-name" id="navUserName">Not Signed In</span>
+          <span class="user-role" id="navUserRole">Please authenticate</span>
         </div>
         <button id="btnAuthAction" class="btn btn-outline-sm">Sign In</button>
       </div>
@@ -38,29 +38,29 @@
   <!-- Notification Toast Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-  <!-- MAIN CONTAINER -->
+  <!-- MAIN APP CONTAINER -->
   <main class="app-container">
 
     <!-- ==================== STUDENT PORTAL ==================== -->
     <section id="portalStudent" class="portal-view active">
-      <!-- Sub-Navigation for Students -->
       <nav class="sub-nav">
         <button class="sub-tab active" data-subview="quizSetup">Take a Quiz</button>
+        <button class="sub-tab" data-subview="leaderboard">🏆 High Scores</button>
         <button class="sub-tab" data-subview="studentDashboard">My Dashboard & History</button>
       </nav>
 
-      <!-- View: Quiz Setup -->
+      <!-- Subview: Quiz Setup -->
       <div id="subViewQuizSetup" class="sub-view-pane active">
         <div class="card setup-card">
           <div class="card-header">
             <h2>Select Assessment Configuration</h2>
-            <p>Select target continent, difficulty level, and session mode.</p>
+            <p>Select target scope, difficulty, and session mode.</p>
           </div>
           <form id="quizSetupForm" class="setup-grid">
             <div class="form-group">
-              <label for="setupContinent">Continent</label>
+              <label for="setupContinent">Geographic Scope / Continent</label>
               <select id="setupContinent" class="form-control" required>
-                <option value="All">All Continents (Global Assessment)</option>
+                <option value="Whole World" selected>🌍 Whole World (All Continents)</option>
                 <option value="Asia">Asia</option>
                 <option value="Africa">Africa</option>
                 <option value="Europe">Europe</option>
@@ -74,7 +74,7 @@
             <div class="form-group">
               <label for="setupDifficulty">Difficulty Level</label>
               <select id="setupDifficulty" class="form-control" required>
-                <option value="All">All Levels</option>
+                <option value="All">All Difficulties</option>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
@@ -90,12 +90,17 @@
 
             <div class="form-group">
               <label for="setupCount">Question Count</label>
-              <select id="setupCount" class="form-control" required>
-                <option value="5">5 Questions</option>
-                <option value="10" selected>10 Questions</option>
-                <option value="20">20 Questions</option>
-                <option value="30">30 Questions</option>
-              </select>
+              <div class="count-selector-group">
+                <select id="setupCount" class="form-control" required>
+                  <option value="5">5 Questions</option>
+                  <option value="10" selected>10 Questions</option>
+                  <option value="20">20 Questions</option>
+                  <option value="30">30 Questions</option>
+                  <option value="all">All Available</option>
+                  <option value="custom">Custom...</option>
+                </select>
+                <input type="number" id="setupCustomCount" class="form-control hidden" placeholder="Enter count" min="1" max="5000">
+              </div>
             </div>
 
             <div class="form-group full-width">
@@ -105,14 +110,14 @@
                   <input type="radio" name="assessmentMode" value="practice" checked>
                   <div class="mode-card-content">
                     <span class="mode-title">Practice Mode</span>
-                    <span class="mode-desc">Untimed, instant explanation display after each submission.</span>
+                    <span class="mode-desc">Untimed practice with instant step-by-step explanations.</span>
                   </div>
                 </label>
                 <label class="mode-card">
                   <input type="radio" name="assessmentMode" value="exam">
                   <div class="mode-card-content">
                     <span class="mode-title">Examination Mode</span>
-                    <span class="mode-desc">Strict countdown timer, locked answers, final institutional score sheet.</span>
+                    <span class="mode-desc">Timed assessment, locked choices, and official leaderboard entry.</span>
                   </div>
                 </label>
               </div>
@@ -126,12 +131,45 @@
         </div>
       </div>
 
-      <!-- View: Active Quiz Arena -->
+      <!-- Subview: High Scores Leaderboard -->
+      <div id="subViewLeaderboard" class="sub-view-pane hidden">
+        <div class="card table-card">
+          <div class="card-header-flex">
+            <div>
+              <h2>🏆 Top 10 Highscore Leaderboard</h2>
+              <p>Top scores sorted by accuracy and completion duration.</p>
+            </div>
+            <button id="btnRefreshLeaderboard" class="btn btn-outline-sm">🔄 Refresh</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Participant</th>
+                  <th>Role</th>
+                  <th>Scope</th>
+                  <th>Mode</th>
+                  <th>Score</th>
+                  <th>Accuracy</th>
+                  <th>Time</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTableBody">
+                <tr><td colspan="9" class="text-center">Loading leaderboard...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subview: Active Quiz Arena -->
       <div id="subViewQuizArena" class="sub-view-pane hidden">
         <div class="arena-header">
           <div class="arena-metadata">
             <span id="arenaModeBadge" class="badge badge-primary">Practice Mode</span>
-            <span id="arenaContinentBadge" class="badge badge-secondary">Asia</span>
+            <span id="arenaContinentBadge" class="badge badge-secondary">Whole World</span>
             <span id="arenaDifficultyBadge" class="badge badge-warning">Medium</span>
           </div>
           <div id="arenaTimerWrapper" class="timer-display hidden">
@@ -149,14 +187,12 @@
 
         <div class="card question-card">
           <div class="question-meta">
-            <span id="qTopicTag" class="tag-topic">Physical Geography</span>
-            <span id="qIdTag" class="tag-id">ID: AS-001</span>
+            <span id="qTopicTag" class="tag-topic">General Geography</span>
+            <span id="qIdTag" class="tag-id">ID: GEO-001</span>
           </div>
           <h2 id="qText" class="question-text">Loading question text...</h2>
 
-          <div id="qOptionsList" class="options-grid">
-            <!-- Dynamic Option Buttons -->
-          </div>
+          <div id="qOptionsList" class="options-grid"></div>
 
           <div id="qFeedbackPane" class="feedback-pane hidden">
             <div id="feedbackTitle" class="feedback-title">Correct!</div>
@@ -168,40 +204,40 @@
             <button id="btnPrevQuestion" class="btn btn-outline" disabled>Previous</button>
             <div class="right-buttons">
               <button id="btnNextQuestion" class="btn btn-primary">Next Question</button>
-              <button id="btnSubmitExam" class="btn btn-danger hidden">Finish & Submit Exam</button>
+              <button id="btnSubmitExam" class="btn btn-danger hidden">Finish & Submit</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- View: Quiz Results -->
+      <!-- Subview: Quiz Results -->
       <div id="subViewQuizResults" class="sub-view-pane hidden">
         <div class="card results-card">
           <div class="results-banner">
             <h2 id="resultsHeading">Assessment Completed</h2>
             <div class="score-circle">
-              <span id="resultsScorePct">80%</span>
-              <span class="score-fraction" id="resultsFraction">8 / 10</span>
+              <span id="resultsScorePct">0%</span>
+              <span class="score-fraction" id="resultsFraction">0 / 0</span>
             </div>
-            <p id="resultsFeedbackComment">Strong geographical mastery demonstrated.</p>
+            <p id="resultsFeedbackComment">Assessment complete.</p>
           </div>
 
           <div class="stats-summary-grid">
             <div class="stat-box">
               <span class="stat-label">Mode</span>
-              <span class="stat-val" id="resMode">Examination</span>
+              <span class="stat-val" id="resMode">Practice</span>
             </div>
             <div class="stat-box">
-              <span class="stat-label">Continent</span>
-              <span class="stat-val" id="resContinent">Africa</span>
+              <span class="stat-label">Scope</span>
+              <span class="stat-val" id="resContinent">Whole World</span>
             </div>
             <div class="stat-box">
               <span class="stat-label">Time Taken</span>
-              <span class="stat-val" id="resTime">04:32</span>
+              <span class="stat-val" id="resTime">00:00</span>
             </div>
             <div class="stat-box">
               <span class="stat-label">Accuracy</span>
-              <span class="stat-val text-success" id="resAccuracy">80%</span>
+              <span class="stat-val text-success" id="resAccuracy">0%</span>
             </div>
           </div>
 
@@ -215,12 +251,12 @@
         </div>
       </div>
 
-      <!-- View: Student Personal Dashboard -->
+      <!-- Subview: Student Personal Dashboard -->
       <div id="subViewStudentDashboard" class="sub-view-pane hidden">
         <div class="dashboard-hero">
           <div>
-            <h2 id="studentDashName">Student Performance Record</h2>
-            <p id="studentDashSub">Authenticated Institutional Profile ID: <strong id="studentDashId">GUEST-01</strong></p>
+            <h2 id="studentDashName">Performance Dashboard</h2>
+            <p id="studentDashSub">ID: <strong id="studentDashId">—</strong></p>
           </div>
         </div>
 
@@ -255,24 +291,12 @@
           </div>
         </div>
 
-        <div class="dashboard-columns">
-          <div class="card">
-            <h3>Performance by Continent</h3>
-            <div id="dashContinentProgress" class="breakdown-list">
-              <!-- Rendered Continent bars -->
-            </div>
-          </div>
-          <div class="card">
-            <h3>Performance by Difficulty</h3>
-            <div id="dashDifficultyProgress" class="breakdown-list">
-              <!-- Rendered Difficulty bars -->
-            </div>
-          </div>
-        </div>
-
         <div class="card table-card">
           <div class="card-header-flex">
-            <h3>Attempt History Logs</h3>
+            <div>
+              <h3>Attempt History Logs</h3>
+              <p class="text-muted">Click any row to review questions, chosen answers, and explanations.</p>
+            </div>
             <div class="table-filters">
               <select id="filterHistoryMode" class="form-control-sm">
                 <option value="All">All Modes</option>
@@ -282,20 +306,21 @@
             </div>
           </div>
           <div class="table-responsive">
-            <table class="data-table">
+            <table class="data-table clickable-table">
               <thead>
                 <tr>
-                  <th>Timestamp</th>
+                  <th>Date & Time</th>
                   <th>Mode</th>
-                  <th>Continent</th>
+                  <th>Scope</th>
                   <th>Difficulty</th>
                   <th>Score</th>
                   <th>Accuracy</th>
                   <th>Duration</th>
+                  <th>Review</th>
                 </tr>
               </thead>
               <tbody id="studentHistoryTableBody">
-                <tr><td colspan="7" class="text-center">No quiz attempts recorded yet.</td></tr>
+                <tr><td colspan="8" class="text-center">No quiz attempts recorded yet.</td></tr>
               </tbody>
             </table>
           </div>
@@ -308,10 +333,10 @@
       <nav class="sub-nav">
         <button class="sub-tab active" data-subview="adminOverview">Platform Overview</button>
         <button class="sub-tab" data-subview="adminQuestionBank">Question Bank Repository</button>
-        <button class="sub-tab" data-subview="adminStudentMonitoring">Student Analytics & Integrity</button>
+        <button class="sub-tab" data-subview="adminStudentMonitoring">All Attempts & Audits</button>
       </nav>
 
-      <!-- View: Admin Overview -->
+      <!-- Subview: Admin Overview -->
       <div id="subViewAdminOverview" class="sub-view-pane active">
         <div class="metrics-grid">
           <div class="metric-card">
@@ -331,45 +356,27 @@
           <div class="metric-card">
             <span class="metric-icon">👥</span>
             <div class="metric-data">
-              <span class="metric-number" id="adminTotalStudents">1</span>
-              <span class="metric-title">Registered Students</span>
+              <span class="metric-number" id="adminTotalStudents">0</span>
+              <span class="metric-title">Active Participants</span>
             </div>
           </div>
           <div class="metric-card">
             <span class="metric-icon">📊</span>
             <div class="metric-data">
               <span class="metric-number" id="adminTotalAttempts">0</span>
-              <span class="metric-title">Assessment Submissions</span>
+              <span class="metric-title">Submissions</span>
             </div>
           </div>
         </div>
 
-        <div class="card table-card">
-          <div class="card-header">
-            <h3>Institutional Database Status</h3>
-          </div>
-          <div class="status-summary-grid">
-            <div class="stat-box">
-              <span class="stat-label">Active Storage Engine</span>
-              <span class="stat-val" id="adminStorageType">Local Dual-Engine (Ready)</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">Firebase Auth Connection</span>
-              <span class="stat-val" id="adminAuthStatus">Unconfigured (Development Fallback)</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">Firestore Synchronization</span>
-              <span class="stat-val" id="adminFirestoreStatus">Local Persistence Active</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">Integrity Enforcements</span>
-              <span class="stat-val text-success">Strict Validation Active</span>
-            </div>
-          </div>
+        <div class="card">
+          <h3>Admin Participation Mode</h3>
+          <p class="text-muted">Administrators and teachers can directly take assessments in the Student Portal, and their attempts will be marked on the high score board.</p>
+          <button id="btnAdminTakeQuiz" class="btn btn-primary" style="margin-top: 10px;">Launch Quiz as Teacher</button>
         </div>
       </div>
 
-      <!-- View: Question Bank Management -->
+      <!-- Subview: Question Bank Management -->
       <div id="subViewAdminQuestionBank" class="sub-view-pane hidden">
         <div class="card filter-card">
           <div class="action-bar-top">
@@ -377,7 +384,7 @@
               <input type="text" id="qbSearchInput" class="form-control" placeholder="Search by ID, keyword, or question text...">
             </div>
             <div class="button-group">
-              <button id="btnOpenCsvModal" class="btn btn-success">📥 CSV Bulk Import</button>
+              <button id="btnOpenCsvModal" class="btn btn-success">📥 Permissive CSV Import</button>
               <button id="btnExportCsv" class="btn btn-outline">📤 Export CSV</button>
               <button id="btnOpenAddModal" class="btn btn-primary">➕ Add Question</button>
             </div>
@@ -385,9 +392,10 @@
 
           <div class="filters-row">
             <div class="filter-item">
-              <label>Continent</label>
+              <label>Continent / Scope</label>
               <select id="qbFilterContinent" class="form-control-sm">
-                <option value="All">All Continents</option>
+                <option value="All">All Scopes</option>
+                <option value="Whole World">Whole World</option>
                 <option value="Asia">Asia</option>
                 <option value="Africa">Africa</option>
                 <option value="Europe">Europe</option>
@@ -409,7 +417,7 @@
             </div>
 
             <div class="filter-item">
-              <label>Publication Status</label>
+              <label>Status</label>
               <select id="qbFilterStatus" class="form-control-sm">
                 <option value="All">All Statuses</option>
                 <option value="Published">Published</option>
@@ -429,14 +437,13 @@
           </div>
         </div>
 
-        <!-- Question Bank Data Table -->
         <div class="card table-card">
           <div class="table-responsive">
             <table class="data-table">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Continent</th>
+                  <th>Scope</th>
                   <th>Difficulty</th>
                   <th>Topic</th>
                   <th style="width: 35%;">Question Text</th>
@@ -451,7 +458,6 @@
             </table>
           </div>
 
-          <!-- Pagination Controls -->
           <div class="pagination-footer">
             <div class="pagination-info">
               Showing <span id="pgStart">0</span> to <span id="pgEnd">0</span> of <span id="pgTotal">0</span> entries
@@ -470,29 +476,30 @@
         </div>
       </div>
 
-      <!-- View: Admin Student Monitoring -->
+      <!-- Subview: Admin Attempt Monitoring -->
       <div id="subViewAdminStudentMonitoring" class="sub-view-pane hidden">
         <div class="card table-card">
           <div class="card-header">
-            <h3>Registered Student Attempts & Integrity Records</h3>
-            <p>Real-time audit log of student examinations and practice records.</p>
+            <h3>Registered Attempts & Integrity Audit Log</h3>
+            <p class="text-muted">Click any row to view complete question breakdowns with correct and wrong answers.</p>
           </div>
           <div class="table-responsive">
-            <table class="data-table">
+            <table class="data-table clickable-table">
               <thead>
                 <tr>
-                  <th>Student ID</th>
-                  <th>Student Name</th>
-                  <th>Assessment Mode</th>
-                  <th>Continent</th>
+                  <th>Date & Time</th>
+                  <th>User ID</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Scope</th>
                   <th>Score</th>
                   <th>Accuracy</th>
-                  <th>Timestamp</th>
-                  <th>Status</th>
+                  <th>Duration</th>
+                  <th>Review</th>
                 </tr>
               </thead>
               <tbody id="adminAttemptsTableBody">
-                <tr><td colspan="8" class="text-center">No student attempt records located.</td></tr>
+                <tr><td colspan="9" class="text-center">No records located.</td></tr>
               </tbody>
             </table>
           </div>
@@ -503,91 +510,113 @@
 
   <!-- ==================== MODALS ==================== -->
 
-  <!-- CSV Bulk Import Modal (CRITICAL FEATURE) -->
+  <!-- Modal 1: Mandatory Authentication Gate -->
+  <div id="authModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-header">
+        <h3 id="authModalTitle">Institutional Portal Login</h3>
+        <button class="modal-close" id="btnCloseAuthModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">Enter your institutional ID and password to access the platform.</p>
+        <form id="authForm">
+          <div class="form-group">
+            <label for="authRole">Institutional Role</label>
+            <select id="authRole" class="form-control">
+              <option value="student" selected>Student</option>
+              <option value="admin">Teacher / Administrator</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="authStudentName">Full Name *</label>
+            <input type="text" id="authStudentName" class="form-control" placeholder="e.g. Mashood" required>
+          </div>
+          <div class="form-group">
+            <label for="authStudentId" id="authIdLabel">Student ID *</label>
+            <input type="text" id="authStudentId" class="form-control" placeholder="e.g. STU-345" required>
+          </div>
+          <div class="form-group">
+            <label for="authPassword">Password / Access PIN *</label>
+            <input type="password" id="authPassword" class="form-control" placeholder="Enter password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Attempt History Drill-Down Breakdown -->
+  <div id="attemptDetailModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3 id="attemptDetailTitle">Assessment Record Breakdown</h3>
+        <button class="modal-close" id="btnCloseAttemptModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="stats-summary-grid" id="attemptModalSummary"></div>
+        <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--border-color);">
+        <h4>Question Responses</h4>
+        <div id="attemptModalQuestionsList" class="results-review-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="btnCloseAttemptModalFooter">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Permissive CSV Ingestion Modal -->
   <div id="csvImportModal" class="modal-overlay hidden">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
-        <h3>Bulk CSV Question Import Engine</h3>
+        <h3>Permissive CSV Question Ingestion</h3>
         <button class="modal-close" id="btnCloseCsvModal">&times;</button>
       </div>
       <div class="modal-body">
         <p class="modal-description">
-          Upload question files containing hundreds or thousands of rows. All inputs are validated for RFC 4180 compatibility, continent alignment, and answer key validity prior to saving.
+          Upload any CSV question file. All non-empty rows will be imported. Missing fields are automatically populated with defaults.
         </p>
-
-        <div class="template-download-banner">
-          <span>Need the approved institutional CSV format?</span>
-          <button id="btnDownloadTemplate" class="btn btn-outline-sm">📥 Download CSV Template</button>
-        </div>
 
         <div class="file-dropzone" id="csvDropZone">
           <input type="file" id="csvFileInput" accept=".csv,text/csv" class="file-input-hidden">
           <label for="csvFileInput" class="dropzone-label">
             <span class="upload-icon">📄</span>
             <span class="primary-prompt">Click to select CSV file, or drag and drop here</span>
-            <span class="sub-prompt">Supports UTF-8, commas inside quoted strings, and multi-line explanations</span>
+            <span class="sub-prompt">Any column format accepted; no rows will be rejected</span>
           </label>
         </div>
 
-        <!-- Preview & Validation Summary -->
         <div id="csvPreviewSection" class="csv-preview-section hidden">
-          <h4>Pre-Import Validation Summary</h4>
+          <h4>Parsed Data Preview</h4>
           <div class="csv-stats-badges">
-            <div class="badge badge-info" id="csvTotalCountBadge">Total Rows: 0</div>
-            <div class="badge badge-success" id="csvValidCountBadge">Valid Questions: 0</div>
-            <div class="badge badge-warning" id="csvDuplicateCountBadge">Duplicates: 0</div>
-            <div class="badge badge-danger" id="csvInvalidCountBadge">Rejected Errors: 0</div>
+            <div class="badge badge-success" id="csvValidCountBadge">Questions Found: 0</div>
           </div>
-
-          <div class="duplicate-policy-box">
-            <label class="policy-label"><strong>Duplicate Handling Policy:</strong></label>
-            <div class="radio-inline">
-              <label>
-                <input type="radio" name="dupPolicy" value="skip" checked>
-                Skip duplicates (Keep existing records intact)
-              </label>
-              <label>
-                <input type="radio" name="dupPolicy" value="overwrite">
-                Overwrite / Update existing records with CSV rows
-              </label>
-            </div>
-          </div>
-
-          <!-- Detailed Row Errors if any -->
-          <div id="csvErrorBox" class="csv-error-box hidden">
-            <h5>Validation Errors Detected (These rows will be rejected):</h5>
-            <ul id="csvErrorList"></ul>
-          </div>
-
-          <!-- Staged Data Table Preview -->
           <div class="table-responsive preview-table-container">
             <table class="data-table preview-table">
               <thead>
                 <tr>
-                  <th>Row</th>
-                  <th>ID</th>
-                  <th>Continent</th>
-                  <th>Difficulty</th>
+                  <th>#</th>
+                  <th>Scope</th>
                   <th>Question Preview</th>
-                  <th>Correct Key</th>
-                  <th>Validation Status</th>
+                  <th>Option A</th>
+                  <th>Option B</th>
+                  <th>Option C</th>
+                  <th>Option D</th>
+                  <th>Key</th>
                 </tr>
               </thead>
-              <tbody id="csvPreviewTableBody">
-                <!-- Staged rows -->
-              </tbody>
+              <tbody id="csvPreviewTableBody"></tbody>
             </table>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button id="btnCancelCsvImport" class="btn btn-outline">Cancel</button>
-        <button id="btnConfirmImport" class="btn btn-primary" disabled>Confirm & Commit Import</button>
+        <button id="btnConfirmImport" class="btn btn-primary" disabled>Commit All Rows to Database</button>
       </div>
     </div>
   </div>
 
-  <!-- Manual Add / Edit Question Modal -->
+  <!-- Modal 4: Manual Add / Edit Question -->
   <div id="questionModal" class="modal-overlay hidden">
     <div class="modal-dialog">
       <div class="modal-header">
@@ -599,8 +628,9 @@
           <input type="hidden" id="editQuestionId">
           <div class="form-row">
             <div class="form-group flex-1">
-              <label for="qfContinent">Continent *</label>
+              <label for="qfContinent">Scope / Continent *</label>
               <select id="qfContinent" class="form-control" required>
+                <option value="Whole World">Whole World</option>
                 <option value="Asia">Asia</option>
                 <option value="Africa">Africa</option>
                 <option value="Europe">Europe</option>
@@ -622,14 +652,14 @@
 
           <div class="form-row">
             <div class="form-group flex-1">
-              <label for="qfTopic">Topic / Domain *</label>
-              <input type="text" id="qfTopic" class="form-control" placeholder="e.g. Capitals, Rivers, Mountain Ranges" required>
+              <label for="qfTopic">Topic / Category *</label>
+              <input type="text" id="qfTopic" class="form-control" placeholder="e.g. Capitals, Rivers" required>
             </div>
             <div class="form-group flex-1">
               <label for="qfStatus">Status *</label>
               <select id="qfStatus" class="form-control" required>
                 <option value="Published">Published</option>
-                <option value="Draft" selected>Draft</option>
+                <option value="Draft">Draft</option>
                 <option value="Archived">Archived</option>
               </select>
             </div>
@@ -637,7 +667,7 @@
 
           <div class="form-group">
             <label for="qfText">Question Text *</label>
-            <textarea id="qfText" class="form-control" rows="3" placeholder="Enter clear, academically verified question text..." required></textarea>
+            <textarea id="qfText" class="form-control" rows="3" required></textarea>
           </div>
 
           <div class="form-row">
@@ -664,7 +694,7 @@
 
           <div class="form-row">
             <div class="form-group flex-1">
-              <label for="qfCorrect">Correct Answer Key *</label>
+              <label for="qfCorrect">Correct Key *</label>
               <select id="qfCorrect" class="form-control" required>
                 <option value="A">Option A</option>
                 <option value="B">Option B</option>
@@ -673,65 +703,31 @@
               </select>
             </div>
             <div class="form-group flex-1">
-              <label for="qfSource">Academic Reference / Source</label>
-              <input type="text" id="qfSource" class="form-control" placeholder="e.g. National Geographic Atlas 2026">
+              <label for="qfSource">Academic Reference</label>
+              <input type="text" id="qfSource" class="form-control">
             </div>
           </div>
 
           <div class="form-group">
             <label for="qfExplanation">Educational Explanation</label>
-            <textarea id="qfExplanation" class="form-control" rows="2" placeholder="Optional context explaining why the key is correct..."></textarea>
+            <textarea id="qfExplanation" class="form-control" rows="2"></textarea>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" id="btnCancelQModal">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btnSaveQuestion">Save Record</button>
+          <button type="submit" class="btn btn-primary">Save Question</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Sign In / Identity Switcher Modal -->
-  <div id="authModal" class="modal-overlay hidden">
-    <div class="modal-dialog modal-sm">
-      <div class="modal-header">
-        <h3>Institutional Authentication</h3>
-        <button class="modal-close" id="btnCloseAuthModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-description">Enter your student ID or credentials to track personal examination records.</p>
-        <form id="authForm">
-          <div class="form-group">
-            <label for="authStudentName">Full Display Name *</label>
-            <input type="text" id="authStudentName" class="form-control" placeholder="e.g. Sarah Jenkins" required>
-          </div>
-          <div class="form-group">
-            <label for="authStudentId">Institutional ID *</label>
-            <input type="text" id="authStudentId" class="form-control" placeholder="e.g. STU-2026-881" required>
-          </div>
-          <div class="form-group">
-            <label for="authRole">Institutional Role</label>
-            <select id="authRole" class="form-control">
-              <option value="student">Student</option>
-              <option value="admin">Teacher / Administrator</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">Confirm Identity</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- App Core Logic Script -->
-  <!-- Firebase SDKs (Compat version for Vanilla JS) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase Project Configuration -->
+  <!-- Firebase Config & App Logic -->
   <script src="firebase-config.js"></script>
-
-  <!-- Application Logic -->
   <script src="app.js"></script>
 </body>
 </html>
