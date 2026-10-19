@@ -1038,4 +1038,10 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   .mode-selector { grid-template-columns: 1fr; }
   .action-bar-top { flex-direction: column; }
   .button-group { flex-wrap: wrap; }
+.hidden,
+.modal-overlay.hidden,
+.portal-view.hidden,
+.sub-view-pane.hidden {
+  display: none !important;
+}
 }
