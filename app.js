@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v2.0
+ * Core Engine v2.1
  */
 
 'use strict';
@@ -340,9 +340,6 @@ class PermissiveCsvEngine {
     return rows;
   }
 
-  /**
-   * Permissive Ingestion: Ingests all rows with intelligent fallbacks
-   */
   static ingestAllRows(rawRows) {
     if (!rawRows || rawRows.length === 0) return [];
 
@@ -493,6 +490,7 @@ class GeoQuizApp {
   async init() {
     this.bindEvents();
     await this.refreshData();
+    this.populateTopicDropdown();
     this.checkSession();
     this.renderQuestionBank();
     this.renderAdminOverview();
@@ -542,7 +540,6 @@ class GeoQuizApp {
       return;
     }
 
-    // Role-based password validation
     if (role === 'admin' && pwd !== 'admin123') {
       this.showToast('Invalid administrator password.', 'error');
       return;
@@ -587,6 +584,44 @@ class GeoQuizApp {
       roleEl.textContent = 'Please authenticate';
       avatarEl.textContent = '?';
       btnAuth.textContent = 'Sign In';
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+     TOPIC DROPDOWN POPULATION (DYNAMIC BY SCOPE / CONTINENT)
+     -------------------------------------------------------------------------- */
+  populateTopicDropdown() {
+    const topicSelect = document.getElementById('setupTopic');
+    if (!topicSelect) return;
+
+    const selectedContinent = document.getElementById('setupContinent')?.value || 'Whole World';
+
+    const matchingQuestions = this.questions.filter(q => {
+      const isPub = q.status === 'Published';
+      const matchCont = (selectedContinent === 'Whole World' || selectedContinent === 'All') 
+        ? true 
+        : q.continent === selectedContinent;
+      return isPub && matchCont;
+    });
+
+    const uniqueTopics = Array.from(
+      new Set(matchingQuestions.map(q => q.topic).filter(Boolean))
+    ).sort();
+
+    const previousValue = topicSelect.value;
+    topicSelect.innerHTML = '<option value="All">All Topics</option>';
+
+    uniqueTopics.forEach(top => {
+      const opt = document.createElement('option');
+      opt.value = top;
+      opt.textContent = top;
+      topicSelect.appendChild(opt);
+    });
+
+    if (uniqueTopics.includes(previousValue)) {
+      topicSelect.value = previousValue;
+    } else {
+      topicSelect.value = 'All';
     }
   }
 
@@ -644,9 +679,15 @@ class GeoQuizApp {
     });
     customCountInput.addEventListener('input', () => this.updateAvailabilityBadge());
 
-    // Filter changes
-    ['setupContinent', 'setupDifficulty', 'setupTopic'].forEach(id => {
-      document.getElementById(id).addEventListener('change', () => this.updateAvailabilityBadge());
+    // Continent change updates topics & availability badge
+    document.getElementById('setupContinent')?.addEventListener('change', () => {
+      this.populateTopicDropdown();
+      this.updateAvailabilityBadge();
+    });
+
+    // Difficulty & Topic change
+    ['setupDifficulty', 'setupTopic'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', () => this.updateAvailabilityBadge());
     });
 
     // Start Quiz
@@ -853,6 +894,7 @@ class GeoQuizApp {
 
     const res = await this.storage.saveBatchQuestions(this.stagedCsvQuestions);
     await this.refreshData();
+    this.populateTopicDropdown();
     this.renderQuestionBank();
     this.renderAdminOverview();
     this.updateAvailabilityBadge();
@@ -1002,6 +1044,7 @@ class GeoQuizApp {
 
     await this.storage.saveQuestion(questionObj);
     await this.refreshData();
+    this.populateTopicDropdown();
     this.renderQuestionBank();
     this.renderAdminOverview();
     this.updateAvailabilityBadge();
@@ -1014,6 +1057,7 @@ class GeoQuizApp {
     if (confirm(`Delete question ${id}? This action is irreversible.`)) {
       await this.storage.deleteQuestion(id);
       await this.refreshData();
+      this.populateTopicDropdown();
       this.renderQuestionBank();
       this.renderAdminOverview();
       this.updateAvailabilityBadge();
@@ -1027,7 +1071,6 @@ class GeoQuizApp {
   getEligibleQuestions(continent, difficulty, topic) {
     return this.questions.filter(q => {
       const isPub = q.status === 'Published';
-      // "Whole World" selects questions across all continents
       const matchCont = (continent === 'Whole World' || continent === 'All') ? true : q.continent === continent;
       const matchDiff = difficulty === 'All' || q.difficulty === difficulty;
       const matchTopic = topic === 'All' || q.topic === topic;
@@ -1367,7 +1410,6 @@ class GeoQuizApp {
       return;
     }
 
-    // Sort by Accuracy %, then duration
     const sorted = [...this.attempts].sort((a, b) => {
       if (b.accuracyPct !== a.accuracyPct) return b.accuracyPct - a.accuracyPct;
       if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
