@@ -1048,4 +1048,4 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
 
 .modal-overlay.hidden {
   display: none !important;
-}
+}.modal-overlay.hidden, .hidden { display: none !important; } 
