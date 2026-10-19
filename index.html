@@ -3,492 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="GeoQuiz Explorer - Comprehensive Geography Practice, Assessment, Question Bank Management & Student Performance Tracking">
-  <title>GeoQuiz Explorer | Continent Practice & Tracking</title>
+  <title>GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-  <!-- Top App Navigation & Header -->
-  <header class="app-header" role="banner">
-    <div class="header-container">
-      <div class="brand">
-        <span class="brand-icon" aria-hidden="true">🌍</span>
-        <div>
-          <h1 class="brand-title">GeoQuiz Explorer</h1>
-          <p class="brand-subtitle">Continent Practice &amp; Knowledge Tracker</p>
-        </div>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <span class="brand-icon">🌍</span>
+      <div class="brand-text">
+        <h1>GeoQuiz Explorer</h1>
+        <span class="brand-tagline">Academic Geography Portal</span>
       </div>
-      <div class="header-meta">
-        <!-- Student Badge (clickable) -->
-        <button type="button" id="header-student-badge" class="badge badge-student" style="display: none; cursor: pointer; border: none;" title="Open My Student Dashboard">
-          <span aria-hidden="true">👤</span>
-          <span id="header-student-name">Student</span>
-        </button>
-
-        <!-- Quiz Mode Badge -->
-        <span id="header-mode-badge" class="badge badge-mode" style="display: none;">
-          <span id="header-mode-text">Practice Mode</span>
-        </span>
-
-        <!-- Quick Dashboard Nav -->
-        <button type="button" id="btn-header-student-dash" class="btn btn-secondary btn-header-action" style="display: none;">
-          📊 My Dashboard
-        </button>
-
-        <!-- Storage Status Badge -->
-        <span id="header-storage-status" class="badge badge-meta" title="Database connection status">
-          💾 Local Mode
-        </span>
-
-        <!-- Admin Portal Nav -->
-        <button type="button" id="btn-header-admin" class="btn btn-admin-header btn-header-action" title="Teacher & Administrator Portal">
-          🔒 Admin Portal
-        </button>
+    </div>
+    <div class="nav-actions">
+      <div class="portal-switch">
+        <button id="btnNavStudent" class="nav-tab active" data-portal="student">Student Portal</button>
+        <button id="btnNavAdmin" class="nav-tab" data-portal="admin">Admin Console</button>
+      </div>
+      <div class="user-session" id="userSessionBadge">
+        <span class="user-avatar" id="navAvatar">S</span>
+        <div class="user-details">
+          <span class="user-name" id="navUserName">Guest Student</span>
+          <span class="user-role" id="navUserRole">Student ID: GUEST-01</span>
+        </div>
+        <button id="btnAuthAction" class="btn btn-outline-sm">Sign In</button>
       </div>
     </div>
   </header>
 
-  <!-- Main Content Views -->
-  <main class="main-container" role="main">
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-    <!-- VIEW 1: REGISTRATION & MODE SELECTION -->
-    <section id="view-registration" class="view active" aria-labelledby="reg-title">
-      <div class="card">
-        <header class="card-header">
-          <h2 id="reg-title" class="card-title">Student Profile &amp; Mode</h2>
-          <p class="card-desc">Enter your student information to begin your geography practice session.</p>
-        </header>
+  <!-- MAIN CONTAINER -->
+  <main class="app-container">
 
-        <form id="form-registration" novalidate>
-          <div class="form-group">
-            <label for="input-student-name" class="form-label">Full Name <span aria-hidden="true" style="color:var(--danger)">*</span></label>
-            <input type="text" id="input-student-name" class="form-input" placeholder="e.g. Maya Lin" required autocomplete="name">
-            <p class="form-hint">Used to label your practice attempts and scorecard.</p>
+    <!-- ==================== STUDENT PORTAL ==================== -->
+    <section id="portalStudent" class="portal-view active">
+      <!-- Sub-Navigation for Students -->
+      <nav class="sub-nav">
+        <button class="sub-tab active" data-subview="quizSetup">Take a Quiz</button>
+        <button class="sub-tab" data-subview="studentDashboard">My Dashboard & History</button>
+      </nav>
+
+      <!-- View: Quiz Setup -->
+      <div id="subViewQuizSetup" class="sub-view-pane active">
+        <div class="card setup-card">
+          <div class="card-header">
+            <h2>Select Assessment Configuration</h2>
+            <p>Select target continent, difficulty level, and session mode.</p>
           </div>
-
-          <div class="form-group">
-            <label for="input-student-id" class="form-label">Student ID <span aria-hidden="true" style="color:var(--danger)">*</span></label>
-            <input type="text" id="input-student-id" class="form-input" placeholder="e.g. STU-2026" required autocomplete="off">
-            <p class="form-hint">Your unique school or classroom identifier (e.g. STU-001).</p>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Select Quiz Mode</label>
-            <div class="mode-grid" role="radiogroup" aria-label="Select Quiz Mode">
-              
-              <label class="mode-option selected" id="mode-opt-practice">
-                <input type="radio" name="quiz-mode" value="practice" checked>
-                <span class="mode-title">
-                  <span aria-hidden="true">💡</span> Practice Mode
-                </span>
-                <span class="mode-desc">Instant feedback after each question with educational explanations. Best for learning.</span>
-              </label>
-
-              <label class="mode-option" id="mode-opt-exam">
-                <input type="radio" name="quiz-mode" value="exam">
-                <span class="mode-title">
-                  <span aria-hidden="true">📝</span> Exam Mode
-                </span>
-                <span class="mode-desc">Answers are locked silently. Scores and explanations are revealed only after submission.</span>
-              </label>
-
-            </div>
-          </div>
-
-          <button type="submit" id="btn-to-selection" class="btn btn-primary btn-block">
-            Choose Continent &amp; Difficulty →
-          </button>
-        </form>
-      </div>
-    </section>
-
-    <!-- VIEW 2: CONTINENT & DIFFICULTY SELECTION -->
-    <section id="view-selection" class="view" aria-labelledby="selection-title">
-      <div class="card">
-        <header class="card-header">
-          <h2 id="selection-title" class="card-title">Select Continent &amp; Difficulty</h2>
-          <p class="card-desc">Choose a continent category and your preferred challenge level.</p>
-        </header>
-
-        <!-- Continent Selector -->
-        <div class="form-group">
-          <label class="form-label">1. Choose a Continent (7 Categories)</label>
-          <div class="continent-grid" role="group" aria-label="Continents">
-            <button type="button" class="continent-chip active" data-continent="Asia">
-              <span class="continent-icon" aria-hidden="true">🌏</span>
-              <span>Asia</span>
-            </button>
-            <button type="button" class="continent-chip" data-continent="Africa">
-              <span class="continent-icon" aria-hidden="true">🌍</span>
-              <span>Africa</span>
-            </button>
-            <button type="button" class="continent-chip" data-continent="Europe">
-              <span class="continent-icon" aria-hidden="true">🏰</span>
-              <span>Europe</span>
-            </button>
-            <button type="button" class="continent-chip" data-continent="North America">
-              <span class="continent-icon" aria-hidden="true">🗽</span>
-              <span>North America</span>
-            </button>
-            <button type="button" class="continent-chip" data-continent="South America">
-              <span class="continent-icon" aria-hidden="true">🦜</span>
-              <span>South America</span>
-            </button>
-            <button type="button" class="continent-chip" data-continent="Australia/Oceania">
-              <span class="continent-icon" aria-hidden="true">🦘</span>
-              <span>Australia/Oceania</span>
-            </button>
-            <button type="button" class="continent-chip" data-continent="Antarctica">
-              <span class="continent-icon" aria-hidden="true">❄️</span>
-              <span>Antarctica</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Difficulty Selector -->
-        <div class="form-group">
-          <label class="form-label">2. Choose Difficulty Level</label>
-          <div class="difficulty-selector" role="group" aria-label="Difficulty Levels">
-            <button type="button" class="difficulty-btn active" data-difficulty="Easy">
-              Easy
-            </button>
-            <button type="button" class="difficulty-btn" data-difficulty="Medium">
-              Medium
-            </button>
-            <button type="button" class="difficulty-btn" data-difficulty="Hard">
-              Hard
-            </button>
-          </div>
-        </div>
-
-        <!-- Optional Session Length Selector -->
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-            <div id="selection-preview-badge" class="badge badge-student" style="padding: 0.5rem 0.85rem; font-size: 0.85rem;">
-              <span id="selection-count-text">Loading questions...</span>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <label for="select-quiz-length" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Practice session size:</label>
-              <select id="select-quiz-length" class="form-input" style="padding: 0.35rem 0.65rem; width: auto; font-size: 0.85rem;">
-                <option value="all">All available questions</option>
-                <option value="10">Quick 10 Questions</option>
-                <option value="20">Standard 20 Questions</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
-          <button type="button" id="btn-back-to-reg" class="btn btn-secondary">
-            ← Change Profile
-          </button>
-          <button type="button" id="btn-selection-to-dashboard" class="btn btn-secondary">
-            📊 View My Practice History
-          </button>
-          <button type="button" id="btn-start-quiz" class="btn btn-primary" style="flex: 1; min-width: 160px;">
-            Start Quiz 🚀
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW 3: ACTIVE QUIZ VIEW -->
-    <section id="view-quiz" class="view" aria-labelledby="quiz-question-text">
-      <!-- Top meta info -->
-      <div class="quiz-topbar">
-        <div class="quiz-meta">
-          <span id="quiz-progress-text">Question 1 of 5</span>
-          <span>•</span>
-          <span id="quiz-topic-text">Asia (Easy)</span>
-        </div>
-        <div class="timer-box" aria-label="Quiz Timer">
-          <span aria-hidden="true">⏱️</span>
-          <span id="quiz-timer-display">00:00</span>
-        </div>
-      </div>
-
-      <!-- Accessible Progress Bar -->
-      <div class="progress-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="quiz-progress-wrapper">
-        <div id="quiz-progress-bar" class="progress-bar"></div>
-      </div>
-
-      <!-- Question Card -->
-      <article class="card">
-        <div class="question-badge" id="quiz-card-badge">Continent Quiz</div>
-        <h2 id="quiz-question-text" class="question-text">Loading Question...</h2>
-
-        <!-- 4 Multiple Choice Options -->
-        <div id="quiz-options-container" class="options-grid" role="group" aria-label="Multiple Choice Options">
-          <!-- Dynamically populated -->
-        </div>
-
-        <!-- Practice Mode Feedback Alert -->
-        <div id="quiz-feedback-box" class="feedback-box" role="status" aria-live="polite">
-          <div id="quiz-feedback-heading" class="feedback-heading"></div>
-          <div id="quiz-feedback-text" class="feedback-text"></div>
-        </div>
-
-        <!-- Navigation Next / Submit Button -->
-        <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-          <button type="button" id="btn-next-question" class="btn btn-primary" disabled>
-            Next Question →
-          </button>
-        </div>
-      </article>
-    </section>
-
-    <!-- VIEW 4: RESULTS & PERFORMANCE SUMMARY -->
-    <section id="view-results" class="view" aria-labelledby="results-title">
-      <div class="card results-card">
-        <header>
-          <h2 id="results-title" class="sr-only">Quiz Results</h2>
-          <div class="score-circle">
-            <span id="results-score-value" class="score-value">0/0</span>
-            <span class="score-total">Score</span>
-          </div>
-          <h3 id="results-verdict" class="score-verdict">Quiz Completed!</h3>
-          <p id="results-subtitle" class="card-desc">Here is your performance summary for this attempt.</p>
-        </header>
-
-        <!-- Stats Grid -->
-        <div class="score-stats">
-          <div class="stat-item">
-            <div class="stat-label">Student</div>
-            <div id="stat-student-name" class="stat-val">-</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Student ID</div>
-            <div id="stat-student-id" class="stat-val">-</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Accuracy</div>
-            <div id="stat-accuracy" class="stat-val">0%</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Time Taken</div>
-            <div id="stat-time" class="stat-val">00:00</div>
-          </div>
-        </div>
-
-        <!-- Storage Status Indicator -->
-        <p id="results-save-status" class="save-status" role="status" aria-live="polite"></p>
-
-        <!-- Action Buttons -->
-        <div class="results-actions">
-          <button type="button" id="btn-retake-quiz" class="btn btn-secondary" style="flex:1;">
-            🔄 Retake Quiz
-          </button>
-          <button type="button" id="btn-new-quiz" class="btn btn-primary" style="flex:1;">
-            🗺️ Choose Another Topic
-          </button>
-          <button type="button" id="btn-results-to-dashboard" class="btn btn-secondary" style="flex:1;">
-            📊 My Practice Dashboard
-          </button>
-        </div>
-
-        <!-- Detailed Question Review Section -->
-        <section class="review-section" aria-labelledby="review-heading">
-          <h3 id="review-heading" class="review-heading">Detailed Question Review</h3>
-          <div id="results-review-container">
-            <!-- Dynamically populated review cards -->
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <!-- VIEW 5: STUDENT DASHBOARD -->
-    <section id="view-student-dashboard" class="view" aria-labelledby="sdash-title">
-      <div class="card">
-        <header class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-          <div>
-            <h2 id="sdash-title" class="card-title">My Practice Dashboard</h2>
-            <p class="card-desc">
-              Student: <strong id="sdash-student-name">-</strong> (ID: <span id="sdash-student-id">-</span>)
-            </p>
-          </div>
-          <button type="button" id="btn-sdash-back-to-quiz" class="btn btn-secondary">
-            ← Back to Quiz Practice
-          </button>
-        </header>
-
-        <!-- Category Filter -->
-        <div class="dash-filters">
-          <div style="flex: 1; min-width: 180px;">
-            <label for="sdash-filter-continent" class="form-label">Filter by Continent:</label>
-            <select id="sdash-filter-continent" class="form-input">
-              <option value="all">All Continents</option>
-              <option value="Asia">Asia</option>
-              <option value="Africa">Africa</option>
-              <option value="Europe">Europe</option>
-              <option value="North America">North America</option>
-              <option value="South America">South America</option>
-              <option value="Australia/Oceania">Australia/Oceania</option>
-              <option value="Antarctica">Antarctica</option>
-            </select>
-          </div>
-          <div style="flex: 1; min-width: 180px;">
-            <label for="sdash-filter-difficulty" class="form-label">Filter by Difficulty:</label>
-            <select id="sdash-filter-difficulty" class="form-input">
-              <option value="all">All Difficulties</option>
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Overall Practice Statistics -->
-        <div class="score-stats" style="margin-bottom: 1.5rem;">
-          <div class="stat-item">
-            <div class="stat-label">Total Attempts</div>
-            <div id="sdash-stat-total" class="stat-val">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Average Score</div>
-            <div id="sdash-stat-avg" class="stat-val">0%</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Best Score</div>
-            <div id="sdash-stat-best" class="stat-val">0%</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Total Time Practiced</div>
-            <div id="sdash-stat-time" class="stat-val">00:00</div>
-          </div>
-        </div>
-
-        <!-- Latest and Best per Topic -->
-        <div id="sdash-topic-bests-container"></div>
-
-        <!-- Score Progression SVG Chart -->
-        <div id="sdash-chart-container"></div>
-
-        <!-- Attempt History Table -->
-        <div style="margin-top: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <h3 class="review-heading" style="margin-bottom: 0;">Complete Attempt History</h3>
-            <span id="sdash-table-count" class="badge badge-meta">0 attempts</span>
-          </div>
-
-          <div class="table-wrap">
-            <table class="dash-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Date &amp; Time</th>
-                  <th>Continent</th>
-                  <th>Level</th>
-                  <th>Mode</th>
-                  <th>Total</th>
-                  <th>Correct</th>
-                  <th>Wrong</th>
-                  <th>Score</th>
-                  <th>Accuracy</th>
-                  <th>Duration</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="sdash-attempts-tbody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Dynamic Attempt Scorecard Detail Container -->
-        <div id="sdash-attempt-detail-container"></div>
-      </div>
-    </section>
-
-    <!-- VIEW 6: ADMINISTRATOR PORTAL -->
-    <section id="view-admin" class="view" aria-labelledby="admin-title">
-      <div class="card">
-        <header class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-          <div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-size: 1.5rem;">🛡️</span>
-              <h2 id="admin-title" class="card-title" style="margin: 0;">Administrator Portal</h2>
-            </div>
-            <p class="card-desc" style="margin-top: 0.25rem;">
-              Monitor student practice, manage the expandable question bank, and upload CSV questions.
-            </p>
-          </div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button type="button" id="btn-admin-change-passcode" class="btn btn-secondary btn-sm">
-              🔑 Change PIN
-            </button>
-            <button type="button" id="btn-admin-logout" class="btn btn-secondary btn-sm text-danger">
-              🚪 Log Out
-            </button>
-            <button type="button" id="btn-admin-back-to-quiz" class="btn btn-primary btn-sm">
-              ← Return to Quiz
-            </button>
-          </div>
-        </header>
-
-        <!-- Storage transparency disclaimer -->
-        <div class="alert alert-info" style="margin: 1rem 0; font-size: 0.82rem;">
-          <strong>💾 Local Storage Notice:</strong> Records and imported questions are securely stored in this browser's IndexedDB database. They persist across sessions on this device. Use <strong>Export to CSV</strong> to back up questions or migrate them between computers.
-        </div>
-
-        <!-- Top Overall Metrics Bar -->
-        <div class="score-stats" style="margin-bottom: 1.5rem;">
-          <div class="stat-item">
-            <div class="stat-label">Registered Students</div>
-            <div id="admin-metric-total-students" class="stat-val">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Total Attempts</div>
-            <div id="admin-metric-total-attempts" class="stat-val">0</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Practiced / Not Yet</div>
-            <div class="stat-val" style="font-size: 1.1rem;">
-              <span id="admin-metric-practiced-count" class="text-success">0</span> / 
-              <span id="admin-metric-not-practiced-count" class="text-muted">0</span>
-            </div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Overall Accuracy</div>
-            <div id="admin-metric-avg-score" class="stat-val">0%</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Total Practice Time</div>
-            <div id="admin-metric-total-time" class="stat-val">00:00</div>
-          </div>
-        </div>
-
-        <!-- Admin Navigation Sub-tabs -->
-        <div class="admin-tab-nav" role="tablist">
-          <button type="button" id="admin-subtab-monitoring" class="admin-tab-btn active" role="tab">
-            📊 Student Practice Monitoring
-          </button>
-          <button type="button" id="admin-subtab-students" class="admin-tab-btn" role="tab">
-            👥 Student Directory
-          </button>
-          <button type="button" id="admin-subtab-questions" class="admin-tab-btn" role="tab">
-            📚 Question Bank Management &amp; CSV
-          </button>
-          <button type="button" id="admin-subtab-cloud" class="admin-tab-btn" role="tab">
-            🔥 Cloud Database (Firebase)
-          </button>
-        </div>
-
-        <!-- SUB-TAB 1: STUDENT PRACTICE MONITORING -->
-        <div id="admin-tab-monitoring-content" class="admin-tab-pane">
-          <!-- Filters Bar -->
-          <div class="admin-filters-bar">
-            <div style="flex: 2; min-width: 180px;">
-              <label for="admin-filter-search" class="form-label">Search Student (Name or ID):</label>
-              <input type="text" id="admin-filter-search" class="form-input" placeholder="Search by Maya Lin or STU-2026...">
-            </div>
-
-            <div style="flex: 1; min-width: 140px;">
-              <label for="admin-filter-continent" class="form-label">Continent:</label>
-              <select id="admin-filter-continent" class="form-input">
-                <option value="all">All Continents</option>
+          <form id="quizSetupForm" class="setup-grid">
+            <div class="form-group">
+              <label for="setupContinent">Continent</label>
+              <select id="setupContinent" class="form-control" required>
+                <option value="All">All Continents (Global Assessment)</option>
                 <option value="Asia">Asia</option>
                 <option value="Africa">Africa</option>
                 <option value="Europe">Europe</option>
@@ -499,614 +71,670 @@
               </select>
             </div>
 
-            <div style="flex: 1; min-width: 120px;">
-              <label for="admin-filter-difficulty" class="form-label">Difficulty:</label>
-              <select id="admin-filter-difficulty" class="form-input">
-                <option value="all">All Levels</option>
+            <div class="form-group">
+              <label for="setupDifficulty">Difficulty Level</label>
+              <select id="setupDifficulty" class="form-control" required>
+                <option value="All">All Levels</option>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
               </select>
             </div>
 
-            <div style="flex: 1; min-width: 120px;">
-              <label for="admin-filter-mode" class="form-label">Mode:</label>
-              <select id="admin-filter-mode" class="form-input">
-                <option value="all">All Modes</option>
-                <option value="practice">Practice Mode</option>
-                <option value="exam">Exam Mode</option>
+            <div class="form-group">
+              <label for="setupTopic">Topic / Category</label>
+              <select id="setupTopic" class="form-control">
+                <option value="All">All Topics</option>
               </select>
             </div>
-
-            <div style="flex: 1; min-width: 120px;">
-              <label for="admin-filter-date" class="form-label">Date Range:</label>
-              <select id="admin-filter-date" class="form-input">
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="7days">Past 7 Days</option>
-                <option value="30days">Past 30 Days</option>
-              </select>
-            </div>
-
-            <div style="display: flex; align-items: flex-end;">
-              <button type="button" id="btn-admin-clear-filters" class="btn btn-secondary" style="height: 42px;">
-                Reset Filters
-              </button>
-            </div>
-          </div>
-
-          <!-- Activity Table -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 0.5rem 0;">
-            <h3 class="review-heading" style="margin: 0;">Recent Practice Activity</h3>
-            <span id="admin-attempts-count" class="badge badge-meta">0 records</span>
-          </div>
-
-          <div class="table-wrap">
-            <table class="dash-table">
-              <thead>
-                <tr>
-                  <th>Date &amp; Time</th>
-                  <th>Student ID</th>
-                  <th>Student Name</th>
-                  <th>Mode</th>
-                  <th>Continent</th>
-                  <th>Level</th>
-                  <th>Total</th>
-                  <th>Score</th>
-                  <th>Accuracy</th>
-                  <th>Time</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="admin-attempts-tbody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- SUB-TAB 2: STUDENT DIRECTORY -->
-        <div id="admin-tab-students-content" class="admin-tab-pane" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 0.5rem 0;">
-            <h3 class="review-heading" style="margin: 0;">Registered Students Directory</h3>
-            <span id="admin-students-count" class="badge badge-meta">0 students</span>
-          </div>
-
-          <div class="table-wrap">
-            <table class="dash-table">
-              <thead>
-                <tr>
-                  <th>Student ID</th>
-                  <th>Student Name</th>
-                  <th>Status</th>
-                  <th>Registered</th>
-                  <th>Last Active</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="admin-students-tbody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- SUB-TAB 3: QUESTION BANK MANAGEMENT & CSV -->
-        <div id="admin-tab-questions-content" class="admin-tab-pane" style="display: none;">
-          <!-- Top Question Bank Actions -->
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
-            <div>
-              <h3 class="review-heading" style="margin-bottom: 0.25rem;">Question Bank Controls</h3>
-              <p class="text-muted" style="font-size: 0.85rem;">
-                Total in Bank: <strong id="qadmin-total-count">0</strong> questions (<span id="qadmin-filtered-count">0 matching filter</span>)
-              </p>
-            </div>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button type="button" id="btn-qadmin-sample-csv" class="btn btn-secondary btn-sm" title="Download sample template for questions">
-                📄 Download CSV Template
-              </button>
-              <button type="button" id="btn-qadmin-export-csv" class="btn btn-secondary btn-sm" title="Export current questions to CSV">
-                📤 Export to CSV
-              </button>
-              <button type="button" id="btn-qadmin-add-single" class="btn btn-primary btn-sm">
-                ➕ Add Single Question
-              </button>
-              <button type="button" id="btn-qadmin-reset-default" class="btn btn-secondary btn-sm text-danger" title="Restore sample question bank">
-                🔄 Reset to Defaults
-              </button>
-            </div>
-          </div>
-
-          <!-- CSV Upload Dropzone -->
-          <div class="csv-upload-card" id="csv-dropzone">
-            <span style="font-size: 2.25rem;" aria-hidden="true">📥</span>
-            <div>
-              <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">Upload Questions via CSV File</h4>
-              <p class="text-muted" style="font-size: 0.85rem;">
-                Drag &amp; drop your CSV file here, or click to browse. Supports thousands of questions with automatic validation &amp; duplicate checking.
-              </p>
-            </div>
-            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-          </div>
-
-          <!-- Question Bank Filters & Pagination Container -->
-          <div id="qadmin-list-top" style="margin-top: 1.5rem;">
-            <!-- Quick Category Shortcut Pills -->
-            <div class="form-group" style="margin-bottom: 1rem;">
-              <label class="form-label" style="font-size: 0.85rem;">Quick Category Shortcuts:</label>
-              <div class="quick-pills-bar" id="qadmin-quick-pills">
-                <button type="button" class="quick-pill active" data-quick-cont="all" data-quick-diff="all">All Questions</button>
-                <button type="button" class="quick-pill" data-quick-cont="Asia" data-quick-diff="Easy">Asia → Easy</button>
-                <button type="button" class="quick-pill" data-quick-cont="Asia" data-quick-diff="Medium">Asia → Medium</button>
-                <button type="button" class="quick-pill" data-quick-cont="Asia" data-quick-diff="Hard">Asia → Hard</button>
-                <button type="button" class="quick-pill" data-quick-cont="Africa" data-quick-diff="Easy">Africa → Easy</button>
-                <button type="button" class="quick-pill" data-quick-cont="Africa" data-quick-diff="Medium">Africa → Medium</button>
-                <button type="button" class="quick-pill" data-quick-cont="Europe" data-quick-diff="Easy">Europe → Easy</button>
-                <button type="button" class="quick-pill" data-quick-cont="North America" data-quick-diff="Easy">North America → Easy</button>
-                <button type="button" class="quick-pill" data-quick-cont="South America" data-quick-diff="Easy">South America → Easy</button>
-                <button type="button" class="quick-pill" data-quick-cont="Australia/Oceania" data-quick-diff="Easy">Oceania → Easy</button>
-                <button type="button" class="quick-pill" data-quick-cont="Antarctica" data-quick-diff="Easy">Antarctica → Easy</button>
-              </div>
-            </div>
-
-            <!-- Detailed Search & Filters Row -->
-            <div class="admin-filters-bar">
-              <div style="flex: 2; min-width: 180px;">
-                <label for="qadmin-search" class="form-label">Search Questions or ID:</label>
-                <input type="text" id="qadmin-search" class="form-input" placeholder="Search by text, mountain, river, or id...">
-              </div>
-
-              <div style="flex: 1; min-width: 130px;">
-                <label for="qadmin-filter-continent" class="form-label">Continent:</label>
-                <select id="qadmin-filter-continent" class="form-input">
-                  <option value="all">All Continents</option>
-                  <option value="Asia">Asia</option>
-                  <option value="Africa">Africa</option>
-                  <option value="Europe">Europe</option>
-                  <option value="North America">North America</option>
-                  <option value="South America">South America</option>
-                  <option value="Australia/Oceania">Australia/Oceania</option>
-                  <option value="Antarctica">Antarctica</option>
-                </select>
-              </div>
-
-              <div style="flex: 1; min-width: 110px;">
-                <label for="qadmin-filter-difficulty" class="form-label">Difficulty:</label>
-                <select id="qadmin-filter-difficulty" class="form-input">
-                  <option value="all">All Levels</option>
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
-              </div>
-
-              <div style="flex: 1; min-width: 130px;">
-                <label for="qadmin-filter-topic" class="form-label">Topic:</label>
-                <select id="qadmin-filter-topic" class="form-input">
-                  <option value="all">All Topics</option>
-                </select>
-              </div>
-
-              <div style="flex: 1; min-width: 120px;">
-                <label for="qadmin-sort" class="form-label">Sort By:</label>
-                <select id="qadmin-sort" class="form-input">
-                  <option value="id-asc">ID (A → Z)</option>
-                  <option value="id-desc">ID (Z → A)</option>
-                  <option value="text-asc">Question (A → Z)</option>
-                  <option value="text-desc">Question (Z → A)</option>
-                  <option value="diff-asc">Difficulty</option>
-                </select>
-              </div>
-
-              <div style="flex: 1; min-width: 100px;">
-                <label for="qadmin-pagesize" class="form-label">Per Page:</label>
-                <select id="qadmin-pagesize" class="form-input">
-                  <option value="25" selected>25</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Pagination Bar (Top) -->
-            <div class="pagination-bar">
-              <div class="pagination-info" id="qadmin-pg-info">
-                Loading questions...
-              </div>
-
-              <div class="pagination-controls">
-                <button type="button" id="qadmin-pg-first" class="btn-pg" title="First Page">« First</button>
-                <button type="button" id="qadmin-pg-prev" class="btn-pg" title="Previous Page">‹ Prev</button>
-                
-                <span style="font-size: 0.85rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem;">
-                  Jump: <input type="number" id="qadmin-pg-jump" min="1" max="1" value="1" style="width: 48px; text-align: center; padding: 0.2rem;" class="form-input">
-                </span>
-
-                <button type="button" id="qadmin-pg-next" class="btn-pg" title="Next Page">Next ›</button>
-                <button type="button" id="qadmin-pg-last" class="btn-pg" title="Last Page">Last »</button>
-              </div>
-            </div>
-
-            <!-- Question Cards List Container -->
-            <div id="qadmin-questions-container" class="qadmin-list" style="margin-top: 1rem;">
-              <!-- Dynamically populated question cards -->
-            </div>
-          </div>
-        </div>
-
-        <!-- SUB-TAB 4: CLOUD DATABASE (FIREBASE) -->
-        <div id="admin-tab-cloud-content" class="admin-tab-pane" style="display: none;">
-          <h3 class="review-heading" style="margin-bottom: 0.5rem;">Google Cloud Firestore Connection</h3>
-          <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1rem;">
-            Connect your free Firebase Firestore database to enable real-time multi-device sync across different student laptops, phones, and teacher computers.
-          </p>
-
-          <div id="fb-connection-status" style="margin-bottom: 1.25rem;"></div>
-
-          <div id="fb-auth-status-card" class="card" style="background-color: var(--bg-surface-elevated); margin-bottom: 1.5rem;">
-            <!-- Populated dynamically with current auth state, UID, and verified admin role -->
-          </div>
-
-          <form id="form-firebase-config" class="card" style="background-color: var(--bg-surface-elevated); margin-bottom: 1.5rem;">
-            <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Firebase Configuration</h4>
-            <p class="form-hint" style="margin-bottom: 0.75rem;">
-              Copy the <code>firebaseConfig</code> object from your Firebase Console (Project Settings &rarr; General &rarr; Your apps &rarr; Web app) and paste it below:
-            </p>
 
             <div class="form-group">
-              <label for="fb-config-json" class="form-label">Firebase Config (JSON or JavaScript Object):</label>
-              <textarea id="fb-config-json" class="form-input" rows="7" style="font-family: monospace; font-size: 0.82rem;" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "my-geo-quiz.firebaseapp.com",
-  "projectId": "my-geo-quiz",
-  "storageBucket": "my-geo-quiz.appspot.com",
-  "messagingSenderId": "123456789",
-  "appId": "1:123456789:web:abcdef"
-}'></textarea>
+              <label for="setupCount">Question Count</label>
+              <select id="setupCount" class="form-control" required>
+                <option value="5">5 Questions</option>
+                <option value="10" selected>10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="30">30 Questions</option>
+              </select>
             </div>
 
-            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-              <button type="submit" class="btn btn-primary">
-                💾 Save Configuration &amp; Connect
-              </button>
-              <button type="button" id="btn-fb-test" class="btn btn-secondary">
-                Test Connection 🔍
-              </button>
-              <button type="button" id="btn-fb-disconnect" class="btn btn-secondary text-danger">
-                Disconnect / Revert to Local Storage
-              </button>
+            <div class="form-group full-width">
+              <label>Assessment Mode</label>
+              <div class="mode-selector">
+                <label class="mode-card">
+                  <input type="radio" name="assessmentMode" value="practice" checked>
+                  <div class="mode-card-content">
+                    <span class="mode-title">Practice Mode</span>
+                    <span class="mode-desc">Untimed, instant explanation display after each submission.</span>
+                  </div>
+                </label>
+                <label class="mode-card">
+                  <input type="radio" name="assessmentMode" value="exam">
+                  <div class="mode-card-content">
+                    <span class="mode-title">Examination Mode</span>
+                    <span class="mode-desc">Strict countdown timer, locked answers, final institutional score sheet.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions full-width">
+              <div id="availabilityNotice" class="badge badge-info">Calculating available questions...</div>
+              <button type="submit" id="btnStartQuiz" class="btn btn-primary btn-lg">Begin Assessment</button>
             </div>
           </form>
+        </div>
+      </div>
 
-          <div class="card" style="background-color: #f8fafc;">
-            <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;">Firebase Setup &amp; Security Rules Guide:</h4>
-            <ol style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-left: 1.25rem;">
-              <li><strong>Enable Authentication:</strong> In <a href="https://console.firebase.google.com/" target="_blank" rel="noopener">Firebase Console</a>, go to <strong>Build &rarr; Authentication &rarr; Sign-in method</strong>. Enable <strong>Email/Password</strong> and <strong>Anonymous</strong>.</li>
-              <li><strong>Create Admin User:</strong> In Authentication &rarr; Users, click <strong>Add user</strong> to create your administrator email and password.</li>
-              <li><strong>Apply Firestore Security Rules:</strong> Go to <strong>Build &rarr; Firestore Database &rarr; Rules</strong>, paste the contents of <code>firestore.rules</code>, and click <strong>Publish</strong>.</li>
-              <li><strong>Grant Admin Verification in Firestore:</strong> In <strong>Firestore Database &rarr; Data</strong>, start collection <code>admins</code>, and create a document with <strong>Document ID = your admin user's Auth UID</strong> (leave fields blank). Client-side write is blocked by rules (<code>allow write: if false;</code>), guaranteeing that only project owners can designate administrators.</li>
-              <li><strong>Register Web App:</strong> In Project Settings (⚙️) &rarr; General &rarr; Your apps, copy the <code>firebaseConfig</code> values into the box above.</li>
-            </ol>
+      <!-- View: Active Quiz Arena -->
+      <div id="subViewQuizArena" class="sub-view-pane hidden">
+        <div class="arena-header">
+          <div class="arena-metadata">
+            <span id="arenaModeBadge" class="badge badge-primary">Practice Mode</span>
+            <span id="arenaContinentBadge" class="badge badge-secondary">Asia</span>
+            <span id="arenaDifficultyBadge" class="badge badge-warning">Medium</span>
+          </div>
+          <div id="arenaTimerWrapper" class="timer-display hidden">
+            <span class="timer-icon">⏱️</span>
+            <span id="arenaTimer">15:00</span>
+          </div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div id="quizProgressBar" class="progress-bar-fill" style="width: 10%;"></div>
+        </div>
+        <div class="progress-label">
+          Question <span id="currentQIndex">1</span> of <span id="totalQCount">10</span>
+        </div>
+
+        <div class="card question-card">
+          <div class="question-meta">
+            <span id="qTopicTag" class="tag-topic">Physical Geography</span>
+            <span id="qIdTag" class="tag-id">ID: AS-001</span>
+          </div>
+          <h2 id="qText" class="question-text">Loading question text...</h2>
+
+          <div id="qOptionsList" class="options-grid">
+            <!-- Dynamic Option Buttons -->
+          </div>
+
+          <div id="qFeedbackPane" class="feedback-pane hidden">
+            <div id="feedbackTitle" class="feedback-title">Correct!</div>
+            <p id="feedbackExplanation" class="feedback-body"></p>
+            <div id="feedbackSource" class="feedback-source"></div>
+          </div>
+
+          <div class="arena-footer">
+            <button id="btnPrevQuestion" class="btn btn-outline" disabled>Previous</button>
+            <div class="right-buttons">
+              <button id="btnNextQuestion" class="btn btn-primary">Next Question</button>
+              <button id="btnSubmitExam" class="btn btn-danger hidden">Finish & Submit Exam</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View: Quiz Results -->
+      <div id="subViewQuizResults" class="sub-view-pane hidden">
+        <div class="card results-card">
+          <div class="results-banner">
+            <h2 id="resultsHeading">Assessment Completed</h2>
+            <div class="score-circle">
+              <span id="resultsScorePct">80%</span>
+              <span class="score-fraction" id="resultsFraction">8 / 10</span>
+            </div>
+            <p id="resultsFeedbackComment">Strong geographical mastery demonstrated.</p>
+          </div>
+
+          <div class="stats-summary-grid">
+            <div class="stat-box">
+              <span class="stat-label">Mode</span>
+              <span class="stat-val" id="resMode">Examination</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Continent</span>
+              <span class="stat-val" id="resContinent">Africa</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Time Taken</span>
+              <span class="stat-val" id="resTime">04:32</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Accuracy</span>
+              <span class="stat-val text-success" id="resAccuracy">80%</span>
+            </div>
+          </div>
+
+          <h3>Itemized Question Review</h3>
+          <div id="resultsReviewList" class="results-review-list"></div>
+
+          <div class="results-actions">
+            <button id="btnRetakeQuiz" class="btn btn-primary">Start New Assessment</button>
+            <button id="btnGoToDashboard" class="btn btn-outline">View My Dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- View: Student Personal Dashboard -->
+      <div id="subViewStudentDashboard" class="sub-view-pane hidden">
+        <div class="dashboard-hero">
+          <div>
+            <h2 id="studentDashName">Student Performance Record</h2>
+            <p id="studentDashSub">Authenticated Institutional Profile ID: <strong id="studentDashId">GUEST-01</strong></p>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-icon">📝</span>
+            <div class="metric-data">
+              <span class="metric-number" id="dashTotalAttempts">0</span>
+              <span class="metric-title">Completed Attempts</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">🎯</span>
+            <div class="metric-data">
+              <span class="metric-number" id="dashOverallAccuracy">0%</span>
+              <span class="metric-title">Overall Accuracy</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">🏆</span>
+            <div class="metric-data">
+              <span class="metric-number" id="dashBestScore">0%</span>
+              <span class="metric-title">Highest Score</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">⏳</span>
+            <div class="metric-data">
+              <span class="metric-number" id="dashTotalTime">0m</span>
+              <span class="metric-title">Total Practice Time</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="card">
+            <h3>Performance by Continent</h3>
+            <div id="dashContinentProgress" class="breakdown-list">
+              <!-- Rendered Continent bars -->
+            </div>
+          </div>
+          <div class="card">
+            <h3>Performance by Difficulty</h3>
+            <div id="dashDifficultyProgress" class="breakdown-list">
+              <!-- Rendered Difficulty bars -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card table-card">
+          <div class="card-header-flex">
+            <h3>Attempt History Logs</h3>
+            <div class="table-filters">
+              <select id="filterHistoryMode" class="form-control-sm">
+                <option value="All">All Modes</option>
+                <option value="practice">Practice</option>
+                <option value="exam">Exam</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Mode</th>
+                  <th>Continent</th>
+                  <th>Difficulty</th>
+                  <th>Score</th>
+                  <th>Accuracy</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody id="studentHistoryTableBody">
+                <tr><td colspan="7" class="text-center">No quiz attempts recorded yet.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- ==================== ADMIN CONSOLE ==================== -->
+    <section id="portalAdmin" class="portal-view hidden">
+      <nav class="sub-nav">
+        <button class="sub-tab active" data-subview="adminOverview">Platform Overview</button>
+        <button class="sub-tab" data-subview="adminQuestionBank">Question Bank Repository</button>
+        <button class="sub-tab" data-subview="adminStudentMonitoring">Student Analytics & Integrity</button>
+      </nav>
+
+      <!-- View: Admin Overview -->
+      <div id="subViewAdminOverview" class="sub-view-pane active">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-icon">📚</span>
+            <div class="metric-data">
+              <span class="metric-number" id="adminTotalQuestions">0</span>
+              <span class="metric-title">Total Questions</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">✅</span>
+            <div class="metric-data">
+              <span class="metric-number" id="adminPublishedQuestions">0</span>
+              <span class="metric-title">Published Items</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">👥</span>
+            <div class="metric-data">
+              <span class="metric-number" id="adminTotalStudents">1</span>
+              <span class="metric-title">Registered Students</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-icon">📊</span>
+            <div class="metric-data">
+              <span class="metric-number" id="adminTotalAttempts">0</span>
+              <span class="metric-title">Assessment Submissions</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card table-card">
+          <div class="card-header">
+            <h3>Institutional Database Status</h3>
+          </div>
+          <div class="status-summary-grid">
+            <div class="stat-box">
+              <span class="stat-label">Active Storage Engine</span>
+              <span class="stat-val" id="adminStorageType">Local Dual-Engine (Ready)</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Firebase Auth Connection</span>
+              <span class="stat-val" id="adminAuthStatus">Unconfigured (Development Fallback)</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Firestore Synchronization</span>
+              <span class="stat-val" id="adminFirestoreStatus">Local Persistence Active</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Integrity Enforcements</span>
+              <span class="stat-val text-success">Strict Validation Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View: Question Bank Management -->
+      <div id="subViewAdminQuestionBank" class="sub-view-pane hidden">
+        <div class="card filter-card">
+          <div class="action-bar-top">
+            <div class="search-box">
+              <input type="text" id="qbSearchInput" class="form-control" placeholder="Search by ID, keyword, or question text...">
+            </div>
+            <div class="button-group">
+              <button id="btnOpenCsvModal" class="btn btn-success">📥 CSV Bulk Import</button>
+              <button id="btnExportCsv" class="btn btn-outline">📤 Export CSV</button>
+              <button id="btnOpenAddModal" class="btn btn-primary">➕ Add Question</button>
+            </div>
+          </div>
+
+          <div class="filters-row">
+            <div class="filter-item">
+              <label>Continent</label>
+              <select id="qbFilterContinent" class="form-control-sm">
+                <option value="All">All Continents</option>
+                <option value="Asia">Asia</option>
+                <option value="Africa">Africa</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="South America">South America</option>
+                <option value="Australia/Oceania">Australia/Oceania</option>
+                <option value="Antarctica">Antarctica</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Difficulty</label>
+              <select id="qbFilterDifficulty" class="form-control-sm">
+                <option value="All">All Difficulties</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Publication Status</label>
+              <select id="qbFilterStatus" class="form-control-sm">
+                <option value="All">All Statuses</option>
+                <option value="Published">Published</option>
+                <option value="Draft">Draft</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Page Size</label>
+              <select id="qbPageSize" class="form-control-sm">
+                <option value="25" selected>25 per page</option>
+                <option value="50">50 per page</option>
+                <option value="100">100 per page</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Bank Data Table -->
+        <div class="card table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Continent</th>
+                  <th>Difficulty</th>
+                  <th>Topic</th>
+                  <th style="width: 35%;">Question Text</th>
+                  <th>Key</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="qbTableBody">
+                <tr><td colspan="8" class="text-center">Loading questions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="pagination-footer">
+            <div class="pagination-info">
+              Showing <span id="pgStart">0</span> to <span id="pgEnd">0</span> of <span id="pgTotal">0</span> entries
+            </div>
+            <div class="pagination-controls">
+              <button id="pgPrevBtn" class="btn btn-outline-sm" disabled>&larr; Previous</button>
+              <span id="pgCurrent">Page 1 of 1</span>
+              <button id="pgNextBtn" class="btn btn-outline-sm" disabled>Next &rarr;</button>
+              <div class="jump-group">
+                <span>Jump to:</span>
+                <input type="number" id="pgJumpInput" min="1" value="1" class="form-control-sm jump-input">
+                <button id="pgJumpBtn" class="btn btn-outline-sm">Go</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View: Admin Student Monitoring -->
+      <div id="subViewAdminStudentMonitoring" class="sub-view-pane hidden">
+        <div class="card table-card">
+          <div class="card-header">
+            <h3>Registered Student Attempts & Integrity Records</h3>
+            <p>Real-time audit log of student examinations and practice records.</p>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Student Name</th>
+                  <th>Assessment Mode</th>
+                  <th>Continent</th>
+                  <th>Score</th>
+                  <th>Accuracy</th>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="adminAttemptsTableBody">
+                <tr><td colspan="8" class="text-center">No student attempt records located.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Application Footer -->
-  <footer class="app-footer" role="contentinfo">
-    <p>Geography Quiz Practice &amp; Performance Tracking • GeoQuiz Explorer</p>
-  </footer>
+  <!-- ==================== MODALS ==================== -->
 
-  <!-- =================================================================== -->
-  <!-- MODALS -->
-  <!-- =================================================================== -->
-
-  <!-- Modal 1: Admin Passcode Login -->
-  <div id="modal-admin-login" class="modal-backdrop" role="dialog" aria-labelledby="modal-login-title" aria-modal="true">
-    <div class="modal-card">
-      <header class="modal-header">
-        <h3 id="modal-login-title" class="modal-title">Administrator Authentication</h3>
-        <button type="button" class="modal-close-btn" data-close-modal="modal-admin-login" aria-label="Close">✕</button>
-      </header>
-      <!-- Auth Method Tabs -->
-      <div style="display: flex; gap: 0.5rem; margin-top: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-        <button type="button" id="tab-login-cloud" class="quick-pill active">🔥 Firebase Cloud Admin</button>
-        <button type="button" id="tab-login-local" class="quick-pill">🔑 Local Passcode</button>
+  <!-- CSV Bulk Import Modal (CRITICAL FEATURE) -->
+  <div id="csvImportModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3>Bulk CSV Question Import Engine</h3>
+        <button class="modal-close" id="btnCloseCsvModal">&times;</button>
       </div>
-
-      <!-- Panel A: Firebase Cloud Admin -->
-      <form id="form-admin-login-cloud" style="margin-top: 1rem;">
-        <p class="card-desc" style="margin-bottom: 0.75rem;">
-          Sign in with your verified Firebase Administrator account to manage Cloud Firestore questions and monitor all student practice attempts under secure rules.
+      <div class="modal-body">
+        <p class="modal-description">
+          Upload question files containing hundreds or thousands of rows. All inputs are validated for RFC 4180 compatibility, continent alignment, and answer key validity prior to saving.
         </p>
-        <div class="form-group">
-          <label for="input-admin-email" class="form-label">Admin Email *</label>
-          <input type="email" id="input-admin-email" class="form-input" placeholder="admin@domain.com" required autocomplete="username">
+
+        <div class="template-download-banner">
+          <span>Need the approved institutional CSV format?</span>
+          <button id="btnDownloadTemplate" class="btn btn-outline-sm">📥 Download CSV Template</button>
         </div>
-        <div class="form-group">
-          <label for="input-admin-password" class="form-label">Password *</label>
-          <input type="password" id="input-admin-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+
+        <div class="file-dropzone" id="csvDropZone">
+          <input type="file" id="csvFileInput" accept=".csv,text/csv" class="file-input-hidden">
+          <label for="csvFileInput" class="dropzone-label">
+            <span class="upload-icon">📄</span>
+            <span class="primary-prompt">Click to select CSV file, or drag and drop here</span>
+            <span class="sub-prompt">Supports UTF-8, commas inside quoted strings, and multi-line explanations</span>
+          </label>
         </div>
-        <p id="admin-cloud-login-error" class="text-danger" style="display: none; font-size: 0.85rem; margin-bottom: 1rem;"></p>
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-          <button type="button" class="btn btn-secondary" data-close-modal="modal-admin-login">Cancel</button>
-          <button type="submit" id="btn-submit-cloud-login" class="btn btn-primary">Sign In as Cloud Admin 🔥</button>
+
+        <!-- Preview & Validation Summary -->
+        <div id="csvPreviewSection" class="csv-preview-section hidden">
+          <h4>Pre-Import Validation Summary</h4>
+          <div class="csv-stats-badges">
+            <div class="badge badge-info" id="csvTotalCountBadge">Total Rows: 0</div>
+            <div class="badge badge-success" id="csvValidCountBadge">Valid Questions: 0</div>
+            <div class="badge badge-warning" id="csvDuplicateCountBadge">Duplicates: 0</div>
+            <div class="badge badge-danger" id="csvInvalidCountBadge">Rejected Errors: 0</div>
+          </div>
+
+          <div class="duplicate-policy-box">
+            <label class="policy-label"><strong>Duplicate Handling Policy:</strong></label>
+            <div class="radio-inline">
+              <label>
+                <input type="radio" name="dupPolicy" value="skip" checked>
+                Skip duplicates (Keep existing records intact)
+              </label>
+              <label>
+                <input type="radio" name="dupPolicy" value="overwrite">
+                Overwrite / Update existing records with CSV rows
+              </label>
+            </div>
+          </div>
+
+          <!-- Detailed Row Errors if any -->
+          <div id="csvErrorBox" class="csv-error-box hidden">
+            <h5>Validation Errors Detected (These rows will be rejected):</h5>
+            <ul id="csvErrorList"></ul>
+          </div>
+
+          <!-- Staged Data Table Preview -->
+          <div class="table-responsive preview-table-container">
+            <table class="data-table preview-table">
+              <thead>
+                <tr>
+                  <th>Row</th>
+                  <th>ID</th>
+                  <th>Continent</th>
+                  <th>Difficulty</th>
+                  <th>Question Preview</th>
+                  <th>Correct Key</th>
+                  <th>Validation Status</th>
+                </tr>
+              </thead>
+              <tbody id="csvPreviewTableBody">
+                <!-- Staged rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelCsvImport" class="btn btn-outline">Cancel</button>
+        <button id="btnConfirmImport" class="btn btn-primary" disabled>Confirm & Commit Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Add / Edit Question Modal -->
+  <div id="questionModal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="questionModalTitle">Add Geography Question</h3>
+        <button class="modal-close" id="btnCloseQModal">&times;</button>
+      </div>
+      <form id="questionForm">
+        <div class="modal-body">
+          <input type="hidden" id="editQuestionId">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="qfContinent">Continent *</label>
+              <select id="qfContinent" class="form-control" required>
+                <option value="Asia">Asia</option>
+                <option value="Africa">Africa</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="South America">South America</option>
+                <option value="Australia/Oceania">Australia/Oceania</option>
+                <option value="Antarctica">Antarctica</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="qfDifficulty">Difficulty *</label>
+              <select id="qfDifficulty" class="form-control" required>
+                <option value="Easy">Easy</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="qfTopic">Topic / Domain *</label>
+              <input type="text" id="qfTopic" class="form-control" placeholder="e.g. Capitals, Rivers, Mountain Ranges" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="qfStatus">Status *</label>
+              <select id="qfStatus" class="form-control" required>
+                <option value="Published">Published</option>
+                <option value="Draft" selected>Draft</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="qfText">Question Text *</label>
+            <textarea id="qfText" class="form-control" rows="3" placeholder="Enter clear, academically verified question text..." required></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="qfOptA">Option A *</label>
+              <input type="text" id="qfOptA" class="form-control" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="qfOptB">Option B *</label>
+              <input type="text" id="qfOptB" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="qfOptC">Option C *</label>
+              <input type="text" id="qfOptC" class="form-control" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="qfOptD">Option D *</label>
+              <input type="text" id="qfOptD" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="qfCorrect">Correct Answer Key *</label>
+              <select id="qfCorrect" class="form-control" required>
+                <option value="A">Option A</option>
+                <option value="B">Option B</option>
+                <option value="C">Option C</option>
+                <option value="D">Option D</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="qfSource">Academic Reference / Source</label>
+              <input type="text" id="qfSource" class="form-control" placeholder="e.g. National Geographic Atlas 2026">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="qfExplanation">Educational Explanation</label>
+            <textarea id="qfExplanation" class="form-control" rows="2" placeholder="Optional context explaining why the key is correct..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelQModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveQuestion">Save Record</button>
         </div>
       </form>
-
-      <!-- Panel B: Local Passcode Fallback -->
-      <form id="form-admin-login" style="margin-top: 1rem; display: none;">
-        <p class="card-desc" style="margin-bottom: 0.75rem;">
-          Enter the administrator passcode to access local browser records and manage local questions when offline.
-        </p>
-        <div class="form-group">
-          <label for="input-admin-passcode" class="form-label">Admin Passcode</label>
-          <input type="password" id="input-admin-passcode" class="form-input" placeholder="Default: admin2026" required autocomplete="current-password">
-          <p class="form-hint">Default passcode is <code>admin2026</code> (configured for offline local mode).</p>
-        </div>
-        <p id="admin-login-error" class="text-danger" style="display: none; font-size: 0.85rem; margin-bottom: 1rem;"></p>
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-          <button type="button" class="btn btn-secondary" data-close-modal="modal-admin-login">Cancel</button>
-          <button type="submit" class="btn btn-primary">Unlock Local Portal 🔓</button>
-        </div>
-      </form>
     </div>
   </div>
 
-  <!-- Modal 2: Attempt Scorecard Inspector (Admin View) -->
-  <div id="modal-attempt-inspect" class="modal-backdrop" role="dialog" aria-labelledby="modal-attempt-title" aria-modal="true">
-    <div class="modal-card modal-lg">
-      <header class="modal-header">
-        <h3 id="modal-attempt-title" class="modal-title">Attempt Inspection Scorecard</h3>
-        <button type="button" class="modal-close-btn" data-close-modal="modal-attempt-inspect" aria-label="Close">✕</button>
-      </header>
-      <div id="modal-attempt-meta" style="margin-top: 1rem;"></div>
-      <div id="modal-attempt-questions" class="review-section" style="max-height: 60vh; overflow-y: auto; padding-right: 0.5rem;">
-        <!-- Question review snapshot -->
+  <!-- Sign In / Identity Switcher Modal -->
+  <div id="authModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-header">
+        <h3>Institutional Authentication</h3>
+        <button class="modal-close" id="btnCloseAuthModal">&times;</button>
       </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-        <button type="button" class="btn btn-secondary" data-close-modal="modal-attempt-inspect">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 3: Student History Drilldown (Admin View) -->
-  <div id="modal-student-drilldown" class="modal-backdrop" role="dialog" aria-labelledby="modal-student-name" aria-modal="true">
-    <div class="modal-card modal-lg">
-      <header class="modal-header">
-        <div>
-          <h3 id="modal-student-name" class="modal-title">Student Profile</h3>
-          <p class="card-desc">Student ID: <strong id="modal-student-id">-</strong></p>
-        </div>
-        <button type="button" class="modal-close-btn" data-close-modal="modal-student-drilldown" aria-label="Close">✕</button>
-      </header>
-      <div class="score-stats" style="margin: 1rem 0;">
-        <div class="stat-item">
-          <div class="stat-label">Total Attempts</div>
-          <div id="student-stat-attempts" class="stat-val">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Average Score</div>
-          <div id="student-stat-avg" class="stat-val">0%</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Best Score</div>
-          <div id="student-stat-best" class="stat-val">0%</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Total Time</div>
-          <div id="student-stat-time" class="stat-val">00:00</div>
-        </div>
-      </div>
-      <h4 class="review-heading" style="margin-top: 1rem;">All Practice Attempts</h4>
-      <div class="table-wrap" style="max-height: 45vh; overflow-y: auto;">
-        <table class="dash-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Date &amp; Time</th>
-              <th>Continent</th>
-              <th>Level</th>
-              <th>Mode</th>
-              <th>Score</th>
-              <th>Accuracy</th>
-              <th>Duration</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="student-attempts-tbody">
-            <!-- Dynamically populated -->
-          </tbody>
-        </table>
-      </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-        <button type="button" class="btn btn-secondary" data-close-modal="modal-student-drilldown">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 4: CSV Import Preview & Duplicate Action Modal -->
-  <div id="modal-csv-preview" class="modal-backdrop" role="dialog" aria-labelledby="csv-preview-title" aria-modal="true">
-    <div class="modal-card modal-lg">
-      <header class="modal-header">
-        <div>
-          <h3 id="csv-preview-title" class="modal-title">CSV Import Preview &amp; Validation</h3>
-          <p class="card-desc">File: <strong id="csv-preview-filename">-</strong></p>
-        </div>
-        <button type="button" class="modal-close-btn" data-close-modal="modal-csv-preview" aria-label="Close">✕</button>
-      </header>
-
-      <!-- Import Stats -->
-      <div class="score-stats" style="margin: 1rem 0;">
-        <div class="stat-item">
-          <div class="stat-label">Total Rows</div>
-          <div id="csv-stat-total" class="stat-val">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Valid Questions</div>
-          <div id="csv-stat-valid" class="stat-val text-success">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Duplicates Found</div>
-          <div id="csv-stat-duplicates" class="stat-val text-warning">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Rejected Errors</div>
-          <div id="csv-stat-errors" class="stat-val text-danger">0</div>
-        </div>
-      </div>
-
-      <!-- Errors breakdown if any -->
-      <div id="csv-errors-list" style="margin-bottom: 1rem; display: none;"></div>
-
-      <!-- Duplicate Handling Policy -->
-      <div class="form-group" style="background-color: var(--bg-muted); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
-        <label for="csv-duplicate-action" class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Duplicate Handling Policy:</label>
-        <select id="csv-duplicate-action" class="form-input">
-          <option value="skip" selected>Skip duplicates (Do not overwrite existing questions - Recommended)</option>
-          <option value="overwrite">Overwrite existing questions matching duplicate ID or text</option>
-        </select>
-        <p class="form-hint" style="margin-top: 0.25rem;">
-          GeoQuiz Explorer prevents silent data loss by asking you how duplicates should be handled before committing.
-        </p>
-      </div>
-
-      <!-- Preview Table -->
-      <h4 class="review-heading" style="margin-bottom: 0.5rem;">Sample Rows Preview</h4>
-      <div class="table-wrap" style="max-height: 40vh; overflow-y: auto;">
-        <table class="dash-table">
-          <thead>
-            <tr>
-              <th>Row</th>
-              <th>Status</th>
-              <th>ID</th>
-              <th>Question</th>
-              <th>Continent</th>
-              <th>Difficulty</th>
-              <th>Validation Notes</th>
-            </tr>
-          </thead>
-          <tbody id="csv-preview-rows">
-            <!-- Dynamically populated -->
-          </tbody>
-        </table>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
-        <button type="button" id="btn-cancel-csv-import" class="btn btn-secondary">Cancel Import</button>
-        <button type="button" id="btn-confirm-csv-import" class="btn btn-primary">Confirm Import →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 5: Add / Edit Single Question -->
-  <div id="modal-qeditor" class="modal-backdrop" role="dialog" aria-labelledby="modal-qeditor-title" aria-modal="true">
-    <div class="modal-card modal-lg">
-      <header class="modal-header">
-        <h3 id="modal-qeditor-title" class="modal-title">Question Editor</h3>
-        <button type="button" class="modal-close-btn" data-close-modal="modal-qeditor" aria-label="Close">✕</button>
-      </header>
-
-      <form id="form-qeditor" style="margin-top: 1rem;">
-        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-          <div class="form-group" style="flex: 1; min-width: 140px;">
-            <label for="input-edit-continent" class="form-label">Continent *</label>
-            <select id="input-edit-continent" class="form-input" required>
-              <option value="Asia">Asia</option>
-              <option value="Africa">Africa</option>
-              <option value="Europe">Europe</option>
-              <option value="North America">North America</option>
-              <option value="South America">South America</option>
-              <option value="Australia/Oceania">Australia/Oceania</option>
-              <option value="Antarctica">Antarctica</option>
+      <div class="modal-body">
+        <p class="modal-description">Enter your student ID or credentials to track personal examination records.</p>
+        <form id="authForm">
+          <div class="form-group">
+            <label for="authStudentName">Full Display Name *</label>
+            <input type="text" id="authStudentName" class="form-control" placeholder="e.g. Sarah Jenkins" required>
+          </div>
+          <div class="form-group">
+            <label for="authStudentId">Institutional ID *</label>
+            <input type="text" id="authStudentId" class="form-control" placeholder="e.g. STU-2026-881" required>
+          </div>
+          <div class="form-group">
+            <label for="authRole">Institutional Role</label>
+            <select id="authRole" class="form-control">
+              <option value="student">Student</option>
+              <option value="admin">Teacher / Administrator</option>
             </select>
           </div>
-
-          <div class="form-group" style="flex: 1; min-width: 120px;">
-            <label for="input-edit-difficulty" class="form-label">Difficulty *</label>
-            <select id="input-edit-difficulty" class="form-input" required>
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-          </div>
-
-          <div class="form-group" style="flex: 1; min-width: 140px;">
-            <label for="input-edit-topic" class="form-label">Topic</label>
-            <input type="text" id="input-edit-topic" class="form-input" placeholder="e.g. Mountains, Capitals">
-          </div>
-
-          <div class="form-group" style="flex: 1; min-width: 120px;">
-            <label for="input-edit-id" class="form-label">Question ID</label>
-            <input type="text" id="input-edit-id" class="form-input" placeholder="(Auto-generated)">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="input-edit-question" class="form-label">Question Text *</label>
-          <textarea id="input-edit-question" class="form-input" rows="2" placeholder="e.g. What is the longest river in Asia?" required></textarea>
-        </div>
-
-        <!-- Options -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <div class="form-group">
-            <label for="input-edit-opt0" class="form-label">Option A *</label>
-            <input type="text" id="input-edit-opt0" class="form-input" required placeholder="Option A text">
-          </div>
-          <div class="form-group">
-            <label for="input-edit-opt1" class="form-label">Option B *</label>
-            <input type="text" id="input-edit-opt1" class="form-input" required placeholder="Option B text">
-          </div>
-          <div class="form-group">
-            <label for="input-edit-opt2" class="form-label">Option C *</label>
-            <input type="text" id="input-edit-opt2" class="form-input" required placeholder="Option C text">
-          </div>
-          <div class="form-group">
-            <label for="input-edit-opt3" class="form-label">Option D *</label>
-            <input type="text" id="input-edit-opt3" class="form-input" required placeholder="Option D text">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="input-edit-correct" class="form-label">Correct Answer *</label>
-          <select id="input-edit-correct" class="form-input" required>
-            <option value="0">Option A</option>
-            <option value="1">Option B</option>
-            <option value="2">Option C</option>
-            <option value="3">Option D</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="input-edit-explanation" class="form-label">Explanation / Geography Fact</label>
-          <textarea id="input-edit-explanation" class="form-input" rows="2" placeholder="Provide educational background for learning..."></textarea>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-          <button type="button" class="btn btn-secondary" data-close-modal="modal-qeditor">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Question</button>
-        </div>
-      </form>
+          <button type="submit" class="btn btn-primary btn-block">Confirm Identity</button>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- Firebase SDK (Compat CDN for browser app) -->
+  <!-- App Core Logic Script -->
+  <!-- Firebase SDKs (Compat version for Vanilla JS) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
 
-  <!-- Application Scripts -->
-  <script src="js/firebase-config.js"></script>
-  <script src="js/sample-questions.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/csv-manager.js"></script>
-  <script src="js/question-admin.js"></script>
-  <script src="js/admin-dashboard.js"></script>
-  <script src="js/student-dashboard.js"></script>
-  <script src="js/questions.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Firebase Project Configuration -->
+  <script src="firebase-config.js"></script>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
+<script src="app.js"></script>
 </body>
 </html>
