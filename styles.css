@@ -204,7 +204,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   flex: 1;
 }
 
-.portal-view.hidden, .sub-view-pane.hidden {
+.hidden, .portal-view.hidden, .sub-view-pane.hidden {
   display: none !important;
 }
 
