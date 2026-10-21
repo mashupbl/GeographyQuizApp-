@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v2.1
+ * Core Engine v2.3
  */
 
 'use strict';
@@ -148,17 +148,6 @@ class StorageAdapter {
         console.warn('[StorageAdapter] Firestore fallback active.', e);
         this.useFirestore = false;
       }
-    } else {
-      this.ensureLocalSeed();
-    }
-  }
-
-  ensureLocalSeed() {
-    if (!localStorage.getItem(this.KEY_QUESTIONS)) {
-      localStorage.setItem(this.KEY_QUESTIONS, JSON.stringify(SEED_QUESTIONS));
-    }
-    if (!localStorage.getItem(this.KEY_ATTEMPTS)) {
-      localStorage.setItem(this.KEY_ATTEMPTS, JSON.stringify([]));
     }
   }
 
@@ -177,24 +166,27 @@ class StorageAdapter {
     return raw ? JSON.parse(raw) : SEED_QUESTIONS;
   }
 
-  async saveQuestion(question) {
+  async clearAllQuestions() {
     if (this.useFirestore) {
       try {
-        await this.db.collection('questions').doc(question.id).set(question);
-      } catch (e) {
-        console.warn('[StorageAdapter] Firestore save failed; saving locally.', e);
+        const snap = await this.db.collection('questions').get();
+        const batch = this.db.batch();
+        snap.docs.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+      } catch (err) {
+        console.error('[StorageAdapter] Failed to clear Firestore questions:', err);
       }
     }
-    const list = await this.getAllQuestions();
-    const idx = list.findIndex(q => q.id === question.id);
-    if (idx >= 0) list[idx] = question;
-    else list.push(question);
-    localStorage.setItem(this.KEY_QUESTIONS, JSON.stringify(list));
-    return question;
+    localStorage.removeItem(this.KEY_QUESTIONS);
+    return true;
   }
 
-  async saveBatchQuestions(questions) {
-    const existing = await this.getAllQuestions();
+  async saveBatchQuestions(questions, purgeExisting = false) {
+    if (purgeExisting) {
+      await this.clearAllQuestions();
+    }
+
+    const existing = purgeExisting ? [] : await this.getAllQuestions();
     const map = new Map(existing.map(q => [q.id, q]));
 
     for (const q of questions) {
@@ -223,6 +215,22 @@ class StorageAdapter {
     return { success: true, count: questions.length };
   }
 
+  async saveQuestion(question) {
+    if (this.useFirestore) {
+      try {
+        await this.db.collection('questions').doc(question.id).set(question);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    const list = await this.getAllQuestions();
+    const idx = list.findIndex(q => q.id === question.id);
+    if (idx >= 0) list[idx] = question;
+    else list.push(question);
+    localStorage.setItem(this.KEY_QUESTIONS, JSON.stringify(list));
+    return question;
+  }
+
   async deleteQuestion(id) {
     if (this.useFirestore) {
       try {
@@ -242,14 +250,29 @@ class StorageAdapter {
       try {
         const snap = await this.db.collection('attempts').orderBy('timestamp', 'desc').get();
         if (!snap.empty) {
-          return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          return this._deduplicateAttempts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         }
       } catch (err) {
-        console.warn('[StorageAdapter] Firestore attempts read error, fallback to local.', err);
+        console.warn('[StorageAdapter] Firestore attempts error, fallback to local.', err);
       }
     }
     const raw = localStorage.getItem(this.KEY_ATTEMPTS);
-    return raw ? JSON.parse(raw) : [];
+    const list = raw ? JSON.parse(raw) : [];
+    return this._deduplicateAttempts(list);
+  }
+
+  // Deduplication safeguard: guarantees single entry per actual completed session
+  _deduplicateAttempts(attempts) {
+    const seen = new Set();
+    const unique = [];
+    for (const a of attempts) {
+      const dedupeKey = a.sessionId || `${a.studentId}_${a.timestamp}_${a.correctCount}_${a.totalQuestions}`;
+      if (!seen.has(dedupeKey)) {
+        seen.add(dedupeKey);
+        unique.push(a);
+      }
+    }
+    return unique;
   }
 
   async saveAttempt(attempt) {
@@ -261,14 +284,14 @@ class StorageAdapter {
       }
     }
     const list = await this.getAllAttempts();
-    list.unshift(attempt);
-    localStorage.setItem(this.KEY_ATTEMPTS, JSON.stringify(list));
+    const updated = this._deduplicateAttempts([attempt, ...list]);
+    localStorage.setItem(this.KEY_ATTEMPTS, JSON.stringify(updated));
     return attempt;
   }
 }
 
 /* ==========================================================================
-   PERMISSIVE CSV ENGINE (RFC 4180 + ZERO REJECTION)
+   PERMISSIVE CSV INGESTION ENGINE
    ========================================================================== */
 
 class PermissiveCsvEngine {
@@ -448,7 +471,7 @@ class PermissiveCsvEngine {
 }
 
 /* ==========================================================================
-   APP CONTROLLER & STATE
+   APPLICATION CONTROLLER
    ========================================================================== */
 
 class GeoQuizApp {
@@ -472,6 +495,8 @@ class GeoQuizApp {
 
     this.quizSession = {
       active: false,
+      sessionId: null,
+      sessionFinalized: false,
       mode: 'practice',
       continent: 'Whole World',
       difficulty: 'All',
@@ -505,6 +530,7 @@ class GeoQuizApp {
 
   showToast(msg, type = 'info') {
     const container = document.getElementById('toastContainer');
+    if (!container) return;
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = msg;
@@ -512,9 +538,6 @@ class GeoQuizApp {
     setTimeout(() => toast.remove(), 4000);
   }
 
-  /* --------------------------------------------------------------------------
-     AUTHENTICATION LOGIC (MANDATORY GATE - NO GUEST ACCESS)
-     -------------------------------------------------------------------------- */
   checkSession() {
     const raw = localStorage.getItem('geoquiz_session_user');
     if (raw) {
@@ -552,11 +575,9 @@ class GeoQuizApp {
     document.getElementById('authModal').classList.add('hidden');
     this.showToast(`Authenticated as ${name} (${role === 'admin' ? 'Teacher/Admin' : 'Student'})`, 'success');
 
-    if (role === 'admin') {
-      this.switchPortal('admin');
-    } else {
-      this.switchPortal('student');
-    }
+    if (role === 'admin') this.switchPortal('admin');
+    else this.switchPortal('student');
+
     this.renderStudentDashboard();
     this.renderLeaderboard();
   }
@@ -587,9 +608,6 @@ class GeoQuizApp {
     }
   }
 
-  /* --------------------------------------------------------------------------
-     TOPIC DROPDOWN POPULATION (DYNAMIC BY SCOPE / CONTINENT)
-     -------------------------------------------------------------------------- */
   populateTopicDropdown() {
     const topicSelect = document.getElementById('setupTopic');
     if (!topicSelect) return;
@@ -625,11 +643,7 @@ class GeoQuizApp {
     }
   }
 
-  /* --------------------------------------------------------------------------
-     EVENT BINDINGS
-     -------------------------------------------------------------------------- */
   bindEvents() {
-    // Portal navigation
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         const portal = e.target.dataset.portal;
@@ -642,7 +656,6 @@ class GeoQuizApp {
       });
     });
 
-    // Sub Navigation
     document.querySelectorAll('.sub-nav .sub-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         const subview = e.target.dataset.subview;
@@ -651,24 +664,22 @@ class GeoQuizApp {
       });
     });
 
-    // Header Auth Action
-    document.getElementById('btnAuthAction').addEventListener('click', () => {
+    document.getElementById('btnAuthAction')?.addEventListener('click', () => {
       if (this.currentUser) this.handleLogout();
       else this.openAuthModal();
     });
-    document.getElementById('btnCloseAuthModal').addEventListener('click', () => {
-      if (!this.currentUser) this.showToast('Login is required to use this portal.', 'warning');
+    document.getElementById('btnCloseAuthModal')?.addEventListener('click', () => {
+      if (!this.currentUser) this.showToast('Login is required to access the platform.', 'warning');
       else document.getElementById('authModal').classList.add('hidden');
     });
-    document.getElementById('authForm').addEventListener('submit', (e) => {
+    document.getElementById('authForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.handleLoginSubmit();
     });
 
-    // Question Count: Custom Input Reveal
     const countSelect = document.getElementById('setupCount');
     const customCountInput = document.getElementById('setupCustomCount');
-    countSelect.addEventListener('change', () => {
+    countSelect?.addEventListener('change', () => {
       if (countSelect.value === 'custom') {
         customCountInput.classList.remove('hidden');
         customCountInput.focus();
@@ -677,85 +688,77 @@ class GeoQuizApp {
       }
       this.updateAvailabilityBadge();
     });
-    customCountInput.addEventListener('input', () => this.updateAvailabilityBadge());
+    customCountInput?.addEventListener('input', () => this.updateAvailabilityBadge());
 
-    // Continent change updates topics & availability badge
     document.getElementById('setupContinent')?.addEventListener('change', () => {
       this.populateTopicDropdown();
       this.updateAvailabilityBadge();
     });
 
-    // Difficulty & Topic change
     ['setupDifficulty', 'setupTopic'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', () => this.updateAvailabilityBadge());
     });
 
-    // Start Quiz
-    document.getElementById('quizSetupForm').addEventListener('submit', (e) => {
+    document.getElementById('quizSetupForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.startAssessment();
     });
 
-    // Quiz Controls
-    document.getElementById('btnNextQuestion').addEventListener('click', () => this.handleNextQuestion());
-    document.getElementById('btnPrevQuestion').addEventListener('click', () => this.handlePrevQuestion());
-    document.getElementById('btnSubmitExam').addEventListener('click', () => this.confirmSubmitExam());
+    document.getElementById('btnNextQuestion')?.addEventListener('click', () => this.handleNextQuestion());
+    document.getElementById('btnPrevQuestion')?.addEventListener('click', () => this.handlePrevQuestion());
+    document.getElementById('btnSubmitExam')?.addEventListener('click', () => this.confirmSubmitExam());
 
-    // Results Actions
-    document.getElementById('btnRetakeQuiz').addEventListener('click', () => {
+    document.getElementById('btnRetakeQuiz')?.addEventListener('click', () => {
       this.switchSubView(document.getElementById('portalStudent'), 'quizSetup', document.querySelector('[data-subview="quizSetup"]'));
     });
-    document.getElementById('btnGoToDashboard').addEventListener('click', () => {
+    document.getElementById('btnGoToDashboard')?.addEventListener('click', () => {
       this.switchSubView(document.getElementById('portalStudent'), 'studentDashboard', document.querySelector('[data-subview="studentDashboard"]'));
     });
 
-    // Admin Participation shortcut
-    document.getElementById('btnAdminTakeQuiz').addEventListener('click', () => {
+    document.getElementById('btnAdminTakeQuiz')?.addEventListener('click', () => {
       this.switchPortal('student');
       this.switchSubView(document.getElementById('portalStudent'), 'quizSetup', document.querySelector('[data-subview="quizSetup"]'));
     });
 
-    // Leaderboard Refresh
-    document.getElementById('btnRefreshLeaderboard').addEventListener('click', async () => {
+    document.getElementById('btnRefreshLeaderboard')?.addEventListener('click', async () => {
       await this.refreshData();
       this.renderLeaderboard();
-      this.showToast('Leaderboard updated.', 'info');
+      this.showToast('Leaderboard refreshed.', 'info');
     });
 
-    // Question Bank Filters & Pagination
-    document.getElementById('qbSearchInput').addEventListener('input', (e) => {
+    document.getElementById('qbSearchInput')?.addEventListener('input', (e) => {
       this.qbState.search = e.target.value.trim().toLowerCase();
       this.qbState.page = 1;
       this.renderQuestionBank();
     });
-    document.getElementById('qbFilterContinent').addEventListener('change', (e) => {
+    document.getElementById('qbFilterContinent')?.addEventListener('change', (e) => {
       this.qbState.continent = e.target.value;
       this.qbState.page = 1;
       this.renderQuestionBank();
     });
-    document.getElementById('qbFilterDifficulty').addEventListener('change', (e) => {
+    document.getElementById('qbFilterDifficulty')?.addEventListener('change', (e) => {
       this.qbState.difficulty = e.target.value;
       this.qbState.page = 1;
       this.renderQuestionBank();
     });
-    document.getElementById('qbFilterStatus').addEventListener('change', (e) => {
+    document.getElementById('qbFilterStatus')?.addEventListener('change', (e) => {
       this.qbState.status = e.target.value;
       this.qbState.page = 1;
       this.renderQuestionBank();
     });
-    document.getElementById('qbPageSize').addEventListener('change', (e) => {
+    document.getElementById('qbPageSize')?.addEventListener('change', (e) => {
       this.qbState.pageSize = parseInt(e.target.value, 10);
       this.qbState.page = 1;
       this.renderQuestionBank();
     });
-    document.getElementById('pgPrevBtn').addEventListener('click', () => {
+    document.getElementById('pgPrevBtn')?.addEventListener('click', () => {
       if (this.qbState.page > 1) { this.qbState.page--; this.renderQuestionBank(); }
     });
-    document.getElementById('pgNextBtn').addEventListener('click', () => {
+    document.getElementById('pgNextBtn')?.addEventListener('click', () => {
       this.qbState.page++;
       this.renderQuestionBank();
     });
-    document.getElementById('pgJumpBtn').addEventListener('click', () => {
+    document.getElementById('pgJumpBtn')?.addEventListener('click', () => {
       const target = parseInt(document.getElementById('pgJumpInput').value, 10);
       if (!isNaN(target) && target >= 1) {
         this.qbState.page = target;
@@ -763,52 +766,45 @@ class GeoQuizApp {
       }
     });
 
-    // CSV Ingestion Modal
-    document.getElementById('btnOpenCsvModal').addEventListener('click', () => {
+    document.getElementById('btnOpenCsvModal')?.addEventListener('click', () => {
       this.stagedCsvQuestions = [];
       document.getElementById('csvFileInput').value = '';
       document.getElementById('csvPreviewSection').classList.add('hidden');
       document.getElementById('btnConfirmImport').disabled = true;
+      const purgeBtn = document.getElementById('btnPurgeAndImport');
+      if (purgeBtn) purgeBtn.disabled = true;
       document.getElementById('csvImportModal').classList.remove('hidden');
     });
-    document.getElementById('btnCloseCsvModal').addEventListener('click', () => {
+    document.getElementById('btnCloseCsvModal')?.addEventListener('click', () => {
       document.getElementById('csvImportModal').classList.add('hidden');
     });
-    document.getElementById('btnCancelCsvImport').addEventListener('click', () => {
+    document.getElementById('btnCancelCsvImport')?.addEventListener('click', () => {
       document.getElementById('csvImportModal').classList.add('hidden');
     });
-    document.getElementById('csvFileInput').addEventListener('change', (e) => {
+    document.getElementById('csvFileInput')?.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) this.processPermissiveCsv(file);
     });
 
-    // Drag-and-drop CSV
-    const dropzone = document.getElementById('csvDropZone');
-    ['dragenter', 'dragover'].forEach(n => dropzone.addEventListener(n, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); }));
-    ['dragleave', 'drop'].forEach(n => dropzone.addEventListener(n, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
-    dropzone.addEventListener('drop', (e) => {
-      const files = e.dataTransfer.files;
-      if (files.length > 0) this.processPermissiveCsv(files[0]);
+    // Confirmation Handlers
+    document.getElementById('btnConfirmImport')?.addEventListener('click', () => this.commitCsvImport(false));
+    document.getElementById('btnPurgeAndImport')?.addEventListener('click', () => {
+      if (confirm("WARNING: This will permanently delete ALL existing questions and replace them entirely with the new CSV file. Are you sure?")) {
+        this.commitCsvImport(true);
+      }
     });
 
-    // Confirm Permissive CSV Import
-    document.getElementById('btnConfirmImport').addEventListener('click', () => this.commitPermissiveCsvImport());
-
-    // Export CSV
-    document.getElementById('btnExportCsv').addEventListener('click', () => this.exportQuestionBankCsv());
-
-    // Question Manual Modal
-    document.getElementById('btnOpenAddModal').addEventListener('click', () => this.openQuestionModal());
-    document.getElementById('btnCloseQModal').addEventListener('click', () => document.getElementById('questionModal').classList.add('hidden'));
-    document.getElementById('btnCancelQModal').addEventListener('click', () => document.getElementById('questionModal').classList.add('hidden'));
-    document.getElementById('questionForm').addEventListener('submit', (e) => {
+    document.getElementById('btnExportCsv')?.addEventListener('click', () => this.exportQuestionBankCsv());
+    document.getElementById('btnOpenAddModal')?.addEventListener('click', () => this.openQuestionModal());
+    document.getElementById('btnCloseQModal')?.addEventListener('click', () => document.getElementById('questionModal').classList.add('hidden'));
+    document.getElementById('btnCancelQModal')?.addEventListener('click', () => document.getElementById('questionModal').classList.add('hidden'));
+    document.getElementById('questionForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.saveSingleQuestion();
     });
 
-    // Attempt Details Modal Close
-    document.getElementById('btnCloseAttemptModal').addEventListener('click', () => document.getElementById('attemptDetailModal').classList.add('hidden'));
-    document.getElementById('btnCloseAttemptModalFooter').addEventListener('click', () => document.getElementById('attemptDetailModal').classList.add('hidden'));
+    document.getElementById('btnCloseAttemptModal')?.addEventListener('click', () => document.getElementById('attemptDetailModal').classList.add('hidden'));
+    document.getElementById('btnCloseAttemptModalFooter')?.addEventListener('click', () => document.getElementById('attemptDetailModal').classList.add('hidden'));
   }
 
   switchPortal(portalName) {
@@ -843,7 +839,7 @@ class GeoQuizApp {
   }
 
   /* --------------------------------------------------------------------------
-     PERMISSIVE CSV INGESTION IMPLEMENTATION
+     CSV IMPORT (WITH DELETE ALL OPTION)
      -------------------------------------------------------------------------- */
   processPermissiveCsv(file) {
     const reader = new FileReader();
@@ -860,12 +856,14 @@ class GeoQuizApp {
 
         this.stagedCsvQuestions = parsed;
         document.getElementById('csvPreviewSection').classList.remove('hidden');
-        document.getElementById('csvValidCountBadge').textContent = `Total Items Ready to Import: ${parsed.length}`;
+        document.getElementById('csvValidCountBadge').textContent = `Total Questions Staged: ${parsed.length}`;
         document.getElementById('btnConfirmImport').disabled = false;
+        const purgeBtn = document.getElementById('btnPurgeAndImport');
+        if (purgeBtn) purgeBtn.disabled = false;
 
         const tbody = document.getElementById('csvPreviewTableBody');
         tbody.innerHTML = '';
-        parsed.slice(0, 20).forEach((item, idx) => {
+        parsed.slice(0, 15).forEach((item, idx) => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${idx + 1}</td>
@@ -886,13 +884,13 @@ class GeoQuizApp {
     reader.readAsText(file, 'UTF-8');
   }
 
-  async commitPermissiveCsvImport() {
+  async commitCsvImport(purgeExisting = false) {
     if (this.stagedCsvQuestions.length === 0) return;
-    const btn = document.getElementById('btnConfirmImport');
+    const btn = purgeExisting ? document.getElementById('btnPurgeAndImport') : document.getElementById('btnConfirmImport');
     btn.disabled = true;
-    btn.textContent = 'Saving to Database...';
+    btn.textContent = purgeExisting ? 'Purging & Saving...' : 'Saving...';
 
-    const res = await this.storage.saveBatchQuestions(this.stagedCsvQuestions);
+    const res = await this.storage.saveBatchQuestions(this.stagedCsvQuestions, purgeExisting);
     await this.refreshData();
     this.populateTopicDropdown();
     this.renderQuestionBank();
@@ -900,9 +898,14 @@ class GeoQuizApp {
     this.updateAvailabilityBadge();
 
     btn.disabled = false;
-    btn.textContent = 'Commit All Rows to Database';
+    btn.textContent = purgeExisting ? '🗑️ Delete All & Upload Fresh CSV' : '➕ Add to Existing Bank';
     document.getElementById('csvImportModal').classList.add('hidden');
-    this.showToast(`Import Success: ${res.count} questions added to the bank!`, 'success');
+    
+    if (purgeExisting) {
+      this.showToast(`Clean Slate Success: Deleted old questions and imported ${res.count} new questions!`, 'success');
+    } else {
+      this.showToast(`Import Success: Added ${res.count} questions to the bank!`, 'success');
+    }
   }
 
   exportQuestionBankCsv() {
@@ -919,9 +922,6 @@ class GeoQuizApp {
     this.showToast(`Exported ${this.questions.length} questions.`, 'success');
   }
 
-  /* --------------------------------------------------------------------------
-     QUESTION BANK UI
-     -------------------------------------------------------------------------- */
   renderQuestionBank() {
     const tbody = document.getElementById('qbTableBody');
     tbody.innerHTML = '';
@@ -954,7 +954,7 @@ class GeoQuizApp {
     document.getElementById('pgJumpInput').max = totalPages;
 
     if (slice.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding: 2rem;">No questions match criteria.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding: 2rem;">No questions matching active filters.</td></tr>`;
       return;
     }
 
@@ -1061,12 +1061,12 @@ class GeoQuizApp {
       this.renderQuestionBank();
       this.renderAdminOverview();
       this.updateAvailabilityBadge();
-      this.showToast(`Deleted ${id}`, 'info');
+      this.showToast(`Deleted question ${id}`, 'info');
     }
   }
 
   /* --------------------------------------------------------------------------
-     QUIZ ENGINE (CUSTOM & ALL COUNT + WHOLE WORLD MODE)
+     QUIZ ENGINE & ATTEMPT DEDUPLICATION (PREVENTS DUPLICATE COMPLETIONS)
      -------------------------------------------------------------------------- */
   getEligibleQuestions(continent, difficulty, topic) {
     return this.questions.filter(q => {
@@ -1079,15 +1079,18 @@ class GeoQuizApp {
   }
 
   updateAvailabilityBadge() {
-    const cont = document.getElementById('setupContinent').value;
-    const diff = document.getElementById('setupDifficulty').value;
-    const top = document.getElementById('setupTopic').value;
+    const cont = document.getElementById('setupContinent')?.value || 'Whole World';
+    const diff = document.getElementById('setupDifficulty')?.value || 'All';
+    const top = document.getElementById('setupTopic')?.value || 'All';
     const pool = this.getEligibleQuestions(cont, diff, top);
 
     const badge = document.getElementById('availabilityNotice');
-    badge.textContent = `${pool.length} published questions available in ${cont}`;
-    badge.className = pool.length > 0 ? 'badge badge-info' : 'badge badge-danger';
-    document.getElementById('btnStartQuiz').disabled = (pool.length === 0);
+    if (badge) {
+      badge.textContent = `${pool.length} published questions available in ${cont}`;
+      badge.className = pool.length > 0 ? 'badge badge-info' : 'badge badge-danger';
+    }
+    const btn = document.getElementById('btnStartQuiz');
+    if (btn) btn.disabled = (pool.length === 0);
   }
 
   startAssessment() {
@@ -1124,6 +1127,8 @@ class GeoQuizApp {
 
     this.quizSession = {
       active: true,
+      sessionId: `SES-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      sessionFinalized: false,
       mode,
       continent,
       difficulty,
@@ -1237,7 +1242,7 @@ class GeoQuizApp {
     if (currentIndex === questions.length - 1) {
       nextBtn.classList.add('hidden');
       submitBtn.classList.remove('hidden');
-      submitBtn.textContent = mode === 'exam' ? 'Submit Exam' : 'Complete Practice';
+      submitBtn.textContent = mode === 'exam' ? 'Submit Final Exam' : 'Complete Practice';
     } else {
       nextBtn.classList.remove('hidden');
       submitBtn.classList.add('hidden');
@@ -1267,10 +1272,14 @@ class GeoQuizApp {
     this.finalizeAssessment(false);
   }
 
+  // Deduplication guard: guarantees save executes exactly once
   async finalizeAssessment(isTimeout = false) {
     if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
 
-    const { questions, userAnswers, mode, continent, difficulty, topic, startTime } = this.quizSession;
+    if (this.quizSession.sessionFinalized) return;
+    this.quizSession.sessionFinalized = true;
+
+    const { sessionId, questions, userAnswers, mode, continent, difficulty, topic, startTime } = this.quizSession;
     const now = new Date();
     const durationSeconds = Math.max(1, Math.round((now - startTime) / 1000));
 
@@ -1295,6 +1304,7 @@ class GeoQuizApp {
 
     const attemptRecord = {
       id: `ATT-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`,
+      sessionId,
       studentId: this.currentUser.id,
       studentName: this.currentUser.name,
       userRole: this.currentUser.role,
@@ -1357,7 +1367,7 @@ class GeoQuizApp {
   }
 
   /* --------------------------------------------------------------------------
-     HISTORY DRILL-DOWN MODAL & LEADERBOARD
+     HISTORY DRILL-DOWN & LEADERBOARD
      -------------------------------------------------------------------------- */
   openAttemptDetailModal(attemptId) {
     const att = this.attempts.find(a => a.id === attemptId);
@@ -1403,10 +1413,11 @@ class GeoQuizApp {
 
   renderLeaderboard() {
     const tbody = document.getElementById('leaderboardTableBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     if (this.attempts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No assessments recorded yet. Be the first to play!</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No assessments recorded yet.</td></tr>`;
       return;
     }
 
