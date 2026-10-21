@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v2.3
+ * Core Engine v2.5 (Automated Duplicate Cleaning, Deduplication & Dynamic Scope)
  */
 
 'use strict';
@@ -126,7 +126,7 @@ const SEED_QUESTIONS = [
 ];
 
 /* ==========================================================================
-   STORAGE ENGINE ADAPTER (FIRESTORE + LOCAL DUAL-ENGINE)
+   STORAGE ENGINE ADAPTER (FIRESTORE + DEDUPLICATION)
    ========================================================================== */
 
 class StorageAdapter {
@@ -245,31 +245,57 @@ class StorageAdapter {
     return true;
   }
 
+  /**
+   * Retrieves and automatically collapses all duplicate attempt clones.
+   */
   async getAllAttempts() {
+    let rawList = [];
     if (this.useFirestore) {
       try {
         const snap = await this.db.collection('attempts').orderBy('timestamp', 'desc').get();
         if (!snap.empty) {
-          return this._deduplicateAttempts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          rawList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
       } catch (err) {
         console.warn('[StorageAdapter] Firestore attempts error, fallback to local.', err);
       }
     }
-    const raw = localStorage.getItem(this.KEY_ATTEMPTS);
-    const list = raw ? JSON.parse(raw) : [];
-    return this._deduplicateAttempts(list);
+
+    if (rawList.length === 0) {
+      const raw = localStorage.getItem(this.KEY_ATTEMPTS);
+      rawList = raw ? JSON.parse(raw) : [];
+    }
+
+    return this._deduplicateAttempts(rawList);
   }
 
-  // Deduplication safeguard: guarantees single entry per actual completed session
+  /**
+   * Powerful deduplication: 
+   * Merges multiple attempt records for the same student on the same day with matching score/continent
+   * into exactly one single distinct submission row.
+   */
   _deduplicateAttempts(attempts) {
-    const seen = new Set();
+    if (!attempts || attempts.length === 0) return [];
+
+    const sorted = [...attempts].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     const unique = [];
-    for (const a of attempts) {
-      const dedupeKey = a.sessionId || `${a.studentId}_${a.timestamp}_${a.correctCount}_${a.totalQuestions}`;
-      if (!seen.has(dedupeKey)) {
-        seen.add(dedupeKey);
-        unique.push(a);
+
+    for (const cur of sorted) {
+      const curDateStr = cur.formattedDate || new Date(cur.timestamp).toLocaleDateString();
+      const isDuplicate = unique.some(prev => {
+        const prevDateStr = prev.formattedDate || new Date(prev.timestamp).toLocaleDateString();
+        // If same student, same scope, same score, and submitted on the same date/session -> Duplicate!
+        return (
+          prev.studentId === cur.studentId &&
+          prev.continent === cur.continent &&
+          prev.correctCount === cur.correctCount &&
+          prev.totalQuestions === cur.totalQuestions &&
+          prevDateStr === curDateStr
+        );
+      });
+
+      if (!isDuplicate) {
+        unique.push(cur);
       }
     }
     return unique;
@@ -287,6 +313,40 @@ class StorageAdapter {
     const updated = this._deduplicateAttempts([attempt, ...list]);
     localStorage.setItem(this.KEY_ATTEMPTS, JSON.stringify(updated));
     return attempt;
+  }
+
+  /**
+   * One-click cleanup of all stored clone attempts from Firestore and localStorage
+   */
+  async purgeDuplicateAttempts() {
+    if (this.useFirestore) {
+      try {
+        const snap = await this.db.collection('attempts').get();
+        const seen = new Set();
+        const batch = this.db.batch();
+        let deleteCount = 0;
+
+        snap.docs.forEach(doc => {
+          const d = doc.data();
+          const dDate = d.formattedDate || new Date(d.timestamp).toLocaleDateString();
+          const key = `${d.studentId}_${d.continent}_${d.correctCount}_${d.totalQuestions}_${dDate}`;
+          if (seen.has(key)) {
+            batch.delete(doc.ref);
+            deleteCount++;
+          } else {
+            seen.add(key);
+          }
+        });
+
+        if (deleteCount > 0) {
+          await batch.commit();
+        }
+      } catch (err) {
+        console.error('Purge error:', err);
+      }
+    }
+    localStorage.removeItem(this.KEY_ATTEMPTS);
+    return true;
   }
 }
 
@@ -706,7 +766,10 @@ class GeoQuizApp {
 
     document.getElementById('btnNextQuestion')?.addEventListener('click', () => this.handleNextQuestion());
     document.getElementById('btnPrevQuestion')?.addEventListener('click', () => this.handlePrevQuestion());
-    document.getElementById('btnSubmitExam')?.addEventListener('click', () => this.confirmSubmitExam());
+    document.getElementById('btnSubmitExam')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.confirmSubmitExam();
+    });
 
     document.getElementById('btnRetakeQuiz')?.addEventListener('click', () => {
       this.switchSubView(document.getElementById('portalStudent'), 'quizSetup', document.querySelector('[data-subview="quizSetup"]'));
@@ -724,6 +787,21 @@ class GeoQuizApp {
       await this.refreshData();
       this.renderLeaderboard();
       this.showToast('Leaderboard refreshed.', 'info');
+    });
+
+    // Clean duplicate attempts button in admin console
+    document.getElementById('btnPurgeDuplicateAttempts')?.addEventListener('click', async () => {
+      const btn = document.getElementById('btnPurgeDuplicateAttempts');
+      btn.disabled = true;
+      btn.textContent = 'Cleaning...';
+      await this.storage.purgeDuplicateAttempts();
+      await this.refreshData();
+      this.renderAdminOverview();
+      this.renderStudentDashboard();
+      this.renderLeaderboard();
+      btn.disabled = false;
+      btn.textContent = '🧹 Clean Database Duplicates';
+      this.showToast('Duplicate attempts successfully removed from Firestore!', 'success');
     });
 
     document.getElementById('qbSearchInput')?.addEventListener('input', (e) => {
@@ -786,10 +864,9 @@ class GeoQuizApp {
       if (file) this.processPermissiveCsv(file);
     });
 
-    // Confirmation Handlers
     document.getElementById('btnConfirmImport')?.addEventListener('click', () => this.commitCsvImport(false));
     document.getElementById('btnPurgeAndImport')?.addEventListener('click', () => {
-      if (confirm("WARNING: This will permanently delete ALL existing questions and replace them entirely with the new CSV file. Are you sure?")) {
+      if (confirm("WARNING: This will permanently delete ALL existing questions and replace them entirely with the new CSV. Proceed?")) {
         this.commitCsvImport(true);
       }
     });
@@ -838,9 +915,6 @@ class GeoQuizApp {
     if (subviewName === 'adminQuestionBank') this.renderQuestionBank();
   }
 
-  /* --------------------------------------------------------------------------
-     CSV IMPORT (WITH DELETE ALL OPTION)
-     -------------------------------------------------------------------------- */
   processPermissiveCsv(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -1065,9 +1139,6 @@ class GeoQuizApp {
     }
   }
 
-  /* --------------------------------------------------------------------------
-     QUIZ ENGINE & ATTEMPT DEDUPLICATION (PREVENTS DUPLICATE COMPLETIONS)
-     -------------------------------------------------------------------------- */
   getEligibleQuestions(continent, difficulty, topic) {
     return this.questions.filter(q => {
       const isPub = q.status === 'Published';
@@ -1149,6 +1220,12 @@ class GeoQuizApp {
     document.getElementById('arenaContinentBadge').textContent = continent;
     document.getElementById('arenaDifficultyBadge').textContent = difficulty;
     document.getElementById('totalQCount').textContent = selected.length;
+
+    const submitBtn = document.getElementById('btnSubmitExam');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === 'exam' ? 'Submit Final Exam' : 'Complete Practice';
+    }
 
     if (mode === 'exam') {
       document.getElementById('arenaTimerWrapper').classList.remove('hidden');
@@ -1264,18 +1341,28 @@ class GeoQuizApp {
   }
 
   confirmSubmitExam() {
+    if (this.quizSession.sessionFinalized) return;
+
     const { questions, userAnswers, mode } = this.quizSession;
     const answered = Object.keys(userAnswers).length;
     if (mode === 'exam' && answered < questions.length) {
       if (!confirm(`You left ${questions.length - answered} questions unanswered. Submit now?`)) return;
     }
+
+    // Instantly lock button to prevent multiple submissions
+    const submitBtn = document.getElementById('btnSubmitExam');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+    }
+
     this.finalizeAssessment(false);
   }
 
-  // Deduplication guard: guarantees save executes exactly once
   async finalizeAssessment(isTimeout = false) {
     if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
 
+    // Hard deduplication lock
     if (this.quizSession.sessionFinalized) return;
     this.quizSession.sessionFinalized = true;
 
@@ -1417,10 +1504,11 @@ class GeoQuizApp {
     tbody.innerHTML = '';
 
     if (this.attempts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No assessments recorded yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No assessments recorded yet. Be the first to play!</td></tr>`;
       return;
     }
 
+    // Top 10 sort: Accuracy % -> Correct count -> Shortest duration
     const sorted = [...this.attempts].sort((a, b) => {
       if (b.accuracyPct !== a.accuracyPct) return b.accuracyPct - a.accuracyPct;
       if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;

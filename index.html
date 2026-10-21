@@ -137,7 +137,7 @@
           <div class="card-header-flex">
             <div>
               <h2>🏆 Top 10 Highscore Leaderboard</h2>
-              <p>Top scores sorted by accuracy and completion duration.</p>
+              <p>Top unique performances ranked by accuracy and completion duration.</p>
             </div>
             <button id="btnRefreshLeaderboard" class="btn btn-outline-sm">🔄 Refresh</button>
           </div>
@@ -479,9 +479,14 @@
       <!-- Subview: Admin Attempt Monitoring -->
       <div id="subViewAdminStudentMonitoring" class="sub-view-pane hidden">
         <div class="card table-card">
-          <div class="card-header">
-            <h3>Registered Attempts & Integrity Audit Log</h3>
-            <p class="text-muted">Click any row to view complete question breakdowns with correct and wrong answers.</p>
+          <div class="card-header-flex">
+            <div>
+              <h3>Registered Attempts & Integrity Audit Log</h3>
+              <p class="text-muted">Click any row to view complete question breakdowns.</p>
+            </div>
+            <button id="btnPurgeDuplicateAttempts" class="btn btn-outline-sm" style="color: var(--primary); border-color: var(--primary); font-weight: 700;">
+              🧹 Clean Database Duplicates
+            </button>
           </div>
           <div class="table-responsive">
             <table class="data-table clickable-table">

@@ -817,7 +817,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* Visibility State Rules - Strictly hide modal overlays when .hidden is applied */
+/* Visibility State Rules */
 .hidden,
 .modal-overlay.hidden,
 .portal-view.hidden,
