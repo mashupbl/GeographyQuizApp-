@@ -424,7 +424,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   font-weight: 600;
 }
 
-.question-meta { display: flex; gap: 0.6rem; margin-bottom: 0.75rem; }
+.question-meta { display: flex; gap: 0.6rem; margin-bottom: 0.75rem; align-items: center; }
 .tag-topic, .tag-id {
   font-size: 0.75rem;
   padding: 0.2rem 0.5rem;

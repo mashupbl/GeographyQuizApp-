@@ -54,7 +54,7 @@
         <div class="card setup-card">
           <div class="card-header">
             <h2>Select Assessment Configuration</h2>
-            <p>Select target scope, difficulty, and session mode.</p>
+            <p>Select target scope, batch, difficulty, and session mode.</p>
           </div>
           <form id="quizSetupForm" class="setup-grid">
             <div class="form-group">
@@ -68,6 +68,13 @@
                 <option value="South America">South America</option>
                 <option value="Australia/Oceania">Australia/Oceania</option>
                 <option value="Antarctica">Antarctica</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="setupBatch">Question Batch / Set</label>
+              <select id="setupBatch" class="form-control">
+                <option value="All">All Questions (All Batches)</option>
               </select>
             </div>
 
@@ -88,10 +95,10 @@
               </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group full-width">
               <label for="setupCount">Question Count</label>
               <div class="count-selector-group">
-                <select id="setupCount" class="form-control" required>
+                <select id="setupCount" class="form-control" required style="max-width: 200px;">
                   <option value="5">5 Questions</option>
                   <option value="10" selected>10 Questions</option>
                   <option value="20">20 Questions</option>
@@ -99,7 +106,7 @@
                   <option value="all">All Available</option>
                   <option value="custom">Custom...</option>
                 </select>
-                <input type="number" id="setupCustomCount" class="form-control hidden" placeholder="Enter count" min="1" max="5000">
+                <input type="number" id="setupCustomCount" class="form-control hidden" placeholder="Enter custom count" min="1" max="5000" style="max-width: 180px;">
               </div>
             </div>
 
@@ -188,6 +195,7 @@
         <div class="card question-card">
           <div class="question-meta">
             <span id="qTopicTag" class="tag-topic">General Geography</span>
+            <span id="qBatchBadge" class="badge badge-warning">🆕 Batch 1</span>
             <span id="qIdTag" class="tag-id">ID: GEO-001</span>
           </div>
           <h2 id="qText" class="question-text">Loading question text...</h2>
@@ -381,7 +389,7 @@
         <div class="card filter-card">
           <div class="action-bar-top">
             <div class="search-box">
-              <input type="text" id="qbSearchInput" class="form-control" placeholder="Search by ID, keyword, or question text...">
+              <input type="text" id="qbSearchInput" class="form-control" placeholder="Search by ID, batch, keyword, or question text...">
             </div>
             <div class="button-group">
               <button id="btnOpenCsvModal" class="btn btn-success">📥 CSV Bulk Import</button>
@@ -403,6 +411,13 @@
                 <option value="South America">South America</option>
                 <option value="Australia/Oceania">Australia/Oceania</option>
                 <option value="Antarctica">Antarctica</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Batch Tag</label>
+              <select id="qbFilterBatch" class="form-control-sm">
+                <option value="All">All Batches</option>
               </select>
             </div>
 
@@ -443,17 +458,18 @@
               <thead>
                 <tr>
                   <th>ID</th>
+                  <th>Batch</th>
                   <th>Scope</th>
                   <th>Difficulty</th>
                   <th>Topic</th>
-                  <th style="width: 35%;">Question Text</th>
+                  <th style="width: 32%;">Question Text</th>
                   <th>Key</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="qbTableBody">
-                <tr><td colspan="8" class="text-center">Loading questions...</td></tr>
+                <tr><td colspan="9" class="text-center">Loading questions...</td></tr>
               </tbody>
             </table>
           </div>
@@ -569,7 +585,7 @@
     </div>
   </div>
 
-  <!-- Modal 3: Permissive CSV Ingestion Modal with Delete All Option -->
+  <!-- Modal 3: Permissive CSV Ingestion Modal with Batch Label & Delete All Option -->
   <div id="csvImportModal" class="modal-overlay hidden">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
@@ -578,8 +594,14 @@
       </div>
       <div class="modal-body">
         <p class="modal-description">
-          Upload any CSV question file. All non-empty rows will be imported. Missing fields are automatically populated with defaults.
+          Upload any CSV question file (including 700+ rows). All non-empty rows will be imported and tagged under your custom batch name.
         </p>
+
+        <div class="form-group" style="background: var(--bg-main); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1rem;">
+          <label for="csvBatchTag"><strong>🏷️ Assign Batch Label / Name:</strong></label>
+          <input type="text" id="csvBatchTag" class="form-control" placeholder="e.g. Batch 2 (700 Questions)" value="Batch 2">
+          <small class="text-muted">This batch name will be tagged to all uploaded questions so you can identify and filter them easily.</small>
+        </div>
 
         <div class="file-dropzone" id="csvDropZone">
           <input type="file" id="csvFileInput" accept=".csv,text/csv" class="file-input-hidden">
@@ -649,6 +671,10 @@
                 <option value="Australia/Oceania">Australia/Oceania</option>
                 <option value="Antarctica">Antarctica</option>
               </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="qfBatch">Batch Label *</label>
+              <input type="text" id="qfBatch" class="form-control" placeholder="e.g. Batch 1, Batch 2" value="Batch 1" required>
             </div>
             <div class="form-group flex-1">
               <label for="qfDifficulty">Difficulty *</label>

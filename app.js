@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v2.5 (Automated Duplicate Cleaning, Deduplication & Dynamic Scope)
+ * Core Engine v2.6 (Batch-Based Tagging & Clean Attempt Engine)
  */
 
 'use strict';
@@ -14,6 +14,7 @@ const SEED_QUESTIONS = [
   {
     id: "GEO-AS-001",
     continent: "Asia",
+    batch: "Batch 1",
     difficulty: "Easy",
     topic: "Mountain Ranges",
     question: "Which mountain range contains Mount Everest, the highest peak above sea level on Earth?",
@@ -30,6 +31,7 @@ const SEED_QUESTIONS = [
   {
     id: "GEO-AF-001",
     continent: "Africa",
+    batch: "Batch 1",
     difficulty: "Easy",
     topic: "Hydrography",
     question: "Which river is widely recognized as the longest river in Africa?",
@@ -46,6 +48,7 @@ const SEED_QUESTIONS = [
   {
     id: "GEO-EU-001",
     continent: "Europe",
+    batch: "Batch 1",
     difficulty: "Medium",
     topic: "Physical Geography",
     question: "Which strait connects the Atlantic Ocean to the Mediterranean Sea and separates Spain from Morocco?",
@@ -62,6 +65,7 @@ const SEED_QUESTIONS = [
   {
     id: "GEO-NA-001",
     continent: "North America",
+    batch: "Batch 1",
     difficulty: "Medium",
     topic: "Lakes & Waterways",
     question: "Which of the Great Lakes is the largest freshwater lake in the world by surface area?",
@@ -78,6 +82,7 @@ const SEED_QUESTIONS = [
   {
     id: "GEO-SA-001",
     continent: "South America",
+    batch: "Batch 1",
     difficulty: "Hard",
     topic: "Geomorphology",
     question: "Which high-altitude plateau in the central Andes is the second-most extensive plateau on Earth after Tibet?",
@@ -94,6 +99,7 @@ const SEED_QUESTIONS = [
   {
     id: "GEO-OC-001",
     continent: "Australia/Oceania",
+    batch: "Batch 1",
     difficulty: "Easy",
     topic: "Marine Geography",
     question: "The Great Barrier Reef is located off the coast of which Australian state?",
@@ -110,6 +116,7 @@ const SEED_QUESTIONS = [
   {
     id: "GEO-AN-001",
     continent: "Antarctica",
+    batch: "Batch 1",
     difficulty: "Hard",
     topic: "Glaciology",
     question: "Which mountain range in Antarctica is completely buried beneath several kilometers of glacial ice?",
@@ -156,14 +163,18 @@ class StorageAdapter {
       try {
         const snap = await this.db.collection('questions').get();
         if (!snap.empty) {
-          return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          return snap.docs.map(doc => {
+            const data = doc.data();
+            return { id: doc.id, batch: data.batch || 'Batch 1', ...data };
+          });
         }
       } catch (err) {
         console.warn('[StorageAdapter] Firestore read failed; loading local storage.', err);
       }
     }
     const raw = localStorage.getItem(this.KEY_QUESTIONS);
-    return raw ? JSON.parse(raw) : SEED_QUESTIONS;
+    const list = raw ? JSON.parse(raw) : SEED_QUESTIONS;
+    return list.map(q => ({ batch: q.batch || 'Batch 1', ...q }));
   }
 
   async clearAllQuestions() {
@@ -245,9 +256,6 @@ class StorageAdapter {
     return true;
   }
 
-  /**
-   * Retrieves and automatically collapses all duplicate attempt clones.
-   */
   async getAllAttempts() {
     let rawList = [];
     if (this.useFirestore) {
@@ -269,14 +277,8 @@ class StorageAdapter {
     return this._deduplicateAttempts(rawList);
   }
 
-  /**
-   * Powerful deduplication: 
-   * Merges multiple attempt records for the same student on the same day with matching score/continent
-   * into exactly one single distinct submission row.
-   */
   _deduplicateAttempts(attempts) {
     if (!attempts || attempts.length === 0) return [];
-
     const sorted = [...attempts].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     const unique = [];
 
@@ -284,7 +286,6 @@ class StorageAdapter {
       const curDateStr = cur.formattedDate || new Date(cur.timestamp).toLocaleDateString();
       const isDuplicate = unique.some(prev => {
         const prevDateStr = prev.formattedDate || new Date(prev.timestamp).toLocaleDateString();
-        // If same student, same scope, same score, and submitted on the same date/session -> Duplicate!
         return (
           prev.studentId === cur.studentId &&
           prev.continent === cur.continent &&
@@ -315,9 +316,6 @@ class StorageAdapter {
     return attempt;
   }
 
-  /**
-   * One-click cleanup of all stored clone attempts from Firestore and localStorage
-   */
   async purgeDuplicateAttempts() {
     if (this.useFirestore) {
       try {
@@ -351,7 +349,7 @@ class StorageAdapter {
 }
 
 /* ==========================================================================
-   PERMISSIVE CSV INGESTION ENGINE
+   PERMISSIVE CSV INGESTION ENGINE WITH BATCH SUPPORT
    ========================================================================== */
 
 class PermissiveCsvEngine {
@@ -423,7 +421,7 @@ class PermissiveCsvEngine {
     return rows;
   }
 
-  static ingestAllRows(rawRows) {
+  static ingestAllRows(rawRows, batchTag = 'Batch 2') {
     if (!rawRows || rawRows.length === 0) return [];
 
     let headerIndex = -1;
@@ -435,6 +433,7 @@ class PermissiveCsvEngine {
         headerIndex = r;
         row.forEach((colName, idx) => {
           if (colName.includes('id')) headerMap.id = idx;
+          else if (colName.includes('batch')) headerMap.batch = idx;
           else if (colName.includes('continent') || colName.includes('scope')) headerMap.continent = idx;
           else if (colName.includes('diff')) headerMap.difficulty = idx;
           else if (colName.includes('topic') || colName.includes('cat')) headerMap.topic = idx;
@@ -483,14 +482,16 @@ class PermissiveCsvEngine {
         difficulty = 'Medium';
       }
 
-      const id = getVal('id', 0) || `GEO-IMP-${Date.now().toString(36)}-${i}`;
+      const assignedBatch = getVal('batch') || batchTag || 'Batch 2';
+      const id = getVal('id', 0) || `GEO-${assignedBatch.replace(/\s+/g, '')}-${Date.now().toString(36)}-${i}`;
       const topic = getVal('topic', 3) || 'General Geography';
       const explanation = getVal('explanation', 10) || '';
-      const source = getVal('source', 11) || 'CSV Import';
+      const source = getVal('source', 11) || 'CSV Bulk Import';
       const status = getVal('status', 12) || 'Published';
 
       result.push({
         id,
+        batch: assignedBatch,
         continent,
         difficulty,
         topic,
@@ -512,7 +513,7 @@ class PermissiveCsvEngine {
 
   static stringify(questions) {
     const headers = [
-      'id', 'continent', 'difficulty', 'topic', 'question',
+      'id', 'batch', 'continent', 'difficulty', 'topic', 'question',
       'optionA', 'optionB', 'optionC', 'optionD',
       'correctAnswer', 'explanation', 'source', 'status'
     ];
@@ -547,6 +548,7 @@ class GeoQuizApp {
       pageSize: 25,
       search: '',
       continent: 'All',
+      batch: 'All',
       difficulty: 'All',
       status: 'All'
     };
@@ -559,6 +561,7 @@ class GeoQuizApp {
       sessionFinalized: false,
       mode: 'practice',
       continent: 'Whole World',
+      batch: 'All',
       difficulty: 'All',
       topic: 'All',
       questions: [],
@@ -575,6 +578,7 @@ class GeoQuizApp {
   async init() {
     this.bindEvents();
     await this.refreshData();
+    this.populateBatchDropdowns();
     this.populateTopicDropdown();
     this.checkSession();
     this.renderQuestionBank();
@@ -668,18 +672,52 @@ class GeoQuizApp {
     }
   }
 
+  populateBatchDropdowns() {
+    const batches = Array.from(new Set(this.questions.map(q => q.batch || 'Batch 1'))).sort();
+    
+    // Quiz Setup Batch Dropdown
+    const setupBatch = document.getElementById('setupBatch');
+    if (setupBatch) {
+      const prev = setupBatch.value;
+      setupBatch.innerHTML = '<option value="All">All Questions (All Batches)</option>';
+      batches.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.textContent = `🏷️ ${b}`;
+        setupBatch.appendChild(opt);
+      });
+      if (batches.includes(prev)) setupBatch.value = prev;
+    }
+
+    // Admin Question Bank Filter Dropdown
+    const qbFilterBatch = document.getElementById('qbFilterBatch');
+    if (qbFilterBatch) {
+      const prev = qbFilterBatch.value;
+      qbFilterBatch.innerHTML = '<option value="All">All Batches</option>';
+      batches.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.textContent = b;
+        qbFilterBatch.appendChild(opt);
+      });
+      if (batches.includes(prev)) qbFilterBatch.value = prev;
+    }
+  }
+
   populateTopicDropdown() {
     const topicSelect = document.getElementById('setupTopic');
     if (!topicSelect) return;
 
     const selectedContinent = document.getElementById('setupContinent')?.value || 'Whole World';
+    const selectedBatch = document.getElementById('setupBatch')?.value || 'All';
 
     const matchingQuestions = this.questions.filter(q => {
       const isPub = q.status === 'Published';
       const matchCont = (selectedContinent === 'Whole World' || selectedContinent === 'All') 
         ? true 
         : q.continent === selectedContinent;
-      return isPub && matchCont;
+      const matchBatch = (selectedBatch === 'All') ? true : (q.batch === selectedBatch);
+      return isPub && matchCont && matchBatch;
     });
 
     const uniqueTopics = Array.from(
@@ -755,6 +793,11 @@ class GeoQuizApp {
       this.updateAvailabilityBadge();
     });
 
+    document.getElementById('setupBatch')?.addEventListener('change', () => {
+      this.populateTopicDropdown();
+      this.updateAvailabilityBadge();
+    });
+
     ['setupDifficulty', 'setupTopic'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', () => this.updateAvailabilityBadge());
     });
@@ -789,7 +832,7 @@ class GeoQuizApp {
       this.showToast('Leaderboard refreshed.', 'info');
     });
 
-    // Clean duplicate attempts button in admin console
+    // 1-Click Clean Duplicates in Admin Console
     document.getElementById('btnPurgeDuplicateAttempts')?.addEventListener('click', async () => {
       const btn = document.getElementById('btnPurgeDuplicateAttempts');
       btn.disabled = true;
@@ -801,7 +844,7 @@ class GeoQuizApp {
       this.renderLeaderboard();
       btn.disabled = false;
       btn.textContent = '🧹 Clean Database Duplicates';
-      this.showToast('Duplicate attempts successfully removed from Firestore!', 'success');
+      this.showToast('Duplicate attempts successfully removed!', 'success');
     });
 
     document.getElementById('qbSearchInput')?.addEventListener('input', (e) => {
@@ -811,6 +854,11 @@ class GeoQuizApp {
     });
     document.getElementById('qbFilterContinent')?.addEventListener('change', (e) => {
       this.qbState.continent = e.target.value;
+      this.qbState.page = 1;
+      this.renderQuestionBank();
+    });
+    document.getElementById('qbFilterBatch')?.addEventListener('change', (e) => {
+      this.qbState.batch = e.target.value;
       this.qbState.page = 1;
       this.renderQuestionBank();
     });
@@ -864,6 +912,7 @@ class GeoQuizApp {
       if (file) this.processPermissiveCsv(file);
     });
 
+    // Confirmation Handlers
     document.getElementById('btnConfirmImport')?.addEventListener('click', () => this.commitCsvImport(false));
     document.getElementById('btnPurgeAndImport')?.addEventListener('click', () => {
       if (confirm("WARNING: This will permanently delete ALL existing questions and replace them entirely with the new CSV. Proceed?")) {
@@ -915,13 +964,18 @@ class GeoQuizApp {
     if (subviewName === 'adminQuestionBank') this.renderQuestionBank();
   }
 
+  /* --------------------------------------------------------------------------
+     CSV IMPORT WITH BATCH LABEL & PURGE OPTION
+     -------------------------------------------------------------------------- */
   processPermissiveCsv(file) {
     const reader = new FileReader();
+    const batchTag = document.getElementById('csvBatchTag')?.value.trim() || 'Batch 2';
+
     reader.onload = (e) => {
       try {
         const text = e.target.result;
         const rawRows = PermissiveCsvEngine.parse(text);
-        const parsed = PermissiveCsvEngine.ingestAllRows(rawRows);
+        const parsed = PermissiveCsvEngine.ingestAllRows(rawRows, batchTag);
 
         if (parsed.length === 0) {
           this.showToast('No valid rows found in CSV file.', 'warning');
@@ -930,7 +984,7 @@ class GeoQuizApp {
 
         this.stagedCsvQuestions = parsed;
         document.getElementById('csvPreviewSection').classList.remove('hidden');
-        document.getElementById('csvValidCountBadge').textContent = `Total Questions Staged: ${parsed.length}`;
+        document.getElementById('csvValidCountBadge').textContent = `Total Questions Staged for "${batchTag}": ${parsed.length}`;
         document.getElementById('btnConfirmImport').disabled = false;
         const purgeBtn = document.getElementById('btnPurgeAndImport');
         if (purgeBtn) purgeBtn.disabled = false;
@@ -941,7 +995,7 @@ class GeoQuizApp {
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${idx + 1}</td>
-            <td><span class="badge badge-info">${item.continent}</span></td>
+            <td><span class="badge badge-info">${item.continent}</span> <span class="badge badge-warning">🏷️ ${item.batch}</span></td>
             <td>${this.escapeHtml(item.question.substring(0, 50))}...</td>
             <td>${this.escapeHtml(item.optionA)}</td>
             <td>${this.escapeHtml(item.optionB)}</td>
@@ -962,10 +1016,11 @@ class GeoQuizApp {
     if (this.stagedCsvQuestions.length === 0) return;
     const btn = purgeExisting ? document.getElementById('btnPurgeAndImport') : document.getElementById('btnConfirmImport');
     btn.disabled = true;
-    btn.textContent = purgeExisting ? 'Purging & Saving...' : 'Saving...';
+    btn.textContent = purgeExisting ? 'Purging & Saving...' : 'Saving 700+ Questions...';
 
     const res = await this.storage.saveBatchQuestions(this.stagedCsvQuestions, purgeExisting);
     await this.refreshData();
+    this.populateBatchDropdowns();
     this.populateTopicDropdown();
     this.renderQuestionBank();
     this.renderAdminOverview();
@@ -1003,12 +1058,14 @@ class GeoQuizApp {
     const filtered = this.questions.filter(q => {
       const matchSearch = !this.qbState.search ||
         q.id.toLowerCase().includes(this.qbState.search) ||
+        (q.batch && q.batch.toLowerCase().includes(this.qbState.search)) ||
         q.question.toLowerCase().includes(this.qbState.search) ||
         q.topic.toLowerCase().includes(this.qbState.search);
       const matchCont = this.qbState.continent === 'All' || q.continent === this.qbState.continent;
+      const matchBatch = this.qbState.batch === 'All' || (q.batch || 'Batch 1') === this.qbState.batch;
       const matchDiff = this.qbState.difficulty === 'All' || q.difficulty === this.qbState.difficulty;
       const matchStatus = this.qbState.status === 'All' || q.status === this.qbState.status;
-      return matchSearch && matchCont && matchDiff && matchStatus;
+      return matchSearch && matchCont && matchBatch && matchDiff && matchStatus;
     });
 
     const total = filtered.length;
@@ -1028,15 +1085,19 @@ class GeoQuizApp {
     document.getElementById('pgJumpInput').max = totalPages;
 
     if (slice.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding: 2rem;">No questions matching active filters.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding: 2rem;">No questions matching active filters.</td></tr>`;
       return;
     }
 
     slice.forEach(q => {
       const tr = document.createElement('tr');
       const badgeClass = q.status === 'Published' ? 'badge-success' : 'badge-warning';
+      const batchLabel = q.batch || 'Batch 1';
+      const isNewBatch = batchLabel !== 'Batch 1';
+
       tr.innerHTML = `
         <td><code>${this.escapeHtml(q.id)}</code></td>
+        <td><span class="badge ${isNewBatch ? 'badge-warning' : 'badge-secondary'}">${isNewBatch ? '🆕 ' : ''}${this.escapeHtml(batchLabel)}</span></td>
         <td><span class="badge badge-info">${this.escapeHtml(q.continent)}</span></td>
         <td>${this.escapeHtml(q.difficulty)}</td>
         <td>${this.escapeHtml(q.topic)}</td>
@@ -1068,6 +1129,7 @@ class GeoQuizApp {
     document.getElementById('questionModalTitle').textContent = `Edit Question (${id})`;
     document.getElementById('editQuestionId').value = q.id;
     document.getElementById('qfContinent').value = q.continent;
+    document.getElementById('qfBatch').value = q.batch || 'Batch 1';
     document.getElementById('qfDifficulty').value = q.difficulty;
     document.getElementById('qfTopic').value = q.topic;
     document.getElementById('qfStatus').value = q.status;
@@ -1085,6 +1147,7 @@ class GeoQuizApp {
   async saveSingleQuestion() {
     const editId = document.getElementById('editQuestionId').value;
     const continent = document.getElementById('qfContinent').value;
+    const batch = document.getElementById('qfBatch').value.trim() || 'Batch 1';
     const difficulty = document.getElementById('qfDifficulty').value;
     const topic = document.getElementById('qfTopic').value.trim();
     const status = document.getElementById('qfStatus').value;
@@ -1101,6 +1164,7 @@ class GeoQuizApp {
 
     const questionObj = {
       id,
+      batch,
       continent,
       difficulty,
       topic,
@@ -1118,6 +1182,7 @@ class GeoQuizApp {
 
     await this.storage.saveQuestion(questionObj);
     await this.refreshData();
+    this.populateBatchDropdowns();
     this.populateTopicDropdown();
     this.renderQuestionBank();
     this.renderAdminOverview();
@@ -1131,6 +1196,7 @@ class GeoQuizApp {
     if (confirm(`Delete question ${id}? This action is irreversible.`)) {
       await this.storage.deleteQuestion(id);
       await this.refreshData();
+      this.populateBatchDropdowns();
       this.populateTopicDropdown();
       this.renderQuestionBank();
       this.renderAdminOverview();
@@ -1139,25 +1205,28 @@ class GeoQuizApp {
     }
   }
 
-  getEligibleQuestions(continent, difficulty, topic) {
+  getEligibleQuestions(continent, difficulty, topic, batch = 'All') {
     return this.questions.filter(q => {
       const isPub = q.status === 'Published';
       const matchCont = (continent === 'Whole World' || continent === 'All') ? true : q.continent === continent;
+      const matchBatch = (batch === 'All') ? true : (q.batch === batch);
       const matchDiff = difficulty === 'All' || q.difficulty === difficulty;
       const matchTopic = topic === 'All' || q.topic === topic;
-      return isPub && matchCont && matchDiff && matchTopic;
+      return isPub && matchCont && matchBatch && matchDiff && matchTopic;
     });
   }
 
   updateAvailabilityBadge() {
     const cont = document.getElementById('setupContinent')?.value || 'Whole World';
+    const batch = document.getElementById('setupBatch')?.value || 'All';
     const diff = document.getElementById('setupDifficulty')?.value || 'All';
     const top = document.getElementById('setupTopic')?.value || 'All';
-    const pool = this.getEligibleQuestions(cont, diff, top);
+    const pool = this.getEligibleQuestions(cont, diff, top, batch);
 
     const badge = document.getElementById('availabilityNotice');
     if (badge) {
-      badge.textContent = `${pool.length} published questions available in ${cont}`;
+      const batchTxt = batch === 'All' ? '' : ` [${batch}]`;
+      badge.textContent = `${pool.length} published questions available in ${cont}${batchTxt}`;
       badge.className = pool.length > 0 ? 'badge badge-info' : 'badge badge-danger';
     }
     const btn = document.getElementById('btnStartQuiz');
@@ -1172,14 +1241,15 @@ class GeoQuizApp {
     }
 
     const continent = document.getElementById('setupContinent').value;
+    const batch = document.getElementById('setupBatch').value;
     const difficulty = document.getElementById('setupDifficulty').value;
     const topic = document.getElementById('setupTopic').value;
     const countOption = document.getElementById('setupCount').value;
     const mode = document.querySelector('input[name="assessmentMode"]:checked').value;
 
-    let pool = this.getEligibleQuestions(continent, difficulty, topic);
+    let pool = this.getEligibleQuestions(continent, difficulty, topic, batch);
     if (pool.length === 0) {
-      this.showToast('No matching questions available.', 'error');
+      this.showToast('No matching questions available for this selection.', 'error');
       return;
     }
 
@@ -1202,6 +1272,7 @@ class GeoQuizApp {
       sessionFinalized: false,
       mode,
       continent,
+      batch,
       difficulty,
       topic,
       questions: selected,
@@ -1264,6 +1335,13 @@ class GeoQuizApp {
     document.getElementById('quizProgressBar').style.width = `${pct}%`;
 
     document.getElementById('qTopicTag').textContent = `${q.continent} • ${q.topic}`;
+    
+    // Display Batch tag on active question
+    const batchBadge = document.getElementById('qBatchBadge');
+    if (batchBadge) {
+      batchBadge.textContent = `🏷️ ${q.batch || 'Batch 1'}`;
+    }
+
     document.getElementById('qIdTag').textContent = `ID: ${q.id}`;
     document.getElementById('qText').textContent = q.question;
 
@@ -1362,7 +1440,6 @@ class GeoQuizApp {
   async finalizeAssessment(isTimeout = false) {
     if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
 
-    // Hard deduplication lock
     if (this.quizSession.sessionFinalized) return;
     this.quizSession.sessionFinalized = true;
 
@@ -1379,6 +1456,7 @@ class GeoQuizApp {
         questionId: q.id,
         questionText: q.question,
         continent: q.continent,
+        batch: q.batch || 'Batch 1',
         difficulty: q.difficulty,
         selectedAnswer: selected,
         correctAnswer: q.correctAnswer,
@@ -1508,7 +1586,6 @@ class GeoQuizApp {
       return;
     }
 
-    // Top 10 sort: Accuracy % -> Correct count -> Shortest duration
     const sorted = [...this.attempts].sort((a, b) => {
       if (b.accuracyPct !== a.accuracyPct) return b.accuracyPct - a.accuracyPct;
       if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
