@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v2.6 (Batch-Based Tagging & Clean Attempt Engine)
+ * Core Engine v3.0 (Flag Quiz, Interactive Seterra Map & Clean Attempt Engine)
  */
 
 'use strict';
@@ -8,6 +8,82 @@
 const VALID_CONTINENTS = [
   'Whole World', 'Asia', 'Africa', 'Europe', 
   'North America', 'South America', 'Australia/Oceania', 'Antarctica'
+];
+
+/* ==========================================================================
+   FLAG MASTER REPOSITORY (CATEGORIZED BY CONTINENT)
+   ========================================================================== */
+const WORLD_FLAGS = [
+  // South America
+  { code: 'cl', name: 'Chile', continent: 'South America' },
+  { code: 'ar', name: 'Argentina', continent: 'South America' },
+  { code: 'br', name: 'Brazil', continent: 'South America' },
+  { code: 'co', name: 'Colombia', continent: 'South America' },
+  { code: 'pe', name: 'Peru', continent: 'South America' },
+  { code: 've', name: 'Venezuela', continent: 'South America' },
+  { code: 'ec', name: 'Ecuador', continent: 'South America' },
+  { code: 'bo', name: 'Bolivia', continent: 'South America' },
+  { code: 'py', name: 'Paraguay', continent: 'South America' },
+  { code: 'uy', name: 'Uruguay', continent: 'South America' },
+
+  // North America & Caribbean
+  { code: 'us', name: 'United States', continent: 'North America' },
+  { code: 'ca', name: 'Canada', continent: 'North America' },
+  { code: 'mx', name: 'Mexico', continent: 'North America' },
+  { code: 'cu', name: 'Cuba', continent: 'North America' },
+  { code: 'cr', name: 'Costa Rica', continent: 'North America' },
+  { code: 'pa', name: 'Panama', continent: 'North America' },
+  { code: 'jm', name: 'Jamaica', continent: 'North America' },
+  { code: 'gt', name: 'Guatemala', continent: 'North America' },
+
+  // Europe
+  { code: 'cz', name: 'Czech Republic', continent: 'Europe' },
+  { code: 'fr', name: 'France', continent: 'Europe' },
+  { code: 'de', name: 'Germany', continent: 'Europe' },
+  { code: 'it', name: 'Italy', continent: 'Europe' },
+  { code: 'es', name: 'Spain', continent: 'Europe' },
+  { code: 'gb', name: 'United Kingdom', continent: 'Europe' },
+  { code: 'nl', name: 'Netherlands', continent: 'Europe' },
+  { code: 'se', name: 'Sweden', continent: 'Europe' },
+  { code: 'no', name: 'Norway', continent: 'Europe' },
+  { code: 'ch', name: 'Switzerland', continent: 'Europe' },
+  { code: 'pt', name: 'Portugal', continent: 'Europe' },
+  { code: 'gr', name: 'Greece', continent: 'Europe' },
+  { code: 'pl', name: 'Poland', continent: 'Europe' },
+  { code: 'at', name: 'Austria', continent: 'Europe' },
+  { code: 'ie', name: 'Ireland', continent: 'Europe' },
+
+  // Asia
+  { code: 'jp', name: 'Japan', continent: 'Asia' },
+  { code: 'cn', name: 'China', continent: 'Asia' },
+  { code: 'in', name: 'India', continent: 'Asia' },
+  { code: 'sa', name: 'Saudi Arabia', continent: 'Asia' },
+  { code: 'ae', name: 'United Arab Emirates', continent: 'Asia' },
+  { code: 'id', name: 'Indonesia', continent: 'Asia' },
+  { code: 'kr', name: 'South Korea', continent: 'Asia' },
+  { code: 'tr', name: 'Turkey', continent: 'Asia' },
+  { code: 'my', name: 'Malaysia', continent: 'Asia' },
+  { code: 'sg', name: 'Singapore', continent: 'Asia' },
+  { code: 'th', name: 'Thailand', continent: 'Asia' },
+  { code: 'qa', name: 'Qatar', continent: 'Asia' },
+
+  // Africa
+  { code: 'eg', name: 'Egypt', continent: 'Africa' },
+  { code: 'za', name: 'South Africa', continent: 'Africa' },
+  { code: 'ng', name: 'Nigeria', continent: 'Africa' },
+  { code: 'ke', name: 'Kenya', continent: 'Africa' },
+  { code: 'ma', name: 'Morocco', continent: 'Africa' },
+  { code: 'dz', name: 'Algeria', continent: 'Africa' },
+  { code: 'et', name: 'Ethiopia', continent: 'Africa' },
+  { code: 'gh', name: 'Ghana', continent: 'Africa' },
+  { code: 'sn', name: 'Senegal', continent: 'Africa' },
+  { code: 'tz', name: 'Tanzania', continent: 'Africa' },
+
+  // Australia / Oceania
+  { code: 'au', name: 'Australia', continent: 'Australia/Oceania' },
+  { code: 'nz', name: 'New Zealand', continent: 'Australia/Oceania' },
+  { code: 'fj', name: 'Fiji', continent: 'Australia/Oceania' },
+  { code: 'pg', name: 'Papua New Guinea', continent: 'Australia/Oceania' }
 ];
 
 const SEED_QUESTIONS = [
@@ -61,81 +137,12 @@ const SEED_QUESTIONS = [
     source: "International Hydrographic Organization",
     status: "Published",
     createdAt: "2026-01-10T08:30:00.000Z"
-  },
-  {
-    id: "GEO-NA-001",
-    continent: "North America",
-    batch: "Batch 1",
-    difficulty: "Medium",
-    topic: "Lakes & Waterways",
-    question: "Which of the Great Lakes is the largest freshwater lake in the world by surface area?",
-    optionA: "Lake Michigan",
-    optionB: "Lake Huron",
-    optionC: "Lake Superior",
-    optionD: "Lake Erie",
-    correctAnswer: "C",
-    explanation: "Lake Superior covers approximately 82,103 km² along the Canada–US border.",
-    source: "USGS Water Science School",
-    status: "Published",
-    createdAt: "2026-01-10T08:45:00.000Z"
-  },
-  {
-    id: "GEO-SA-001",
-    continent: "South America",
-    batch: "Batch 1",
-    difficulty: "Hard",
-    topic: "Geomorphology",
-    question: "Which high-altitude plateau in the central Andes is the second-most extensive plateau on Earth after Tibet?",
-    optionA: "Patagonian Desert",
-    optionB: "The Altiplano",
-    optionC: "The Mato Grosso",
-    optionD: "Guiana Shield",
-    correctAnswer: "B",
-    explanation: "The Altiplano sits at an average elevation of 3,750 meters across Bolivia, Peru, and Chile.",
-    source: "Geological Society of America",
-    status: "Published",
-    createdAt: "2026-01-10T09:00:00.000Z"
-  },
-  {
-    id: "GEO-OC-001",
-    continent: "Australia/Oceania",
-    batch: "Batch 1",
-    difficulty: "Easy",
-    topic: "Marine Geography",
-    question: "The Great Barrier Reef is located off the coast of which Australian state?",
-    optionA: "Western Australia",
-    optionB: "Queensland",
-    optionC: "New South Wales",
-    optionD: "Victoria",
-    correctAnswer: "B",
-    explanation: "The Great Barrier Reef stretches along the coast of Queensland in the Coral Sea.",
-    source: "Great Barrier Reef Marine Park Authority",
-    status: "Published",
-    createdAt: "2026-01-10T09:15:00.000Z"
-  },
-  {
-    id: "GEO-AN-001",
-    continent: "Antarctica",
-    batch: "Batch 1",
-    difficulty: "Hard",
-    topic: "Glaciology",
-    question: "Which mountain range in Antarctica is completely buried beneath several kilometers of glacial ice?",
-    optionA: "Transantarctic Mountains",
-    optionB: "Gamburtsev Mountain Range",
-    optionC: "Ellsworth Mountains",
-    optionD: "Queen Maud Mountains",
-    correctAnswer: "B",
-    explanation: "The Gamburtsev Mountains were discovered in 1958 and rival the European Alps in size.",
-    source: "British Antarctic Survey",
-    status: "Published",
-    createdAt: "2026-01-10T09:30:00.000Z"
   }
 ];
 
 /* ==========================================================================
    STORAGE ENGINE ADAPTER (FIRESTORE + DEDUPLICATION)
    ========================================================================== */
-
 class StorageAdapter {
   constructor() {
     this.useFirestore = false;
@@ -288,6 +295,7 @@ class StorageAdapter {
         const prevDateStr = prev.formattedDate || new Date(prev.timestamp).toLocaleDateString();
         return (
           prev.studentId === cur.studentId &&
+          prev.type === cur.type &&
           prev.continent === cur.continent &&
           prev.correctCount === cur.correctCount &&
           prev.totalQuestions === cur.totalQuestions &&
@@ -327,7 +335,7 @@ class StorageAdapter {
         snap.docs.forEach(doc => {
           const d = doc.data();
           const dDate = d.formattedDate || new Date(d.timestamp).toLocaleDateString();
-          const key = `${d.studentId}_${d.continent}_${d.correctCount}_${d.totalQuestions}_${dDate}`;
+          const key = `${d.studentId}_${d.type || 'qna'}_${d.continent}_${d.correctCount}_${d.totalQuestions}_${dDate}`;
           if (seen.has(key)) {
             batch.delete(doc.ref);
             deleteCount++;
@@ -349,9 +357,8 @@ class StorageAdapter {
 }
 
 /* ==========================================================================
-   PERMISSIVE CSV INGESTION ENGINE WITH BATCH SUPPORT
+   PERMISSIVE CSV INGESTION ENGINE
    ========================================================================== */
-
 class PermissiveCsvEngine {
   static parse(text) {
     const rows = [];
@@ -532,9 +539,8 @@ class PermissiveCsvEngine {
 }
 
 /* ==========================================================================
-   APPLICATION CONTROLLER
+   MAIN APP CONTROLLER
    ========================================================================== */
-
 class GeoQuizApp {
   constructor() {
     this.storage = new StorageAdapter();
@@ -555,6 +561,7 @@ class GeoQuizApp {
 
     this.stagedCsvQuestions = [];
 
+    // Standard Q&A Session
     this.quizSession = {
       active: false,
       sessionId: null,
@@ -569,6 +576,32 @@ class GeoQuizApp {
       userAnswers: {},
       startTime: null,
       secondsRemaining: 0,
+      timerInterval: null
+    };
+
+    // Flag Quiz Session
+    this.flagSession = {
+      active: false,
+      continent: 'Whole World',
+      items: [],
+      currentIndex: 0,
+      score: 0,
+      timerSec: 15,
+      secondsRemaining: 15,
+      timerInterval: null,
+      answered: false,
+      snapshots: []
+    };
+
+    // Map Pointing Session (Seterra Style)
+    this.mapSession = {
+      active: false,
+      targets: [],
+      currentTargetIndex: 0,
+      attemptsOnCurrent: 0,
+      totalCompleted: 0,
+      correctPoints: 0,
+      secondsElapsed: 0,
       timerInterval: null
     };
 
@@ -674,8 +707,6 @@ class GeoQuizApp {
 
   populateBatchDropdowns() {
     const batches = Array.from(new Set(this.questions.map(q => q.batch || 'Batch 1'))).sort();
-    
-    // Quiz Setup Batch Dropdown
     const setupBatch = document.getElementById('setupBatch');
     if (setupBatch) {
       const prev = setupBatch.value;
@@ -689,7 +720,6 @@ class GeoQuizApp {
       if (batches.includes(prev)) setupBatch.value = prev;
     }
 
-    // Admin Question Bank Filter Dropdown
     const qbFilterBatch = document.getElementById('qbFilterBatch');
     if (qbFilterBatch) {
       const prev = qbFilterBatch.value;
@@ -742,6 +772,7 @@ class GeoQuizApp {
   }
 
   bindEvents() {
+    // Portal Switcher
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         const portal = e.target.dataset.portal;
@@ -754,6 +785,7 @@ class GeoQuizApp {
       });
     });
 
+    // Sub navigation
     document.querySelectorAll('.sub-nav .sub-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         const subview = e.target.dataset.subview;
@@ -762,6 +794,7 @@ class GeoQuizApp {
       });
     });
 
+    // Auth
     document.getElementById('btnAuthAction')?.addEventListener('click', () => {
       if (this.currentUser) this.handleLogout();
       else this.openAuthModal();
@@ -775,6 +808,7 @@ class GeoQuizApp {
       this.handleLoginSubmit();
     });
 
+    // Custom Count Input
     const countSelect = document.getElementById('setupCount');
     const customCountInput = document.getElementById('setupCustomCount');
     countSelect?.addEventListener('change', () => {
@@ -788,25 +822,24 @@ class GeoQuizApp {
     });
     customCountInput?.addEventListener('input', () => this.updateAvailabilityBadge());
 
+    // Filter Listeners
     document.getElementById('setupContinent')?.addEventListener('change', () => {
       this.populateTopicDropdown();
       this.updateAvailabilityBadge();
     });
-
     document.getElementById('setupBatch')?.addEventListener('change', () => {
       this.populateTopicDropdown();
       this.updateAvailabilityBadge();
     });
-
     ['setupDifficulty', 'setupTopic'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', () => this.updateAvailabilityBadge());
     });
 
+    // Standard Quiz Launch & Actions
     document.getElementById('quizSetupForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.startAssessment();
     });
-
     document.getElementById('btnNextQuestion')?.addEventListener('click', () => this.handleNextQuestion());
     document.getElementById('btnPrevQuestion')?.addEventListener('click', () => this.handlePrevQuestion());
     document.getElementById('btnSubmitExam')?.addEventListener('click', (e) => {
@@ -814,6 +847,37 @@ class GeoQuizApp {
       this.confirmSubmitExam();
     });
 
+    // Flag Quiz Launch & Next
+    document.getElementById('flagSetupForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.startFlagQuiz();
+    });
+    document.getElementById('btnNextFlag')?.addEventListener('click', () => this.handleNextFlag());
+
+    // Map Pointing Launch & Controls
+    document.getElementById('btnStartMapPointing')?.addEventListener('click', () => this.startMapPointing());
+    document.getElementById('btnSkipMapTarget')?.addEventListener('click', () => this.skipMapTarget());
+    document.getElementById('btnExitMapArena')?.addEventListener('click', () => this.exitMapPointing());
+
+    // SVG Continent Click Handlers
+    document.querySelectorAll('.continent-path').forEach(path => {
+      path.addEventListener('click', (e) => {
+        const clickedName = e.target.dataset.name;
+        this.handleContinentClick(clickedName, e.target);
+      });
+    });
+
+    // Admin Quick Launch buttons
+    document.getElementById('btnAdminLaunchFlag')?.addEventListener('click', () => {
+      this.switchPortal('student');
+      this.switchSubView(document.getElementById('portalStudent'), 'flagSetup', document.querySelector('[data-subview="flagSetup"]'));
+    });
+    document.getElementById('btnAdminLaunchMap')?.addEventListener('click', () => {
+      this.switchPortal('student');
+      this.switchSubView(document.getElementById('portalStudent'), 'mapSetup', document.querySelector('[data-subview="mapSetup"]'));
+    });
+
+    // Retake / Results actions
     document.getElementById('btnRetakeQuiz')?.addEventListener('click', () => {
       this.switchSubView(document.getElementById('portalStudent'), 'quizSetup', document.querySelector('[data-subview="quizSetup"]'));
     });
@@ -821,18 +885,13 @@ class GeoQuizApp {
       this.switchSubView(document.getElementById('portalStudent'), 'studentDashboard', document.querySelector('[data-subview="studentDashboard"]'));
     });
 
-    document.getElementById('btnAdminTakeQuiz')?.addEventListener('click', () => {
-      this.switchPortal('student');
-      this.switchSubView(document.getElementById('portalStudent'), 'quizSetup', document.querySelector('[data-subview="quizSetup"]'));
-    });
-
+    // Leaderboard Refresh & Purge
     document.getElementById('btnRefreshLeaderboard')?.addEventListener('click', async () => {
       await this.refreshData();
       this.renderLeaderboard();
       this.showToast('Leaderboard refreshed.', 'info');
     });
 
-    // 1-Click Clean Duplicates in Admin Console
     document.getElementById('btnPurgeDuplicateAttempts')?.addEventListener('click', async () => {
       const btn = document.getElementById('btnPurgeDuplicateAttempts');
       btn.disabled = true;
@@ -844,9 +903,10 @@ class GeoQuizApp {
       this.renderLeaderboard();
       btn.disabled = false;
       btn.textContent = '🧹 Clean Database Duplicates';
-      this.showToast('Duplicate attempts successfully removed!', 'success');
+      this.showToast('Duplicate attempts removed!', 'success');
     });
 
+    // Question Bank Filters & Pagination
     document.getElementById('qbSearchInput')?.addEventListener('input', (e) => {
       this.qbState.search = e.target.value.trim().toLowerCase();
       this.qbState.page = 1;
@@ -892,6 +952,7 @@ class GeoQuizApp {
       }
     });
 
+    // CSV Modal Handlers
     document.getElementById('btnOpenCsvModal')?.addEventListener('click', () => {
       this.stagedCsvQuestions = [];
       document.getElementById('csvFileInput').value = '';
@@ -901,18 +962,13 @@ class GeoQuizApp {
       if (purgeBtn) purgeBtn.disabled = true;
       document.getElementById('csvImportModal').classList.remove('hidden');
     });
-    document.getElementById('btnCloseCsvModal')?.addEventListener('click', () => {
-      document.getElementById('csvImportModal').classList.add('hidden');
-    });
-    document.getElementById('btnCancelCsvImport')?.addEventListener('click', () => {
-      document.getElementById('csvImportModal').classList.add('hidden');
-    });
+    document.getElementById('btnCloseCsvModal')?.addEventListener('click', () => document.getElementById('csvImportModal').classList.add('hidden'));
+    document.getElementById('btnCancelCsvImport')?.addEventListener('click', () => document.getElementById('csvImportModal').classList.add('hidden'));
     document.getElementById('csvFileInput')?.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) this.processPermissiveCsv(file);
     });
 
-    // Confirmation Handlers
     document.getElementById('btnConfirmImport')?.addEventListener('click', () => this.commitCsvImport(false));
     document.getElementById('btnPurgeAndImport')?.addEventListener('click', () => {
       if (confirm("WARNING: This will permanently delete ALL existing questions and replace them entirely with the new CSV. Proceed?")) {
@@ -964,9 +1020,860 @@ class GeoQuizApp {
     if (subviewName === 'adminQuestionBank') this.renderQuestionBank();
   }
 
-  /* --------------------------------------------------------------------------
-     CSV IMPORT WITH BATCH LABEL & PURGE OPTION
-     -------------------------------------------------------------------------- */
+  /* ==========================================================================
+     FLAG QUIZ MODULE LOGIC (MATCHES IMAGE 1)
+     ========================================================================== */
+  startFlagQuiz() {
+    if (!this.currentUser) {
+      this.showToast('Please authenticate before launching the Flag Quiz.', 'error');
+      this.openAuthModal();
+      return;
+    }
+
+    const continent = document.getElementById('flagContinent').value;
+    const countVal = document.getElementById('flagCount').value;
+    const timerSec = parseInt(document.getElementById('flagTimerLimit').value, 10);
+
+    let pool = WORLD_FLAGS.filter(f => (continent === 'Whole World' ? true : f.continent === continent));
+    if (pool.length < 4) pool = WORLD_FLAGS; // fallback
+
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    const count = countVal === 'all' ? shuffled.length : Math.min(parseInt(countVal, 10), shuffled.length);
+    const selected = shuffled.slice(0, count);
+
+    this.flagSession = {
+      active: true,
+      continent,
+      items: selected,
+      currentIndex: 0,
+      score: 0,
+      timerSec,
+      secondsRemaining: timerSec,
+      timerInterval: null,
+      answered: false,
+      snapshots: []
+    };
+
+    document.querySelectorAll('.sub-view-pane').forEach(p => p.classList.add('hidden'));
+    document.getElementById('subViewFlagArena').classList.remove('hidden');
+
+    document.getElementById('flagTotalCount').textContent = selected.length;
+    document.getElementById('flagLiveScore').textContent = '0';
+
+    this.renderCurrentFlag();
+  }
+
+  renderCurrentFlag() {
+    const { items, currentIndex, timerSec } = this.flagSession;
+    const current = items[currentIndex];
+
+    this.flagSession.answered = false;
+    document.getElementById('btnNextFlag').disabled = true;
+    document.getElementById('flagCurrentIndex').textContent = currentIndex + 1;
+    document.getElementById('flagTimesUpLabel').classList.remove('active');
+
+    // Display flag image (CDN via flagcdn)
+    const img = document.getElementById('flagDisplayImg');
+    img.src = `https://flagcdn.com/w320/${current.code}.png`;
+
+    // Generate 4 options (1 correct + 3 distinct distractors)
+    const distractors = WORLD_FLAGS
+      .filter(f => f.code !== current.code)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 3)
+      .map(f => f.name);
+
+    const options = [current.name, ...distractors].sort(() => 0.5 - Math.random());
+
+    const grid = document.getElementById('flagOptionsGrid');
+    grid.innerHTML = '';
+
+    options.forEach(optName => {
+      const btn = document.createElement('button');
+      btn.className = 'flag-option-btn';
+      btn.textContent = optName;
+      btn.addEventListener('click', () => this.handleFlagChoice(optName, current.name));
+      grid.appendChild(btn);
+    });
+
+    // Start 15s Timer if configured
+    if (timerSec > 0) {
+      this.flagSession.secondsRemaining = timerSec;
+      const badge = document.getElementById('flagTimerBadge');
+      badge.textContent = timerSec;
+      if (this.flagSession.timerInterval) clearInterval(this.flagSession.timerInterval);
+
+      this.flagSession.timerInterval = setInterval(() => {
+        this.flagSession.secondsRemaining--;
+        badge.textContent = this.flagSession.secondsRemaining;
+
+        if (this.flagSession.secondsRemaining <= 0) {
+          clearInterval(this.flagSession.timerInterval);
+          this.handleFlagTimeout(current.name);
+        }
+      }, 1000);
+    } else {
+      document.getElementById('flagTimerContainer').style.display = 'none';
+    }
+  }
+
+  handleFlagChoice(chosenName, correctName) {
+    if (this.flagSession.answered) return;
+    this.flagSession.answered = true;
+    if (this.flagSession.timerInterval) clearInterval(this.flagSession.timerInterval);
+
+    const isCorrect = (chosenName === correctName);
+    if (isCorrect) {
+      this.flagSession.score++;
+      document.getElementById('flagLiveScore').textContent = this.flagSession.score;
+    }
+
+    const currentItem = this.flagSession.items[this.flagSession.currentIndex];
+    this.flagSession.snapshots.push({
+      questionText: `Identify flag of ${currentItem.name}`,
+      selectedAnswer: chosenName,
+      correctAnswer: correctName,
+      isCorrect
+    });
+
+    // Style buttons according to Image 1
+    document.querySelectorAll('.flag-option-btn').forEach(btn => {
+      btn.disabled = true;
+      if (btn.textContent === correctName) {
+        btn.classList.add('selected-correct');
+      } else if (btn.textContent === chosenName && !isCorrect) {
+        btn.classList.add('selected-incorrect');
+      }
+    });
+
+    document.getElementById('btnNextFlag').disabled = false;
+  }
+
+  handleFlagTimeout(correctName) {
+    if (this.flagSession.answered) return;
+    this.flagSession.answered = true;
+    document.getElementById('flagTimesUpLabel').classList.add('active');
+
+    const currentItem = this.flagSession.items[this.flagSession.currentIndex];
+    this.flagSession.snapshots.push({
+      questionText: `Identify flag of ${currentItem.name}`,
+      selectedAnswer: 'Timed Out',
+      correctAnswer: correctName,
+      isCorrect: false
+    });
+
+    document.querySelectorAll('.flag-option-btn').forEach(btn => {
+      btn.disabled = true;
+      if (btn.textContent === correctName) {
+        btn.classList.add('revealed-correct');
+      }
+    });
+    document.getElementById('btnNextFlag').disabled = false;
+  }
+
+  handleNextFlag() {
+    if (this.flagSession.currentIndex < this.flagSession.items.length - 1) {
+      this.flagSession.currentIndex++;
+      this.renderCurrentFlag();
+    } else {
+      this.finalizeFlagQuiz();
+    }
+  }
+
+  async finalizeFlagQuiz() {
+    if (this.flagSession.timerInterval) clearInterval(this.flagSession.timerInterval);
+
+    const total = this.flagSession.items.length;
+    const correct = this.flagSession.score;
+    const accuracyPct = Math.round((correct / total) * 100);
+
+    const attempt = {
+      id: `ATT-FLAG-${Date.now().toString(36)}`,
+      studentId: this.currentUser.id,
+      studentName: this.currentUser.name,
+      userRole: this.currentUser.role,
+      type: '🚩 Flag Quiz',
+      mode: 'Flag Challenge',
+      continent: this.flagSession.continent,
+      difficulty: 'Medium',
+      totalQuestions: total,
+      correctCount: correct,
+      accuracyPct,
+      durationSeconds: total * 15,
+      timestamp: new Date().toISOString(),
+      formattedDate: new Date().toLocaleDateString(),
+      formattedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      snapshots: this.flagSession.snapshots
+    };
+
+    await this.storage.saveAttempt(attempt);
+    await this.refreshData();
+    this.renderResultsScreen(attempt);
+  }
+
+  /* ==========================================================================
+     MAP POINTING MODULE LOGIC (SETERRA STYLE - MATCHES IMAGE 2)
+     ========================================================================== */
+  startMapPointing() {
+    if (!this.currentUser) {
+      this.showToast('Please authenticate before launching Map Pointing.', 'error');
+      this.openAuthModal();
+      return;
+    }
+
+    const continents = [
+      'Europe', 'Asia', 'Africa', 'North America', 
+      'South America', 'Australia/Oceania', 'Antarctica'
+    ];
+    const targets = [...continents].sort(() => 0.5 - Math.random());
+
+    this.mapSession = {
+      active: true,
+      targets,
+      currentTargetIndex: 0,
+      attemptsOnCurrent: 0,
+      totalCompleted: 0,
+      correctPoints: 0,
+      secondsElapsed: 0,
+      timerInterval: null
+    };
+
+    document.querySelectorAll('.sub-view-pane').forEach(p => p.classList.add('hidden'));
+    document.getElementById('subViewMapArena').classList.remove('hidden');
+
+    // Reset SVG paths
+    document.querySelectorAll('.continent-path').forEach(p => {
+      p.className.baseVal = 'continent-path';
+    });
+
+    this.updateMapMissionBar();
+    this.startMapTimer();
+  }
+
+  updateMapMissionBar() {
+    const { targets, currentTargetIndex, totalCompleted, correctPoints } = this.mapSession;
+    const target = targets[currentTargetIndex];
+
+    document.getElementById('mapScoreRatio').textContent = `${totalCompleted} / ${targets.length}`;
+    const pct = totalCompleted > 0 ? Math.round((correctPoints / totalCompleted) * 100) : 0;
+    document.getElementById('mapAccuracyPct').textContent = `${pct}%`;
+    document.getElementById('mapTargetName').textContent = target || 'Completed';
+  }
+
+  startMapTimer() {
+    if (this.mapSession.timerInterval) clearInterval(this.mapSession.timerInterval);
+    this.mapSession.secondsElapsed = 0;
+
+    this.mapSession.timerInterval = setInterval(() => {
+      this.mapSession.secondsElapsed++;
+      const m = Math.floor(this.mapSession.secondsElapsed / 60);
+      const s = this.mapSession.secondsElapsed % 60;
+      document.getElementById('mapTimerDisplay').textContent = 
+        `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }, 1000);
+  }
+
+  handleContinentClick(clickedName, element) {
+    if (!this.mapSession.active) return;
+    const target = this.mapSession.targets[this.mapSession.currentTargetIndex];
+
+    if (clickedName === target) {
+      // Correct!
+      element.classList.add('correct-hit');
+      element.classList.remove('hint-flash');
+
+      const pts = this.mapSession.attemptsOnCurrent === 0 ? 1 : 0.5;
+      this.mapSession.correctPoints += pts;
+      this.mapSession.totalCompleted++;
+
+      this.showMapToast(`✅ Correct! You found ${target}`, 'success');
+      this.advanceMapTarget();
+    } else {
+      // Wrong hit
+      this.mapSession.attemptsOnCurrent++;
+      element.classList.add('wrong-hit');
+      setTimeout(() => element.classList.remove('wrong-hit'), 400);
+
+      this.showMapToast(`That was ${clickedName}, try again!`, 'warning');
+
+      // 3rd miss hint: pulse target landmass
+      if (this.mapSession.attemptsOnCurrent >= 2) {
+        const targetEl = document.querySelector(`.continent-path[data-name="${target}"]`);
+        if (targetEl) targetEl.classList.add('hint-flash');
+      }
+    }
+  }
+
+  showMapToast(text, type = 'info') {
+    const toast = document.getElementById('mapFeedbackToast');
+    toast.textContent = text;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 2200);
+  }
+
+  skipMapTarget() {
+    if (!this.mapSession.active) return;
+    this.mapSession.totalCompleted++;
+    this.advanceMapTarget();
+  }
+
+  advanceMapTarget() {
+    this.mapSession.attemptsOnCurrent = 0;
+    this.mapSession.currentTargetIndex++;
+
+    if (this.mapSession.currentTargetIndex < this.mapSession.targets.length) {
+      this.updateMapMissionBar();
+    } else {
+      this.finalizeMapPointing();
+    }
+  }
+
+  async finalizeMapPointing() {
+    if (this.mapSession.timerInterval) clearInterval(this.mapSession.timerInterval);
+    this.mapSession.active = false;
+
+    const total = this.mapSession.targets.length;
+    const score = Math.round(this.mapSession.correctPoints);
+    const accuracyPct = Math.round((this.mapSession.correctPoints / total) * 100);
+
+    const attempt = {
+      id: `ATT-MAP-${Date.now().toString(36)}`,
+      studentId: this.currentUser.id,
+      studentName: this.currentUser.name,
+      userRole: this.currentUser.role,
+      type: '🗺️ Map Pointing',
+      mode: 'Continents Map Drill',
+      continent: 'Whole World',
+      difficulty: 'Easy',
+      totalQuestions: total,
+      correctCount: score,
+      accuracyPct,
+      durationSeconds: this.mapSession.secondsElapsed,
+      timestamp: new Date().toISOString(),
+      formattedDate: new Date().toLocaleDateString(),
+      formattedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      snapshots: []
+    };
+
+    await this.storage.saveAttempt(attempt);
+    await this.refreshData();
+    this.renderResultsScreen(attempt);
+  }
+
+  exitMapPointing() {
+    if (this.mapSession.timerInterval) clearInterval(this.mapSession.timerInterval);
+    this.mapSession.active = false;
+    this.switchSubView(document.getElementById('portalStudent'), 'mapSetup', document.querySelector('[data-subview="mapSetup"]'));
+  }
+
+  /* ==========================================================================
+     STANDARD Q&A QUIZ MODULE LOGIC
+     ========================================================================== */
+  getEligibleQuestions(continent, difficulty, topic, batch = 'All') {
+    return this.questions.filter(q => {
+      const isPub = q.status === 'Published';
+      const matchCont = (continent === 'Whole World' || continent === 'All') ? true : q.continent === continent;
+      const matchBatch = (batch === 'All') ? true : (q.batch === batch);
+      const matchDiff = difficulty === 'All' || q.difficulty === difficulty;
+      const matchTopic = topic === 'All' || q.topic === topic;
+      return isPub && matchCont && matchBatch && matchDiff && matchTopic;
+    });
+  }
+
+  updateAvailabilityBadge() {
+    const cont = document.getElementById('setupContinent')?.value || 'Whole World';
+    const batch = document.getElementById('setupBatch')?.value || 'All';
+    const diff = document.getElementById('setupDifficulty')?.value || 'All';
+    const top = document.getElementById('setupTopic')?.value || 'All';
+    const pool = this.getEligibleQuestions(cont, diff, top, batch);
+
+    const badge = document.getElementById('availabilityNotice');
+    if (badge) {
+      const batchTxt = batch === 'All' ? '' : ` [${batch}]`;
+      badge.textContent = `${pool.length} published questions available in ${cont}${batchTxt}`;
+      badge.className = pool.length > 0 ? 'badge badge-info' : 'badge badge-danger';
+    }
+    const btn = document.getElementById('btnStartQuiz');
+    if (btn) btn.disabled = (pool.length === 0);
+  }
+
+  startAssessment() {
+    if (!this.currentUser) {
+      this.showToast('Authentication required before starting a quiz.', 'error');
+      this.openAuthModal();
+      return;
+    }
+
+    const continent = document.getElementById('setupContinent').value;
+    const batch = document.getElementById('setupBatch').value;
+    const difficulty = document.getElementById('setupDifficulty').value;
+    const topic = document.getElementById('setupTopic').value;
+    const countOption = document.getElementById('setupCount').value;
+    const mode = document.querySelector('input[name="assessmentMode"]:checked').value;
+
+    let pool = this.getEligibleQuestions(continent, difficulty, topic, batch);
+    if (pool.length === 0) {
+      this.showToast('No matching questions available for this selection.', 'error');
+      return;
+    }
+
+    let targetCount = 10;
+    if (countOption === 'all') {
+      targetCount = pool.length;
+    } else if (countOption === 'custom') {
+      const customVal = parseInt(document.getElementById('setupCustomCount').value, 10);
+      targetCount = (!isNaN(customVal) && customVal > 0) ? Math.min(customVal, pool.length) : pool.length;
+    } else {
+      targetCount = Math.min(parseInt(countOption, 10), pool.length);
+    }
+
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, targetCount);
+
+    this.quizSession = {
+      active: true,
+      sessionId: `SES-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      sessionFinalized: false,
+      mode,
+      continent,
+      batch,
+      difficulty,
+      topic,
+      questions: selected,
+      currentIndex: 0,
+      userAnswers: {},
+      startTime: new Date(),
+      secondsRemaining: mode === 'exam' ? selected.length * 60 : 0,
+      timerInterval: null
+    };
+
+    document.querySelectorAll('.sub-view-pane').forEach(p => p.classList.add('hidden'));
+    document.getElementById('subViewQuizArena').classList.remove('hidden');
+
+    document.getElementById('arenaModeBadge').textContent = mode === 'exam' ? 'Exam Mode' : 'Practice Mode';
+    document.getElementById('arenaModeBadge').className = mode === 'exam' ? 'badge badge-danger' : 'badge badge-primary';
+    document.getElementById('arenaContinentBadge').textContent = continent;
+    document.getElementById('arenaDifficultyBadge').textContent = difficulty;
+    document.getElementById('totalQCount').textContent = selected.length;
+
+    const submitBtn = document.getElementById('btnSubmitExam');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === 'exam' ? 'Submit Final Exam' : 'Complete Practice';
+    }
+
+    if (mode === 'exam') {
+      document.getElementById('arenaTimerWrapper').classList.remove('hidden');
+      this.startTimer();
+    } else {
+      document.getElementById('arenaTimerWrapper').classList.add('hidden');
+    }
+
+    this.renderCurrentQuestion();
+  }
+
+  startTimer() {
+    if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
+    const updateTimer = () => {
+      const m = Math.floor(this.quizSession.secondsRemaining / 60);
+      const s = this.quizSession.secondsRemaining % 60;
+      document.getElementById('arenaTimer').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+      if (this.quizSession.secondsRemaining <= 0) {
+        clearInterval(this.quizSession.timerInterval);
+        this.showToast('Time expired! Submitting assessment.', 'warning');
+        this.finalizeAssessment(true);
+      }
+      this.quizSession.secondsRemaining--;
+    };
+    updateTimer();
+    this.quizSession.timerInterval = setInterval(updateTimer, 1000);
+  }
+
+  renderCurrentQuestion() {
+    const { questions, currentIndex, userAnswers, mode } = this.quizSession;
+    const q = questions[currentIndex];
+
+    document.getElementById('currentQIndex').textContent = currentIndex + 1;
+    const pct = ((currentIndex + 1) / questions.length) * 100;
+    document.getElementById('quizProgressBar').style.width = `${pct}%`;
+
+    document.getElementById('qTopicTag').textContent = `${q.continent} • ${q.topic}`;
+    const batchBadge = document.getElementById('qBatchBadge');
+    if (batchBadge) batchBadge.textContent = `🏷️ ${q.batch || 'Batch 1'}`;
+
+    document.getElementById('qIdTag').textContent = `ID: ${q.id}`;
+    document.getElementById('qText').textContent = q.question;
+
+    const container = document.getElementById('qOptionsList');
+    container.innerHTML = '';
+
+    const options = [
+      { key: 'A', text: q.optionA },
+      { key: 'B', text: q.optionB },
+      { key: 'C', text: q.optionC },
+      { key: 'D', text: q.optionD }
+    ];
+
+    const chosenKey = userAnswers[currentIndex];
+    const isAnswered = chosenKey !== undefined;
+
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      if (chosenKey === opt.key) btn.classList.add('selected');
+
+      if (mode === 'practice' && isAnswered) {
+        btn.disabled = true;
+        if (opt.key === q.correctAnswer) btn.classList.add('correct');
+        else if (chosenKey === opt.key) btn.classList.add('incorrect');
+      }
+
+      btn.innerHTML = `<span class="opt-badge">${opt.key}</span><span>${this.escapeHtml(opt.text)}</span>`;
+      btn.addEventListener('click', () => {
+        if (mode === 'practice' && userAnswers[currentIndex] !== undefined) return;
+        userAnswers[currentIndex] = opt.key;
+        this.renderCurrentQuestion();
+      });
+      container.appendChild(btn);
+    });
+
+    const fb = document.getElementById('qFeedbackPane');
+    if (mode === 'practice' && isAnswered) {
+      fb.classList.remove('hidden');
+      const ok = chosenKey === q.correctAnswer;
+      fb.className = `feedback-pane ${ok ? 'correct' : 'incorrect'}`;
+      document.getElementById('feedbackTitle').textContent = ok ? '✅ Correct Answer!' : `❌ Incorrect (Correct: Option ${q.correctAnswer})`;
+      document.getElementById('feedbackExplanation').textContent = q.explanation || 'No detailed explanation provided.';
+      document.getElementById('feedbackSource').textContent = q.source ? `Source: ${q.source}` : '';
+    } else {
+      fb.classList.add('hidden');
+    }
+
+    document.getElementById('btnPrevQuestion').disabled = (currentIndex === 0);
+    const nextBtn = document.getElementById('btnNextQuestion');
+    const submitBtn = document.getElementById('btnSubmitExam');
+
+    if (currentIndex === questions.length - 1) {
+      nextBtn.classList.add('hidden');
+      submitBtn.classList.remove('hidden');
+      submitBtn.textContent = mode === 'exam' ? 'Submit Final Exam' : 'Complete Practice';
+    } else {
+      nextBtn.classList.remove('hidden');
+      submitBtn.classList.add('hidden');
+    }
+  }
+
+  handleNextQuestion() {
+    if (this.quizSession.currentIndex < this.quizSession.questions.length - 1) {
+      this.quizSession.currentIndex++;
+      this.renderCurrentQuestion();
+    }
+  }
+
+  handlePrevQuestion() {
+    if (this.quizSession.currentIndex > 0) {
+      this.quizSession.currentIndex--;
+      this.renderCurrentQuestion();
+    }
+  }
+
+  confirmSubmitExam() {
+    if (this.quizSession.sessionFinalized) return;
+
+    const { questions, userAnswers, mode } = this.quizSession;
+    const answered = Object.keys(userAnswers).length;
+    if (mode === 'exam' && answered < questions.length) {
+      if (!confirm(`You left ${questions.length - answered} questions unanswered. Submit now?`)) return;
+    }
+
+    const submitBtn = document.getElementById('btnSubmitExam');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+    }
+
+    this.finalizeAssessment(false);
+  }
+
+  async finalizeAssessment(isTimeout = false) {
+    if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
+
+    if (this.quizSession.sessionFinalized) return;
+    this.quizSession.sessionFinalized = true;
+
+    const { sessionId, questions, userAnswers, mode, continent, difficulty, topic, startTime } = this.quizSession;
+    const now = new Date();
+    const durationSeconds = Math.max(1, Math.round((now - startTime) / 1000));
+
+    let correctCount = 0;
+    const snapshots = questions.map((q, idx) => {
+      const selected = userAnswers[idx] || null;
+      const isCorrect = (selected === q.correctAnswer);
+      if (isCorrect) correctCount++;
+      return {
+        questionId: q.id,
+        questionText: q.question,
+        continent: q.continent,
+        batch: q.batch || 'Batch 1',
+        difficulty: q.difficulty,
+        selectedAnswer: selected,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation || '',
+        isCorrect
+      };
+    });
+
+    const accuracyPct = Math.round((correctCount / questions.length) * 100);
+
+    const attemptRecord = {
+      id: `ATT-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`,
+      sessionId,
+      studentId: this.currentUser.id,
+      studentName: this.currentUser.name,
+      userRole: this.currentUser.role,
+      type: '📝 Question Quiz',
+      mode,
+      continent,
+      difficulty,
+      topic,
+      totalQuestions: questions.length,
+      correctCount,
+      accuracyPct,
+      durationSeconds,
+      timestamp: now.toISOString(),
+      formattedTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      formattedDate: now.toLocaleDateString(),
+      status: isTimeout ? 'Completed (Timeout)' : 'Completed',
+      snapshots
+    };
+
+    await this.storage.saveAttempt(attemptRecord);
+    await this.refreshData();
+
+    this.renderResultsScreen(attemptRecord);
+    this.renderLeaderboard();
+  }
+
+  renderResultsScreen(att) {
+    document.querySelectorAll('.sub-view-pane').forEach(p => p.classList.add('hidden'));
+    document.getElementById('subViewQuizResults').classList.remove('hidden');
+
+    document.getElementById('resultsScorePct').textContent = `${att.accuracyPct}%`;
+    document.getElementById('resultsFraction').textContent = `${att.correctCount} / ${att.totalQuestions}`;
+    document.getElementById('resMode').textContent = att.type || (att.mode === 'exam' ? 'Exam' : 'Practice');
+    document.getElementById('resContinent').textContent = att.continent;
+    document.getElementById('resAccuracy').textContent = `${att.accuracyPct}%`;
+
+    const m = Math.floor(att.durationSeconds / 60);
+    const s = att.durationSeconds % 60;
+    document.getElementById('resTime').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+    const reviewContainer = document.getElementById('resultsReviewList');
+    reviewContainer.innerHTML = '';
+
+    (att.snapshots || []).forEach((snap, idx) => {
+      const item = document.createElement('div');
+      item.className = `review-item ${snap.isCorrect ? 'pass' : 'fail'}`;
+      item.innerHTML = `
+        <div class="review-header">
+          <span>Question ${idx + 1} (${snap.continent || att.continent})</span>
+          <span class="badge ${snap.isCorrect ? 'badge-success' : 'badge-danger'}">${snap.isCorrect ? 'Correct' : 'Incorrect'}</span>
+        </div>
+        <div class="review-question">${this.escapeHtml(snap.questionText)}</div>
+        <div class="review-answers">
+          <span>Your Answer: <strong>${this.escapeHtml(snap.selectedAnswer || 'Unanswered')}</strong></span>
+          ${!snap.isCorrect ? `<span>Correct Key: <strong>${this.escapeHtml(snap.correctAnswer)}</strong></span>` : ''}
+          ${snap.explanation ? `<div class="feedback-source">${this.escapeHtml(snap.explanation)}</div>` : ''}
+        </div>
+      `;
+      reviewContainer.appendChild(item);
+    });
+  }
+
+  /* ==========================================================================
+     ADMIN & COMMON MODULE FUNCTIONS
+     ========================================================================== */
+  renderLeaderboard() {
+    const tbody = document.getElementById('leaderboardTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (this.attempts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No assessments recorded yet. Be the first to play!</td></tr>`;
+      return;
+    }
+
+    const sorted = [...this.attempts].sort((a, b) => {
+      if (b.accuracyPct !== a.accuracyPct) return b.accuracyPct - a.accuracyPct;
+      if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
+      return (a.durationSeconds || 9999) - (b.durationSeconds || 9999);
+    }).slice(0, 10);
+
+    sorted.forEach((att, idx) => {
+      const tr = document.createElement('tr');
+      const rankIcon = idx === 0 ? '🥇 1' : (idx === 1 ? '🥈 2' : (idx === 2 ? '🥉 3' : `${idx + 1}`));
+      const roleBadge = att.userRole === 'admin' ? '<span class="badge badge-warning">Teacher/Admin</span>' : '<span class="badge badge-info">Student</span>';
+      const m = Math.floor(att.durationSeconds / 60);
+      const s = att.durationSeconds % 60;
+
+      tr.innerHTML = `
+        <td><strong class="rank-badge">${rankIcon}</strong></td>
+        <td><strong>${this.escapeHtml(att.studentName)}</strong></td>
+        <td>${roleBadge}</td>
+        <td><span class="badge badge-primary">${att.type || 'Question Quiz'}</span></td>
+        <td><span class="badge badge-secondary">${att.continent}</span></td>
+        <td>${att.correctCount} / ${att.totalQuestions}</td>
+        <td><strong class="text-success">${att.accuracyPct}%</strong></td>
+        <td>${m}m ${s}s</td>
+        <td>${att.formattedDate || new Date(att.timestamp).toLocaleDateString()}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  renderStudentDashboard() {
+    if (!this.currentUser) return;
+    document.getElementById('studentDashName').textContent = this.currentUser.name;
+    document.getElementById('studentDashId').textContent = this.currentUser.id;
+
+    const myAttempts = this.attempts.filter(a => a.studentId === this.currentUser.id);
+    document.getElementById('dashTotalAttempts').textContent = myAttempts.length;
+
+    let totalQ = 0, totalC = 0, best = 0, totalSec = 0;
+    myAttempts.forEach(a => {
+      totalQ += a.totalQuestions;
+      totalC += a.correctCount;
+      totalSec += (a.durationSeconds || 0);
+      if (a.accuracyPct > best) best = a.accuracyPct;
+    });
+
+    const overallAcc = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0;
+    document.getElementById('dashOverallAccuracy').textContent = `${overallAcc}%`;
+    document.getElementById('dashBestScore').textContent = `${best}%`;
+    document.getElementById('dashTotalTime').textContent = `${Math.round(totalSec / 60)}m`;
+
+    const tbody = document.getElementById('studentHistoryTableBody');
+    tbody.innerHTML = '';
+
+    if (myAttempts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center">No quiz attempts recorded yet.</td></tr>`;
+      return;
+    }
+
+    myAttempts.forEach(att => {
+      const tr = document.createElement('tr');
+      const dateStr = att.formattedDate || new Date(att.timestamp).toLocaleDateString();
+      const timeStr = att.formattedTime || new Date(att.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const m = Math.floor(att.durationSeconds / 60);
+      const s = att.durationSeconds % 60;
+
+      tr.innerHTML = `
+        <td>${dateStr} <small class="text-muted">${timeStr}</small></td>
+        <td><span class="badge badge-info">${att.type || 'Question Quiz'}</span></td>
+        <td>${att.continent}</td>
+        <td>${att.difficulty || 'Normal'}</td>
+        <td>${att.correctCount} / ${att.totalQuestions}</td>
+        <td><strong>${att.accuracyPct}%</strong></td>
+        <td>${m}m ${s}s</td>
+        <td><button class="btn btn-outline-sm btn-view-attempt" data-id="${att.id}">Review</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.btn-view-attempt').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openAttemptDetailModal(b.dataset.id);
+      });
+    });
+  }
+
+  renderAdminOverview() {
+    document.getElementById('adminTotalQuestions').textContent = this.questions.length;
+    document.getElementById('adminPublishedQuestions').textContent = this.questions.filter(q => q.status === 'Published').length;
+    document.getElementById('adminTotalStudents').textContent = new Set(this.attempts.map(a => a.studentId)).size;
+    document.getElementById('adminTotalAttempts').textContent = this.attempts.length;
+
+    const tbody = document.getElementById('adminAttemptsTableBody');
+    tbody.innerHTML = '';
+
+    if (this.attempts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No attempts logged yet.</td></tr>`;
+      return;
+    }
+
+    this.attempts.forEach(att => {
+      const tr = document.createElement('tr');
+      const dateStr = att.formattedDate || new Date(att.timestamp).toLocaleDateString();
+      const timeStr = att.formattedTime || new Date(att.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const m = Math.floor(att.durationSeconds / 60);
+      const s = att.durationSeconds % 60;
+      const roleBadge = att.userRole === 'admin' ? '<span class="badge badge-warning">Admin</span>' : '<span class="badge badge-info">Student</span>';
+
+      tr.innerHTML = `
+        <td>${dateStr} <small class="text-muted">${timeStr}</small></td>
+        <td><code>${this.escapeHtml(att.studentId)}</code></td>
+        <td><strong>${this.escapeHtml(att.studentName)}</strong></td>
+        <td>${roleBadge}</td>
+        <td>${att.continent}</td>
+        <td>${att.correctCount} / ${att.totalQuestions}</td>
+        <td><strong>${att.accuracyPct}%</strong></td>
+        <td>${m}m ${s}s</td>
+        <td><button class="btn btn-outline-sm btn-view-attempt" data-id="${att.id}">Review</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.btn-view-attempt').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openAttemptDetailModal(b.dataset.id);
+      });
+    });
+  }
+
+  openAttemptDetailModal(attemptId) {
+    const att = this.attempts.find(a => a.id === attemptId);
+    if (!att) return;
+
+    document.getElementById('attemptDetailTitle').textContent = `Assessment Review — ${att.studentName} (${att.studentId})`;
+
+    const summary = document.getElementById('attemptModalSummary');
+    const m = Math.floor(att.durationSeconds / 60);
+    const s = att.durationSeconds % 60;
+
+    summary.innerHTML = `
+      <div class="stat-box"><span class="stat-label">Date</span><span class="stat-val">${att.formattedDate}</span></div>
+      <div class="stat-box"><span class="stat-label">Type</span><span class="stat-val">${att.type || 'Q&A'}</span></div>
+      <div class="stat-box"><span class="stat-label">Scope</span><span class="stat-val">${att.continent}</span></div>
+      <div class="stat-box"><span class="stat-label">Score</span><span class="stat-val text-success">${att.correctCount} / ${att.totalQuestions} (${att.accuracyPct}%)</span></div>
+      <div class="stat-box"><span class="stat-label">Duration</span><span class="stat-val">${m}m ${s}s</span></div>
+    `;
+
+    const qList = document.getElementById('attemptModalQuestionsList');
+    qList.innerHTML = '';
+
+    (att.snapshots || []).forEach((snap, idx) => {
+      const item = document.createElement('div');
+      item.className = `review-item ${snap.isCorrect ? 'pass' : 'fail'}`;
+      item.innerHTML = `
+        <div class="review-header">
+          <span>#${idx + 1}</span>
+          <span class="badge ${snap.isCorrect ? 'badge-success' : 'badge-danger'}">${snap.isCorrect ? 'Correct' : 'Incorrect'}</span>
+        </div>
+        <div class="review-question">${this.escapeHtml(snap.questionText)}</div>
+        <div class="review-answers">
+          <span>Chosen: <strong>${this.escapeHtml(snap.selectedAnswer || 'Unanswered')}</strong></span>
+          ${!snap.isCorrect ? `<span>Correct: <strong>${this.escapeHtml(snap.correctAnswer)}</strong></span>` : ''}
+        </div>
+      `;
+      qList.appendChild(item);
+    });
+
+    document.getElementById('attemptDetailModal').classList.remove('hidden');
+  }
+
   processPermissiveCsv(file) {
     const reader = new FileReader();
     const batchTag = document.getElementById('csvBatchTag')?.value.trim() || 'Batch 2';
@@ -984,7 +1891,7 @@ class GeoQuizApp {
 
         this.stagedCsvQuestions = parsed;
         document.getElementById('csvPreviewSection').classList.remove('hidden');
-        document.getElementById('csvValidCountBadge').textContent = `Total Questions Staged for "${batchTag}": ${parsed.length}`;
+        document.getElementById('csvValidCountBadge').textContent = `Total Questions Staged: ${parsed.length}`;
         document.getElementById('btnConfirmImport').disabled = false;
         const purgeBtn = document.getElementById('btnPurgeAndImport');
         if (purgeBtn) purgeBtn.disabled = false;
@@ -1031,9 +1938,9 @@ class GeoQuizApp {
     document.getElementById('csvImportModal').classList.add('hidden');
     
     if (purgeExisting) {
-      this.showToast(`Clean Slate Success: Deleted old questions and imported ${res.count} new questions!`, 'success');
+      this.showToast(`Clean Slate: Loaded ${res.count} fresh questions!`, 'success');
     } else {
-      this.showToast(`Import Success: Added ${res.count} questions to the bank!`, 'success');
+      this.showToast(`Import Success: Added ${res.count} questions to bank!`, 'success');
     }
   }
 
@@ -1203,522 +2110,6 @@ class GeoQuizApp {
       this.updateAvailabilityBadge();
       this.showToast(`Deleted question ${id}`, 'info');
     }
-  }
-
-  getEligibleQuestions(continent, difficulty, topic, batch = 'All') {
-    return this.questions.filter(q => {
-      const isPub = q.status === 'Published';
-      const matchCont = (continent === 'Whole World' || continent === 'All') ? true : q.continent === continent;
-      const matchBatch = (batch === 'All') ? true : (q.batch === batch);
-      const matchDiff = difficulty === 'All' || q.difficulty === difficulty;
-      const matchTopic = topic === 'All' || q.topic === topic;
-      return isPub && matchCont && matchBatch && matchDiff && matchTopic;
-    });
-  }
-
-  updateAvailabilityBadge() {
-    const cont = document.getElementById('setupContinent')?.value || 'Whole World';
-    const batch = document.getElementById('setupBatch')?.value || 'All';
-    const diff = document.getElementById('setupDifficulty')?.value || 'All';
-    const top = document.getElementById('setupTopic')?.value || 'All';
-    const pool = this.getEligibleQuestions(cont, diff, top, batch);
-
-    const badge = document.getElementById('availabilityNotice');
-    if (badge) {
-      const batchTxt = batch === 'All' ? '' : ` [${batch}]`;
-      badge.textContent = `${pool.length} published questions available in ${cont}${batchTxt}`;
-      badge.className = pool.length > 0 ? 'badge badge-info' : 'badge badge-danger';
-    }
-    const btn = document.getElementById('btnStartQuiz');
-    if (btn) btn.disabled = (pool.length === 0);
-  }
-
-  startAssessment() {
-    if (!this.currentUser) {
-      this.showToast('Authentication required before starting a quiz.', 'error');
-      this.openAuthModal();
-      return;
-    }
-
-    const continent = document.getElementById('setupContinent').value;
-    const batch = document.getElementById('setupBatch').value;
-    const difficulty = document.getElementById('setupDifficulty').value;
-    const topic = document.getElementById('setupTopic').value;
-    const countOption = document.getElementById('setupCount').value;
-    const mode = document.querySelector('input[name="assessmentMode"]:checked').value;
-
-    let pool = this.getEligibleQuestions(continent, difficulty, topic, batch);
-    if (pool.length === 0) {
-      this.showToast('No matching questions available for this selection.', 'error');
-      return;
-    }
-
-    let targetCount = 10;
-    if (countOption === 'all') {
-      targetCount = pool.length;
-    } else if (countOption === 'custom') {
-      const customVal = parseInt(document.getElementById('setupCustomCount').value, 10);
-      targetCount = (!isNaN(customVal) && customVal > 0) ? Math.min(customVal, pool.length) : pool.length;
-    } else {
-      targetCount = Math.min(parseInt(countOption, 10), pool.length);
-    }
-
-    const shuffled = [...pool].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, targetCount);
-
-    this.quizSession = {
-      active: true,
-      sessionId: `SES-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-      sessionFinalized: false,
-      mode,
-      continent,
-      batch,
-      difficulty,
-      topic,
-      questions: selected,
-      currentIndex: 0,
-      userAnswers: {},
-      startTime: new Date(),
-      secondsRemaining: mode === 'exam' ? selected.length * 60 : 0,
-      timerInterval: null
-    };
-
-    document.querySelectorAll('.sub-view-pane').forEach(p => p.classList.add('hidden'));
-    document.getElementById('subViewQuizArena').classList.remove('hidden');
-
-    document.getElementById('arenaModeBadge').textContent = mode === 'exam' ? 'Exam Mode' : 'Practice Mode';
-    document.getElementById('arenaModeBadge').className = mode === 'exam' ? 'badge badge-danger' : 'badge badge-primary';
-    document.getElementById('arenaContinentBadge').textContent = continent;
-    document.getElementById('arenaDifficultyBadge').textContent = difficulty;
-    document.getElementById('totalQCount').textContent = selected.length;
-
-    const submitBtn = document.getElementById('btnSubmitExam');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = mode === 'exam' ? 'Submit Final Exam' : 'Complete Practice';
-    }
-
-    if (mode === 'exam') {
-      document.getElementById('arenaTimerWrapper').classList.remove('hidden');
-      this.startTimer();
-    } else {
-      document.getElementById('arenaTimerWrapper').classList.add('hidden');
-    }
-
-    this.renderCurrentQuestion();
-  }
-
-  startTimer() {
-    if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
-    const updateTimer = () => {
-      const m = Math.floor(this.quizSession.secondsRemaining / 60);
-      const s = this.quizSession.secondsRemaining % 60;
-      document.getElementById('arenaTimer').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-
-      if (this.quizSession.secondsRemaining <= 0) {
-        clearInterval(this.quizSession.timerInterval);
-        this.showToast('Time expired! Submitting assessment.', 'warning');
-        this.finalizeAssessment(true);
-      }
-      this.quizSession.secondsRemaining--;
-    };
-    updateTimer();
-    this.quizSession.timerInterval = setInterval(updateTimer, 1000);
-  }
-
-  renderCurrentQuestion() {
-    const { questions, currentIndex, userAnswers, mode } = this.quizSession;
-    const q = questions[currentIndex];
-
-    document.getElementById('currentQIndex').textContent = currentIndex + 1;
-    const pct = ((currentIndex + 1) / questions.length) * 100;
-    document.getElementById('quizProgressBar').style.width = `${pct}%`;
-
-    document.getElementById('qTopicTag').textContent = `${q.continent} • ${q.topic}`;
-    
-    // Display Batch tag on active question
-    const batchBadge = document.getElementById('qBatchBadge');
-    if (batchBadge) {
-      batchBadge.textContent = `🏷️ ${q.batch || 'Batch 1'}`;
-    }
-
-    document.getElementById('qIdTag').textContent = `ID: ${q.id}`;
-    document.getElementById('qText').textContent = q.question;
-
-    const container = document.getElementById('qOptionsList');
-    container.innerHTML = '';
-
-    const options = [
-      { key: 'A', text: q.optionA },
-      { key: 'B', text: q.optionB },
-      { key: 'C', text: q.optionC },
-      { key: 'D', text: q.optionD }
-    ];
-
-    const chosenKey = userAnswers[currentIndex];
-    const isAnswered = chosenKey !== undefined;
-
-    options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      if (chosenKey === opt.key) btn.classList.add('selected');
-
-      if (mode === 'practice' && isAnswered) {
-        btn.disabled = true;
-        if (opt.key === q.correctAnswer) btn.classList.add('correct');
-        else if (chosenKey === opt.key) btn.classList.add('incorrect');
-      }
-
-      btn.innerHTML = `<span class="opt-badge">${opt.key}</span><span>${this.escapeHtml(opt.text)}</span>`;
-      btn.addEventListener('click', () => {
-        if (mode === 'practice' && userAnswers[currentIndex] !== undefined) return;
-        userAnswers[currentIndex] = opt.key;
-        this.renderCurrentQuestion();
-      });
-      container.appendChild(btn);
-    });
-
-    const fb = document.getElementById('qFeedbackPane');
-    if (mode === 'practice' && isAnswered) {
-      fb.classList.remove('hidden');
-      const ok = chosenKey === q.correctAnswer;
-      fb.className = `feedback-pane ${ok ? 'correct' : 'incorrect'}`;
-      document.getElementById('feedbackTitle').textContent = ok ? '✅ Correct Answer!' : `❌ Incorrect (Correct: Option ${q.correctAnswer})`;
-      document.getElementById('feedbackExplanation').textContent = q.explanation || 'No detailed explanation provided.';
-      document.getElementById('feedbackSource').textContent = q.source ? `Source: ${q.source}` : '';
-    } else {
-      fb.classList.add('hidden');
-    }
-
-    document.getElementById('btnPrevQuestion').disabled = (currentIndex === 0);
-    const nextBtn = document.getElementById('btnNextQuestion');
-    const submitBtn = document.getElementById('btnSubmitExam');
-
-    if (currentIndex === questions.length - 1) {
-      nextBtn.classList.add('hidden');
-      submitBtn.classList.remove('hidden');
-      submitBtn.textContent = mode === 'exam' ? 'Submit Final Exam' : 'Complete Practice';
-    } else {
-      nextBtn.classList.remove('hidden');
-      submitBtn.classList.add('hidden');
-    }
-  }
-
-  handleNextQuestion() {
-    if (this.quizSession.currentIndex < this.quizSession.questions.length - 1) {
-      this.quizSession.currentIndex++;
-      this.renderCurrentQuestion();
-    }
-  }
-
-  handlePrevQuestion() {
-    if (this.quizSession.currentIndex > 0) {
-      this.quizSession.currentIndex--;
-      this.renderCurrentQuestion();
-    }
-  }
-
-  confirmSubmitExam() {
-    if (this.quizSession.sessionFinalized) return;
-
-    const { questions, userAnswers, mode } = this.quizSession;
-    const answered = Object.keys(userAnswers).length;
-    if (mode === 'exam' && answered < questions.length) {
-      if (!confirm(`You left ${questions.length - answered} questions unanswered. Submit now?`)) return;
-    }
-
-    // Instantly lock button to prevent multiple submissions
-    const submitBtn = document.getElementById('btnSubmitExam');
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
-    }
-
-    this.finalizeAssessment(false);
-  }
-
-  async finalizeAssessment(isTimeout = false) {
-    if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
-
-    if (this.quizSession.sessionFinalized) return;
-    this.quizSession.sessionFinalized = true;
-
-    const { sessionId, questions, userAnswers, mode, continent, difficulty, topic, startTime } = this.quizSession;
-    const now = new Date();
-    const durationSeconds = Math.max(1, Math.round((now - startTime) / 1000));
-
-    let correctCount = 0;
-    const snapshots = questions.map((q, idx) => {
-      const selected = userAnswers[idx] || null;
-      const isCorrect = (selected === q.correctAnswer);
-      if (isCorrect) correctCount++;
-      return {
-        questionId: q.id,
-        questionText: q.question,
-        continent: q.continent,
-        batch: q.batch || 'Batch 1',
-        difficulty: q.difficulty,
-        selectedAnswer: selected,
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation || '',
-        isCorrect
-      };
-    });
-
-    const accuracyPct = Math.round((correctCount / questions.length) * 100);
-
-    const attemptRecord = {
-      id: `ATT-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`,
-      sessionId,
-      studentId: this.currentUser.id,
-      studentName: this.currentUser.name,
-      userRole: this.currentUser.role,
-      mode,
-      continent,
-      difficulty,
-      topic,
-      totalQuestions: questions.length,
-      correctCount,
-      accuracyPct,
-      durationSeconds,
-      timestamp: now.toISOString(),
-      formattedTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      formattedDate: now.toLocaleDateString(),
-      status: isTimeout ? 'Completed (Timeout)' : 'Completed',
-      snapshots
-    };
-
-    await this.storage.saveAttempt(attemptRecord);
-    await this.refreshData();
-
-    this.renderResultsScreen(attemptRecord);
-    this.renderLeaderboard();
-  }
-
-  renderResultsScreen(att) {
-    document.querySelectorAll('.sub-view-pane').forEach(p => p.classList.add('hidden'));
-    document.getElementById('subViewQuizResults').classList.remove('hidden');
-
-    document.getElementById('resultsScorePct').textContent = `${att.accuracyPct}%`;
-    document.getElementById('resultsFraction').textContent = `${att.correctCount} / ${att.totalQuestions}`;
-    document.getElementById('resMode').textContent = att.mode === 'exam' ? 'Examination' : 'Practice';
-    document.getElementById('resContinent').textContent = att.continent;
-    document.getElementById('resAccuracy').textContent = `${att.accuracyPct}%`;
-
-    const m = Math.floor(att.durationSeconds / 60);
-    const s = att.durationSeconds % 60;
-    document.getElementById('resTime').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-
-    const reviewContainer = document.getElementById('resultsReviewList');
-    reviewContainer.innerHTML = '';
-
-    att.snapshots.forEach((snap, idx) => {
-      const item = document.createElement('div');
-      item.className = `review-item ${snap.isCorrect ? 'pass' : 'fail'}`;
-      item.innerHTML = `
-        <div class="review-header">
-          <span>Question ${idx + 1} (${snap.continent} • ${snap.difficulty})</span>
-          <span class="badge ${snap.isCorrect ? 'badge-success' : 'badge-danger'}">${snap.isCorrect ? 'Correct' : 'Incorrect'}</span>
-        </div>
-        <div class="review-question">${this.escapeHtml(snap.questionText)}</div>
-        <div class="review-answers">
-          <span>Your Answer: <strong>${snap.selectedAnswer ? `Option ${snap.selectedAnswer}` : 'Unanswered'}</strong></span>
-          ${!snap.isCorrect ? `<span>Correct Key: <strong>Option ${snap.correctAnswer}</strong></span>` : ''}
-          ${snap.explanation ? `<div class="feedback-source">${this.escapeHtml(snap.explanation)}</div>` : ''}
-        </div>
-      `;
-      reviewContainer.appendChild(item);
-    });
-  }
-
-  /* --------------------------------------------------------------------------
-     HISTORY DRILL-DOWN & LEADERBOARD
-     -------------------------------------------------------------------------- */
-  openAttemptDetailModal(attemptId) {
-    const att = this.attempts.find(a => a.id === attemptId);
-    if (!att) return;
-
-    document.getElementById('attemptDetailTitle').textContent = `Assessment Review — ${att.studentName} (${att.studentId})`;
-
-    const summary = document.getElementById('attemptModalSummary');
-    const m = Math.floor(att.durationSeconds / 60);
-    const s = att.durationSeconds % 60;
-
-    summary.innerHTML = `
-      <div class="stat-box"><span class="stat-label">Date & Time</span><span class="stat-val">${att.formattedDate || new Date(att.timestamp).toLocaleDateString()} ${att.formattedTime || ''}</span></div>
-      <div class="stat-box"><span class="stat-label">Scope</span><span class="stat-val">${att.continent}</span></div>
-      <div class="stat-box"><span class="stat-label">Mode</span><span class="stat-val">${att.mode}</span></div>
-      <div class="stat-box"><span class="stat-label">Score</span><span class="stat-val text-success">${att.correctCount} / ${att.totalQuestions} (${att.accuracyPct}%)</span></div>
-      <div class="stat-box"><span class="stat-label">Duration</span><span class="stat-val">${m}m ${s}s</span></div>
-    `;
-
-    const qList = document.getElementById('attemptModalQuestionsList');
-    qList.innerHTML = '';
-
-    (att.snapshots || []).forEach((snap, idx) => {
-      const item = document.createElement('div');
-      item.className = `review-item ${snap.isCorrect ? 'pass' : 'fail'}`;
-      item.innerHTML = `
-        <div class="review-header">
-          <span>#${idx + 1} (${snap.continent} • ${snap.difficulty})</span>
-          <span class="badge ${snap.isCorrect ? 'badge-success' : 'badge-danger'}">${snap.isCorrect ? 'Correct' : 'Incorrect'}</span>
-        </div>
-        <div class="review-question">${this.escapeHtml(snap.questionText)}</div>
-        <div class="review-answers">
-          <span>Chosen: <strong>${snap.selectedAnswer ? `Option ${snap.selectedAnswer}` : 'Unanswered'}</strong></span>
-          ${!snap.isCorrect ? `<span>Correct: <strong>Option ${snap.correctAnswer}</strong></span>` : ''}
-          ${snap.explanation ? `<div class="feedback-source">${this.escapeHtml(snap.explanation)}</div>` : ''}
-        </div>
-      `;
-      qList.appendChild(item);
-    });
-
-    document.getElementById('attemptDetailModal').classList.remove('hidden');
-  }
-
-  renderLeaderboard() {
-    const tbody = document.getElementById('leaderboardTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (this.attempts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No assessments recorded yet. Be the first to play!</td></tr>`;
-      return;
-    }
-
-    const sorted = [...this.attempts].sort((a, b) => {
-      if (b.accuracyPct !== a.accuracyPct) return b.accuracyPct - a.accuracyPct;
-      if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
-      return (a.durationSeconds || 9999) - (b.durationSeconds || 9999);
-    }).slice(0, 10);
-
-    sorted.forEach((att, idx) => {
-      const tr = document.createElement('tr');
-      const rankIcon = idx === 0 ? '🥇 1' : (idx === 1 ? '🥈 2' : (idx === 2 ? '🥉 3' : `${idx + 1}`));
-      const roleBadge = att.userRole === 'admin' ? '<span class="badge badge-warning">Teacher/Admin</span>' : '<span class="badge badge-info">Student</span>';
-      const m = Math.floor(att.durationSeconds / 60);
-      const s = att.durationSeconds % 60;
-
-      tr.innerHTML = `
-        <td><strong class="rank-badge">${rankIcon}</strong></td>
-        <td><strong>${this.escapeHtml(att.studentName)}</strong></td>
-        <td>${roleBadge}</td>
-        <td><span class="badge badge-secondary">${att.continent}</span></td>
-        <td>${att.mode}</td>
-        <td>${att.correctCount} / ${att.totalQuestions}</td>
-        <td><strong class="text-success">${att.accuracyPct}%</strong></td>
-        <td>${m}m ${s}s</td>
-        <td>${att.formattedDate || new Date(att.timestamp).toLocaleDateString()}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  renderStudentDashboard() {
-    if (!this.currentUser) return;
-    document.getElementById('studentDashName').textContent = this.currentUser.name;
-    document.getElementById('studentDashId').textContent = this.currentUser.id;
-
-    const myAttempts = this.attempts.filter(a => a.studentId === this.currentUser.id);
-    document.getElementById('dashTotalAttempts').textContent = myAttempts.length;
-
-    let totalQ = 0, totalC = 0, best = 0, totalSec = 0;
-    myAttempts.forEach(a => {
-      totalQ += a.totalQuestions;
-      totalC += a.correctCount;
-      totalSec += (a.durationSeconds || 0);
-      if (a.accuracyPct > best) best = a.accuracyPct;
-    });
-
-    const overallAcc = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0;
-    document.getElementById('dashOverallAccuracy').textContent = `${overallAcc}%`;
-    document.getElementById('dashBestScore').textContent = `${best}%`;
-    document.getElementById('dashTotalTime').textContent = `${Math.round(totalSec / 60)}m`;
-
-    const tbody = document.getElementById('studentHistoryTableBody');
-    tbody.innerHTML = '';
-
-    if (myAttempts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center">No assessments taken yet.</td></tr>`;
-      return;
-    }
-
-    myAttempts.forEach(att => {
-      const tr = document.createElement('tr');
-      const dateStr = att.formattedDate || new Date(att.timestamp).toLocaleDateString();
-      const timeStr = att.formattedTime || new Date(att.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const m = Math.floor(att.durationSeconds / 60);
-      const s = att.durationSeconds % 60;
-
-      tr.innerHTML = `
-        <td>${dateStr} <small class="text-muted">${timeStr}</small></td>
-        <td><span class="badge ${att.mode === 'exam' ? 'badge-danger' : 'badge-primary'}">${att.mode}</span></td>
-        <td>${att.continent}</td>
-        <td>${att.difficulty}</td>
-        <td>${att.correctCount} / ${att.totalQuestions}</td>
-        <td><strong>${att.accuracyPct}%</strong></td>
-        <td>${m}m ${s}s</td>
-        <td><button class="btn btn-outline-sm btn-view-attempt" data-id="${att.id}">Review</button></td>
-      `;
-      tr.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('btn-view-attempt')) this.openAttemptDetailModal(att.id);
-      });
-      tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll('.btn-view-attempt').forEach(b => {
-      b.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.openAttemptDetailModal(b.dataset.id);
-      });
-    });
-  }
-
-  renderAdminOverview() {
-    document.getElementById('adminTotalQuestions').textContent = this.questions.length;
-    document.getElementById('adminPublishedQuestions').textContent = this.questions.filter(q => q.status === 'Published').length;
-    document.getElementById('adminTotalStudents').textContent = new Set(this.attempts.map(a => a.studentId)).size;
-    document.getElementById('adminTotalAttempts').textContent = this.attempts.length;
-
-    const tbody = document.getElementById('adminAttemptsTableBody');
-    tbody.innerHTML = '';
-
-    if (this.attempts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No attempts logged yet.</td></tr>`;
-      return;
-    }
-
-    this.attempts.forEach(att => {
-      const tr = document.createElement('tr');
-      const dateStr = att.formattedDate || new Date(att.timestamp).toLocaleDateString();
-      const timeStr = att.formattedTime || new Date(att.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const m = Math.floor(att.durationSeconds / 60);
-      const s = att.durationSeconds % 60;
-      const roleBadge = att.userRole === 'admin' ? '<span class="badge badge-warning">Admin</span>' : '<span class="badge badge-info">Student</span>';
-
-      tr.innerHTML = `
-        <td>${dateStr} <small class="text-muted">${timeStr}</small></td>
-        <td><code>${this.escapeHtml(att.studentId)}</code></td>
-        <td><strong>${this.escapeHtml(att.studentName)}</strong></td>
-        <td>${roleBadge}</td>
-        <td>${att.continent}</td>
-        <td>${att.correctCount} / ${att.totalQuestions}</td>
-        <td><strong>${att.accuracyPct}%</strong></td>
-        <td>${m}m ${s}s</td>
-        <td><button class="btn btn-outline-sm btn-view-attempt" data-id="${att.id}">Review</button></td>
-      `;
-      tr.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('btn-view-attempt')) this.openAttemptDetailModal(att.id);
-      });
-      tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll('.btn-view-attempt').forEach(b => {
-      b.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.openAttemptDetailModal(b.dataset.id);
-      });
-    });
   }
 
   escapeHtml(str) {

@@ -44,12 +44,14 @@
     <!-- ==================== STUDENT PORTAL ==================== -->
     <section id="portalStudent" class="portal-view active">
       <nav class="sub-nav">
-        <button class="sub-tab active" data-subview="quizSetup">Take a Quiz</button>
+        <button class="sub-tab active" data-subview="quizSetup">📝 Question Quiz</button>
+        <button class="sub-tab" data-subview="flagSetup">🚩 Flag Quiz</button>
+        <button class="sub-tab" data-subview="mapSetup">🗺️ Map Pointing</button>
         <button class="sub-tab" data-subview="leaderboard">🏆 High Scores</button>
-        <button class="sub-tab" data-subview="studentDashboard">My Dashboard & History</button>
+        <button class="sub-tab" data-subview="studentDashboard">My Dashboard</button>
       </nav>
 
-      <!-- Subview: Quiz Setup -->
+      <!-- ================= 1. STANDARD Q&A SETUP ================= -->
       <div id="subViewQuizSetup" class="sub-view-pane active">
         <div class="card setup-card">
           <div class="card-header">
@@ -106,7 +108,7 @@
                   <option value="all">All Available</option>
                   <option value="custom">Custom...</option>
                 </select>
-                <input type="number" id="setupCustomCount" class="form-control hidden" placeholder="Enter custom count" min="1" max="5000" style="max-width: 180px;">
+                <input type="number" id="setupCustomCount" class="form-control hidden" placeholder="Enter count" min="1" max="5000" style="max-width: 180px;">
               </div>
             </div>
 
@@ -138,40 +140,193 @@
         </div>
       </div>
 
-      <!-- Subview: High Scores Leaderboard -->
-      <div id="subViewLeaderboard" class="sub-view-pane hidden">
-        <div class="card table-card">
-          <div class="card-header-flex">
-            <div>
-              <h2>🏆 Top 10 Highscore Leaderboard</h2>
-              <p>Top unique performances ranked by accuracy and completion duration.</p>
-            </div>
-            <button id="btnRefreshLeaderboard" class="btn btn-outline-sm">🔄 Refresh</button>
+      <!-- ================= 2. FLAG QUIZ SETUP ================= -->
+      <div id="subViewFlagSetup" class="sub-view-pane hidden">
+        <div class="card setup-card">
+          <div class="card-header">
+            <h2>🚩 Name That World Flag! (Flag Quiz)</h2>
+            <p>Select your continent and question count to identify world flags.</p>
           </div>
-          <div class="table-responsive">
-            <table class="data-table leaderboard-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Participant</th>
-                  <th>Role</th>
-                  <th>Scope</th>
-                  <th>Mode</th>
-                  <th>Score</th>
-                  <th>Accuracy</th>
-                  <th>Time</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboardTableBody">
-                <tr><td colspan="9" class="text-center">Loading leaderboard...</td></tr>
-              </tbody>
-            </table>
+          <form id="flagSetupForm" class="setup-grid">
+            <div class="form-group">
+              <label for="flagContinent">Flag Continent Scope</label>
+              <select id="flagContinent" class="form-control" required>
+                <option value="Whole World" selected>🌍 Whole World (All Continents)</option>
+                <option value="Asia">Asia</option>
+                <option value="Africa">Africa</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America & Caribbean</option>
+                <option value="South America">South America</option>
+                <option value="Australia/Oceania">Australia & Oceania</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="flagCount">Number of Flags</label>
+              <select id="flagCount" class="form-control" required>
+                <option value="10">10 Flags</option>
+                <option value="20">20 Flags</option>
+                <option value="35" selected>35 Flags (Challenge)</option>
+                <option value="all">All Available Flags</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="flagTimerLimit">Time per Flag</label>
+              <select id="flagTimerLimit" class="form-control" style="max-width: 250px;">
+                <option value="15" selected>15 Seconds per Flag</option>
+                <option value="10">10 Seconds (Speed Drill)</option>
+                <option value="0">Untimed Practice</option>
+              </select>
+            </div>
+
+            <div class="form-actions full-width">
+              <button type="submit" id="btnStartFlagQuiz" class="btn btn-primary btn-lg">
+                🚩 Start Flag Challenge
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ================= 3. ACTIVE FLAG ARENA (MATCHES IMAGE 1) ================= -->
+      <div id="subViewFlagArena" class="sub-view-pane hidden">
+        <div class="flag-quiz-wrapper">
+          <div class="flag-quiz-header">
+            <div class="flag-quiz-title">Name That World Flag!</div>
+            <div class="flag-header-stats">
+              <div class="flag-timer-container" id="flagTimerContainer">
+                <span class="flag-times-up-pill" id="flagTimesUpLabel">Time's Up!</span>
+                <div class="flag-countdown-circle" id="flagTimerBadge">15</div>
+              </div>
+              <div class="flag-progress-text">
+                <span id="flagCurrentIndex">1</span> of <span id="flagTotalCount">35</span>
+              </div>
+              <div class="flag-score-text">
+                Score: <strong id="flagLiveScore">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="flag-quiz-card">
+            <!-- Center Flag Image -->
+            <div class="flag-image-container">
+              <img id="flagDisplayImg" class="flag-image-element" src="" alt="Flag Challenge">
+            </div>
+
+            <!-- 2x2 Option Buttons -->
+            <div class="flag-options-grid" id="flagOptionsGrid"></div>
+
+            <!-- Next Button -->
+            <div class="flag-footer-action">
+              <button id="btnNextFlag" class="btn-flag-next" disabled>Next &rarr;</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Subview: Active Quiz Arena -->
+      <!-- ================= 4. MAP POINTING SETUP ================= -->
+      <div id="subViewMapSetup" class="sub-view-pane hidden">
+        <div class="card setup-card">
+          <div class="card-header">
+            <h2>🗺️ Map Pointing Challenge (Seterra Style)</h2>
+            <p>Click and locate continents and regions directly on the interactive vector map.</p>
+          </div>
+          <div class="setup-grid">
+            <div class="form-group full-width">
+              <label>Select Challenge Level</label>
+              <div class="mode-selector">
+                <label class="mode-card">
+                  <input type="radio" name="mapChallengeType" value="continents" checked>
+                  <div class="mode-card-content">
+                    <span class="mode-title">Level 1: The 7 Continents of the World</span>
+                    <span class="mode-desc">Locate North America, South America, Europe, Africa, Asia, Australia, and Antarctica.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions full-width">
+              <button type="button" id="btnStartMapPointing" class="btn btn-primary btn-lg">
+                🗺️ Launch Map Pointing Arena
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 5. ACTIVE MAP POINTING ARENA (MATCHES IMAGE 2) ================= -->
+      <div id="subViewMapArena" class="sub-view-pane hidden">
+        <div class="map-arena-wrapper">
+          <!-- Top Navy Mission Bar -->
+          <div class="map-mission-bar">
+            <div class="map-stats-left">
+              <span id="mapScoreRatio">0 / 7</span>
+              <span class="map-stat-divider">|</span>
+              <span id="mapAccuracyPct">0%</span>
+            </div>
+
+            <div class="map-target-pill">
+              <span>Click on</span>
+              <span class="map-target-name" id="mapTargetName">Europe</span>
+              <button id="btnSkipMapTarget" class="map-btn-skip" title="Skip Target">&#9654;&#10073;</button>
+            </div>
+
+            <div class="map-controls-right">
+              <div class="map-timer" id="mapTimerDisplay">00:00</div>
+              <button id="btnExitMapArena" class="map-btn-exit" title="Exit Map Challenge">&times;</button>
+            </div>
+          </div>
+
+          <!-- Alert / Feedback Overlay -->
+          <div id="mapFeedbackToast" class="map-feedback-toast hidden">That was Africa, try again!</div>
+
+          <!-- Interactive SVG World Map Canvas -->
+          <div class="svg-map-container" id="svgMapContainer">
+            <svg id="interactiveWorldSvg" viewBox="0 0 1000 500" class="world-svg">
+              <rect width="1000" height="500" class="ocean-water"></rect>
+
+              <!-- Continents Interactive Vector Paths -->
+              <!-- North America -->
+              <path id="continent-na" class="continent-path" data-name="North America"
+                d="M 120 70 L 210 65 L 280 90 L 320 85 L 340 140 L 290 170 L 230 175 L 210 240 L 250 250 L 270 290 L 250 310 L 220 280 L 190 230 L 150 220 L 130 180 L 100 130 Z M 270 40 L 330 30 L 340 80 L 290 90 Z">
+              </path>
+
+              <!-- South America -->
+              <path id="continent-sa" class="continent-path" data-name="South America"
+                d="M 270 290 L 320 300 L 370 340 L 360 400 L 320 440 L 290 480 L 270 450 L 260 380 L 250 320 Z">
+              </path>
+
+              <!-- Europe -->
+              <path id="continent-eu" class="continent-path" data-name="Europe"
+                d="M 460 120 L 520 100 L 560 130 L 580 180 L 530 200 L 490 220 L 450 200 L 470 160 Z M 430 150 L 460 140 L 450 170 Z">
+              </path>
+
+              <!-- Africa -->
+              <path id="continent-af" class="continent-path" data-name="Africa"
+                d="M 440 210 L 530 200 L 590 260 L 560 330 L 520 400 L 480 370 L 440 300 L 420 250 Z M 570 350 L 590 340 L 580 390 Z">
+              </path>
+
+              <!-- Asia -->
+              <path id="continent-as" class="continent-path" data-name="Asia"
+                d="M 580 90 L 780 70 L 890 110 L 870 200 L 790 250 L 730 250 L 690 320 L 650 290 L 610 260 L 580 180 Z M 720 310 L 820 330 L 790 360 L 730 340 Z M 840 180 L 870 190 L 850 240 Z">
+              </path>
+
+              <!-- Australia / Oceania -->
+              <path id="continent-au" class="continent-path" data-name="Australia/Oceania"
+                d="M 780 350 L 870 340 L 890 410 L 820 430 L 770 400 Z M 900 420 L 920 440 L 890 460 Z">
+              </path>
+
+              <!-- Antarctica -->
+              <path id="continent-an" class="continent-path" data-name="Antarctica"
+                d="M 180 480 L 350 470 L 520 480 L 700 470 L 850 485 L 800 500 L 200 500 Z">
+              </path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 6. ACTIVE STANDARD QUIZ ARENA ================= -->
       <div id="subViewQuizArena" class="sub-view-pane hidden">
         <div class="arena-header">
           <div class="arena-metadata">
@@ -195,7 +350,7 @@
         <div class="card question-card">
           <div class="question-meta">
             <span id="qTopicTag" class="tag-topic">General Geography</span>
-            <span id="qBatchBadge" class="badge badge-warning">🆕 Batch 1</span>
+            <span id="qBatchBadge" class="badge badge-warning">🏷️ Batch 1</span>
             <span id="qIdTag" class="tag-id">ID: GEO-001</span>
           </div>
           <h2 id="qText" class="question-text">Loading question text...</h2>
@@ -218,7 +373,7 @@
         </div>
       </div>
 
-      <!-- Subview: Quiz Results -->
+      <!-- ================= 7. RESULTS OVERVIEW ================= -->
       <div id="subViewQuizResults" class="sub-view-pane hidden">
         <div class="card results-card">
           <div class="results-banner">
@@ -232,7 +387,7 @@
 
           <div class="stats-summary-grid">
             <div class="stat-box">
-              <span class="stat-label">Mode</span>
+              <span class="stat-label">Mode / Type</span>
               <span class="stat-val" id="resMode">Practice</span>
             </div>
             <div class="stat-box">
@@ -249,17 +404,50 @@
             </div>
           </div>
 
-          <h3>Itemized Question Review</h3>
+          <h3>Itemized Review</h3>
           <div id="resultsReviewList" class="results-review-list"></div>
 
           <div class="results-actions">
-            <button id="btnRetakeQuiz" class="btn btn-primary">Start New Assessment</button>
+            <button id="btnRetakeQuiz" class="btn btn-primary">Start New Session</button>
             <button id="btnGoToDashboard" class="btn btn-outline">View My Dashboard</button>
           </div>
         </div>
       </div>
 
-      <!-- Subview: Student Personal Dashboard -->
+      <!-- ================= 8. LEADERBOARD ================= -->
+      <div id="subViewLeaderboard" class="sub-view-pane hidden">
+        <div class="card table-card">
+          <div class="card-header-flex">
+            <div>
+              <h2>🏆 Top Highscore Leaderboards</h2>
+              <p>Top unique performances across Q&A, Flag Quizzes, and Map Pointing.</p>
+            </div>
+            <button id="btnRefreshLeaderboard" class="btn btn-outline-sm">🔄 Refresh</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Participant</th>
+                  <th>Role</th>
+                  <th>Type</th>
+                  <th>Scope</th>
+                  <th>Score</th>
+                  <th>Accuracy</th>
+                  <th>Time</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTableBody">
+                <tr><td colspan="9" class="text-center">Loading leaderboard...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 9. STUDENT DASHBOARD ================= -->
       <div id="subViewStudentDashboard" class="sub-view-pane hidden">
         <div class="dashboard-hero">
           <div>
@@ -300,25 +488,15 @@
         </div>
 
         <div class="card table-card">
-          <div class="card-header-flex">
-            <div>
-              <h3>Attempt History Logs</h3>
-              <p class="text-muted">Click any row or 'Review' to view questions, chosen answers, and explanations.</p>
-            </div>
-            <div class="table-filters">
-              <select id="filterHistoryMode" class="form-control-sm">
-                <option value="All">All Modes</option>
-                <option value="practice">Practice</option>
-                <option value="exam">Exam</option>
-              </select>
-            </div>
+          <div class="card-header">
+            <h3>Recent Activity History</h3>
           </div>
           <div class="table-responsive">
             <table class="data-table clickable-table">
               <thead>
                 <tr>
                   <th>Date & Time</th>
-                  <th>Mode</th>
+                  <th>Type</th>
                   <th>Scope</th>
                   <th>Difficulty</th>
                   <th>Score</th>
@@ -378,9 +556,12 @@
         </div>
 
         <div class="card">
-          <h3>Admin Participation Mode</h3>
-          <p class="text-muted">Administrators and teachers can directly take assessments in the Student Portal, and their attempts will be marked on the high score board.</p>
-          <button id="btnAdminTakeQuiz" class="btn btn-primary" style="margin-top: 10px;">Launch Quiz as Teacher</button>
+          <h3>Interactive Modules Quick-Launch</h3>
+          <p class="text-muted">Launch any visual module directly as a teacher to verify content and scoring.</p>
+          <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+            <button id="btnAdminLaunchFlag" class="btn btn-primary">🚩 Test Flag Quiz</button>
+            <button id="btnAdminLaunchMap" class="btn btn-outline">🗺️ Test Map Pointing</button>
+          </div>
         </div>
       </div>
 
@@ -585,7 +766,7 @@
     </div>
   </div>
 
-  <!-- Modal 3: Permissive CSV Ingestion Modal with Batch Label & Delete All Option -->
+  <!-- Modal 3: CSV Ingestion Modal with Batch Label & Purge Option -->
   <div id="csvImportModal" class="modal-overlay hidden">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">

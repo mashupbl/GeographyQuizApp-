@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GeoQuiz Explorer 🌍 | Institutional Style Tokens & Layout System
+   GeoQuiz Explorer 🌍 | Institutional Style Tokens & Visual Quizzes
    ========================================================================== */
 
 :root {
@@ -163,6 +163,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.5rem;
+  overflow-x: auto;
 }
 
 .sub-tab {
@@ -175,6 +176,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   color: var(--text-muted);
   cursor: pointer;
   transition: var(--transition);
+  white-space: nowrap;
 }
 
 .sub-tab.active {
@@ -265,7 +267,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
 .btn-block { width: 100%; }
 
 /* Begin Assessment Button: Green Gradient */
-#btnStartQuiz {
+#btnStartQuiz, #btnStartFlagQuiz, #btnStartMapPointing {
   background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%) !important;
   color: #ffffff !important;
   border: 1px solid #059669 !important;
@@ -277,25 +279,15 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   overflow: hidden;
 }
 
-#btnStartQuiz:hover:not(:disabled) {
+#btnStartQuiz:hover:not(:disabled),
+#btnStartFlagQuiz:hover:not(:disabled),
+#btnStartMapPointing:hover:not(:disabled) {
   background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%) !important;
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45), 0 3px 6px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-#btnStartQuiz:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-}
-
-#btnStartQuiz:disabled {
-  background: #94a3b8 !important;
-  border-color: #cbd5e1 !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
-
-/* Purge & Delete Danger Button */
+/* Purge Danger Button */
 .btn-purge-danger {
   background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
   color: #fff !important;
@@ -380,7 +372,338 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
 .mode-title { display: block; font-weight: 700; font-size: 0.95rem; color: var(--primary); }
 .mode-desc { display: block; font-size: 0.8rem; color: var(--text-muted); }
 
-/* Arena UI */
+/* ==========================================================================
+   FLAG QUIZ MODULE (IMAGE 1 EXACT DESIGN)
+   ========================================================================== */
+.flag-quiz-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #dbeafe;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.flag-quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.flag-quiz-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.flag-header-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.flag-timer-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.flag-times-up-pill {
+  background: #991b1b;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  display: none;
+}
+.flag-times-up-pill.active { display: inline-block; }
+
+.flag-countdown-circle {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #991b1b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.flag-progress-text {
+  color: #334155;
+  font-weight: 500;
+}
+
+.flag-score-text {
+  color: #334155;
+}
+
+.flag-quiz-card {
+  padding: 2.5rem 2rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.flag-image-container {
+  width: 100%;
+  max-width: 420px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.flag-image-element {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 2x2 Option Buttons matching Image 1 */
+.flag-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: 650px;
+  margin-bottom: 1.75rem;
+}
+
+.flag-option-btn {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.flag-option-btn:hover:not(:disabled) {
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.flag-option-btn.selected-correct {
+  border: 2px solid #059669 !important;
+  color: #0f172a !important;
+  font-weight: 700;
+  background: #ffffff !important;
+}
+
+.flag-option-btn.selected-incorrect {
+  border: 2px solid #dc2626 !important;
+  color: #dc2626 !important;
+  background: #fee2e2 !important;
+}
+
+.flag-option-btn.revealed-correct {
+  border: 2px solid #059669 !important;
+  color: #059669 !important;
+  font-weight: 700;
+}
+
+/* Dark Navy Next Button matching Image 1 */
+.flag-footer-action {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-flag-next {
+  background: #0f2b48;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 2.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s ease;
+}
+
+.btn-flag-next:hover:not(:disabled) {
+  background: #1e3a5f;
+}
+
+.btn-flag-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   MAP POINTING MODULE (SETERRA EXACT DESIGN - IMAGE 2)
+   ========================================================================== */
+.map-arena-wrapper {
+  max-width: 1050px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid #cbd5e1;
+  position: relative;
+}
+
+.map-mission-bar {
+  background: #2b3956;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: inherit;
+}
+
+.map-stats-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.map-stat-divider { color: #64748b; }
+
+.map-target-pill {
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 0.35rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.map-target-name {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.map-btn-skip {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 0.4rem;
+}
+.map-btn-skip:hover { color: #fff; }
+
+.map-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.map-timer {
+  font-weight: 700;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.map-btn-exit {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.map-btn-exit:hover { color: #fff; }
+
+.map-feedback-toast {
+  position: absolute;
+  top: 70px;
+  right: 25px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1.5px solid #cbd5e1;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+}
+
+/* SVG Map Canvas */
+.svg-map-container {
+  width: 100%;
+  background: #a2cad8; /* Exact ocean blue from Image 2 */
+  line-height: 0;
+}
+
+.world-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ocean-water {
+  fill: #a2cad8;
+}
+
+.continent-path {
+  fill: #21794b; /* Exact rich green landmass from Image 2 */
+  stroke: #a2cad8;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.continent-path:hover {
+  fill: #2c9b60;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.continent-path.correct-hit {
+  fill: #15803d !important;
+  stroke: #ffffff !important;
+  stroke-width: 2;
+  cursor: default;
+}
+
+.continent-path.wrong-hit {
+  fill: #dc2626 !important;
+  transition: fill 0.1s ease;
+}
+
+.continent-path.hint-flash {
+  animation: pulseHint 1s infinite alternate;
+}
+
+@keyframes pulseHint {
+  from { fill: #f59e0b; }
+  to { fill: #dc2626; }
+}
+
+/* ==========================================================================
+   STANDARD QUIZ ARENA & REMAINING ELEMENTS
+   ========================================================================== */
 .arena-header {
   display: flex;
   justify-content: space-between;
@@ -649,10 +972,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
 .clickable-table tr:hover td { background: var(--secondary-light); }
 
 .leaderboard-table th { background: #f1f5f9; }
-.rank-badge {
-  font-weight: 700;
-  font-size: 1rem;
-}
+.rank-badge { font-weight: 700; font-size: 1rem; }
 
 /* Badges */
 .badge {
@@ -825,11 +1145,11 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   display: none !important;
 }
 
-/* Responsive */
 @media (max-width: 850px) {
   .navbar { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
   .nav-actions { width: 100%; justify-content: space-between; }
   .mode-selector { grid-template-columns: 1fr; }
+  .flag-options-grid { grid-template-columns: 1fr; }
   .action-bar-top { flex-direction: column; }
   .button-group { flex-wrap: wrap; }
 }
