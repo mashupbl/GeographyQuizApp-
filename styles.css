@@ -694,6 +694,12 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   to { fill: #dc2626 !important; }
 }
 
+/* Small Island / Microstate Beacon Pin Styles */
+.small-country-pin {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
 /* ==========================================================================
    STANDARD QUIZ ARENA & DATA TABLES
    ========================================================================== */

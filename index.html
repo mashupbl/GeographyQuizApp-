@@ -6,7 +6,7 @@
   <title>GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform</title>
   
   <!-- Cache-Busting Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=3.2">
+  <link rel="stylesheet" href="styles.css?v=3.3">
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -234,34 +234,34 @@
         </div>
       </div>
 
-      <!-- ================= 4. MAP POINTING SETUP (ALL COUNTRIES + ACCURATE MAP) ================= -->
+      <!-- ================= 4. MAP POINTING SETUP ================= -->
       <div id="subViewMapSetup" class="sub-view-pane hidden">
         <div class="card setup-card">
           <div class="card-header">
-            <h2>🗺️ Map Pointing Challenge (Accurate Seterra Style)</h2>
-            <p>Locate real-scale countries and continents with interactive zooming and accurate borders.</p>
+            <h2>🗺️ Map Pointing Challenge (Seterra Style)</h2>
+            <p>Locate real-scale countries and continents. Choosing a continent isolates and shows only that continent!</p>
           </div>
           <form id="mapSetupForm" class="setup-grid">
             <div class="form-group full-width">
               <label for="mapScopeSelect">Choose Target Map Region</label>
-              <select id="mapScopeSelect" class="form-control" style="max-width: 420px;" required>
-                <option value="Europe" selected>🏰 Countries of Europe (45 Countries)</option>
-                <option value="Asia">🌏 Countries of Asia (49 Countries)</option>
-                <option value="Africa">🌍 Countries of Africa (54 Countries)</option>
-                <option value="North America">🗽 Countries of North America (23 Countries)</option>
-                <option value="South America">🏔️ Countries of South America (12 Countries)</option>
-                <option value="Australia/Oceania">🏝️ Countries of Oceania (14 Countries)</option>
-                <option value="Whole World">🌍 Countries of the World (Challenge Mode)</option>
-                <option value="Continents">🌐 The 7 Continents of the World</option>
+              <select id="mapScopeSelect" class="form-control" style="max-width: 440px;" required>
+                <option value="Continents" selected>🌐 The 7 Continents of the World (Continent Selection)</option>
+                <option value="Asia">🌏 Countries of Asia (49 Asian Countries Only)</option>
+                <option value="Europe">🏰 Countries of Europe (45 European Countries Only)</option>
+                <option value="Africa">🌍 Countries of Africa (54 African Countries Only)</option>
+                <option value="North America">🗽 Countries of North America (23 Countries Only)</option>
+                <option value="South America">🏔️ Countries of South America (12 Countries Only)</option>
+                <option value="Australia/Oceania">🏝️ Countries of Oceania (14 Countries Only)</option>
+                <option value="Whole World">🌍 Countries of the World (All 197 Countries)</option>
               </select>
             </div>
 
             <div class="form-group">
               <label for="mapTargetCountSelect">Target Question Count</label>
               <select id="mapTargetCountSelect" class="form-control">
-                <option value="all" selected>All Countries in Region</option>
-                <option value="10">10 Random Countries</option>
-                <option value="20">20 Random Countries</option>
+                <option value="all" selected>All in Selected Region</option>
+                <option value="10">10 Random Questions</option>
+                <option value="20">20 Random Questions</option>
               </select>
             </div>
 
@@ -280,7 +280,7 @@
           <!-- Top Navy Mission Bar -->
           <div class="map-mission-bar">
             <div class="map-stats-left">
-              <span id="mapScoreRatio">0 / 45</span>
+              <span id="mapScoreRatio">0 / 7</span>
               <span class="map-stat-divider">|</span>
               <span id="mapAccuracyPct">0%</span>
             </div>
@@ -298,7 +298,7 @@
           </div>
 
           <!-- Alert / Feedback Overlay -->
-          <div id="mapFeedbackToast" class="map-feedback-toast hidden">That was France, try again!</div>
+          <div id="mapFeedbackToast" class="map-feedback-toast hidden">That was Europe, try again!</div>
 
           <!-- Leaflet High-Accuracy Map Viewport -->
           <div id="leafletMapContainer" class="leaflet-map-canvas">
@@ -663,7 +663,7 @@
           <div class="card-header-flex">
             <div>
               <h3>Registered Attempts & Integrity Audit Log</h3>
-              <p class="text-muted">Click any row to view complete question breakdowns.</p>
+              <p class="text-muted">Click 'Review' on any attempt (Q&A, Flag Quiz, or Map Pointing) to inspect answers.</p>
             </div>
             <button id="btnPurgeDuplicateAttempts" class="btn btn-outline-sm" style="color: var(--primary); border-color: var(--primary); font-weight: 700;">
               🧹 Clean Database Duplicates
@@ -677,6 +677,7 @@
                   <th>User ID</th>
                   <th>Name</th>
                   <th>Role</th>
+                  <th>Type</th>
                   <th>Scope</th>
                   <th>Score</th>
                   <th>Accuracy</th>
@@ -685,7 +686,7 @@
                 </tr>
               </thead>
               <tbody id="adminAttemptsTableBody">
-                <tr><td colspan="9" class="text-center">No records located.</td></tr>
+                <tr><td colspan="10" class="text-center">No records located.</td></tr>
               </tbody>
             </table>
           </div>
@@ -696,7 +697,7 @@
 
   <!-- ==================== MODALS ==================== -->
 
-  <!-- Modal 1: Authentication Gate -->
+  <!-- Modal 1: Mandatory Authentication Gate -->
   <div id="authModal" class="modal-overlay hidden">
     <div class="modal-dialog modal-sm">
       <div class="modal-header">
@@ -731,7 +732,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: Attempt History Drill-Down Breakdown -->
+  <!-- Modal 2: Attempt History Drill-Down Breakdown (Supports Q&A, Flags & Map Pointing) -->
   <div id="attemptDetailModal" class="modal-overlay hidden">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
@@ -741,7 +742,7 @@
       <div class="modal-body">
         <div class="stats-summary-grid" id="attemptModalSummary"></div>
         <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--border-color);">
-        <h4>Question Responses</h4>
+        <h4 id="attemptDetailSectionTitle">Itemized Question Responses</h4>
         <div id="attemptModalQuestionsList" class="results-review-list"></div>
       </div>
       <div class="modal-footer">
@@ -929,6 +930,6 @@
 
   <!-- Firebase Config & App Logic (With Cache-Busting Version Query) -->
   <script src="firebase-config.js"></script>
-  <script src="app.js?v=3.2"></script>
+  <script src="app.js?v=3.3"></script>
 </body>
 </html>

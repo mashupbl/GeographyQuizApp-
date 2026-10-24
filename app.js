@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v3.2 (Complete 197 Flag Roster & Leaflet Seterra Vector Map)
+ * Core Engine v3.3 (Continent Selection Mode, Filtered Continents & Admin Review)
  */
 
 'use strict';
@@ -11,218 +11,224 @@ const VALID_CONTINENTS = [
 ];
 
 /* ==========================================================================
-   COMPLETE 197 COUNTRY FLAG REPOSITORY (ALL SOVEREIGN NATIONS)
+   COMPLETE 197 COUNTRY FLAG & GEOGRAPHY REPOSITORY (ALL SOVEREIGN NATIONS)
    ========================================================================== */
 const WORLD_FLAGS = [
   // --- Africa (54 Sovereign Countries) ---
-  { code: 'dz', name: 'Algeria', continent: 'Africa' },
-  { code: 'ao', name: 'Angola', continent: 'Africa' },
-  { code: 'bj', name: 'Benin', continent: 'Africa' },
-  { code: 'bw', name: 'Botswana', continent: 'Africa' },
-  { code: 'bf', name: 'Burkina Faso', continent: 'Africa' },
-  { code: 'bi', name: 'Burundi', continent: 'Africa' },
-  { code: 'cv', name: 'Cabo Verde', continent: 'Africa' },
-  { code: 'cm', name: 'Cameroon', continent: 'Africa' },
-  { code: 'cf', name: 'Central African Republic', continent: 'Africa' },
-  { code: 'td', name: 'Chad', continent: 'Africa' },
-  { code: 'km', name: 'Comoros', continent: 'Africa' },
-  { code: 'cg', name: 'Republic of the Congo', continent: 'Africa' },
-  { code: 'cd', name: 'DR Congo', continent: 'Africa' },
-  { code: 'dj', name: 'Djibouti', continent: 'Africa' },
-  { code: 'eg', name: 'Egypt', continent: 'Africa' },
-  { code: 'gq', name: 'Equatorial Guinea', continent: 'Africa' },
-  { code: 'er', name: 'Eritrea', continent: 'Africa' },
-  { code: 'sz', name: 'Eswatini', continent: 'Africa' },
-  { code: 'et', name: 'Ethiopia', continent: 'Africa' },
-  { code: 'ga', name: 'Gabon', continent: 'Africa' },
-  { code: 'gm', name: 'Gambia', continent: 'Africa' },
-  { code: 'gh', name: 'Ghana', continent: 'Africa' },
-  { code: 'gn', name: 'Guinea', continent: 'Africa' },
-  { code: 'gw', name: 'Guinea-Bissau', continent: 'Africa' },
-  { code: 'ci', name: 'Ivory Coast', continent: 'Africa' },
-  { code: 'ke', name: 'Kenya', continent: 'Africa' },
-  { code: 'ls', name: 'Lesotho', continent: 'Africa' },
-  { code: 'lr', name: 'Liberia', continent: 'Africa' },
-  { code: 'ly', name: 'Libya', continent: 'Africa' },
-  { code: 'mg', name: 'Madagascar', continent: 'Africa' },
-  { code: 'mw', name: 'Malawi', continent: 'Africa' },
-  { code: 'ml', name: 'Mali', continent: 'Africa' },
-  { code: 'mr', name: 'Mauritania', continent: 'Africa' },
-  { code: 'mu', name: 'Mauritius', continent: 'Africa' },
-  { code: 'ma', name: 'Morocco', continent: 'Africa' },
-  { code: 'mz', name: 'Mozambique', continent: 'Africa' },
-  { code: 'na', name: 'Namibia', continent: 'Africa' },
-  { code: 'ne', name: 'Niger', continent: 'Africa' },
-  { code: 'ng', name: 'Nigeria', continent: 'Africa' },
-  { code: 'rw', name: 'Rwanda', continent: 'Africa' },
-  { code: 'st', name: 'Sao Tome and Principe', continent: 'Africa' },
-  { code: 'sn', name: 'Senegal', continent: 'Africa' },
-  { code: 'sc', name: 'Seychelles', continent: 'Africa' },
-  { code: 'sl', name: 'Sierra Leone', continent: 'Africa' },
-  { code: 'so', name: 'Somalia', continent: 'Africa' },
-  { code: 'za', name: 'South Africa', continent: 'Africa' },
-  { code: 'ss', name: 'South Sudan', continent: 'Africa' },
-  { code: 'sd', name: 'Sudan', continent: 'Africa' },
-  { code: 'tz', name: 'Tanzania', continent: 'Africa' },
-  { code: 'tg', name: 'Togo', continent: 'Africa' },
-  { code: 'tn', name: 'Tunisia', continent: 'Africa' },
-  { code: 'ug', name: 'Uganda', continent: 'Africa' },
-  { code: 'zm', name: 'Zambia', continent: 'Africa' },
-  { code: 'zw', name: 'Zimbabwe', continent: 'Africa' },
+  { code: 'dz', name: 'Algeria', continent: 'Africa', coords: [28.0339, 1.6596] },
+  { code: 'ao', name: 'Angola', continent: 'Africa', coords: [-11.2027, 17.8739] },
+  { code: 'bj', name: 'Benin', continent: 'Africa', coords: [9.3077, 2.3158] },
+  { code: 'bw', name: 'Botswana', continent: 'Africa', coords: [-22.3285, 24.6849] },
+  { code: 'bf', name: 'Burkina Faso', continent: 'Africa', coords: [12.2383, -1.5616] },
+  { code: 'bi', name: 'Burundi', continent: 'Africa', coords: [-3.3731, 29.9189] },
+  { code: 'cv', name: 'Cabo Verde', continent: 'Africa', coords: [16.5388, -23.0418], isSmall: true },
+  { code: 'cm', name: 'Cameroon', continent: 'Africa', coords: [7.3697, 12.3547] },
+  { code: 'cf', name: 'Central African Republic', continent: 'Africa', coords: [6.6111, 20.9394] },
+  { code: 'td', name: 'Chad', continent: 'Africa', coords: [15.4542, 18.7322] },
+  { code: 'km', name: 'Comoros', continent: 'Africa', coords: [-11.8795, 43.4473], isSmall: true },
+  { code: 'cg', name: 'Republic of the Congo', continent: 'Africa', coords: [-0.2280, 15.8277] },
+  { code: 'cd', name: 'DR Congo', continent: 'Africa', coords: [-4.0383, 21.7587] },
+  { code: 'dj', name: 'Djibouti', continent: 'Africa', coords: [11.8251, 42.5903], isSmall: true },
+  { code: 'eg', name: 'Egypt', continent: 'Africa', coords: [26.8206, 30.8025] },
+  { code: 'gq', name: 'Equatorial Guinea', continent: 'Africa', coords: [1.6508, 10.2679] },
+  { code: 'er', name: 'Eritrea', continent: 'Africa', coords: [15.1794, 39.7823] },
+  { code: 'sz', name: 'Eswatini', continent: 'Africa', coords: [-26.5225, 31.4659], isSmall: true },
+  { code: 'et', name: 'Ethiopia', continent: 'Africa', coords: [9.1450, 40.4897] },
+  { code: 'ga', name: 'Gabon', continent: 'Africa', coords: [-0.8037, 11.6094] },
+  { code: 'gm', name: 'Gambia', continent: 'Africa', coords: [13.4432, -15.3101], isSmall: true },
+  { code: 'gh', name: 'Ghana', continent: 'Africa', coords: [7.9465, -1.0232] },
+  { code: 'gn', name: 'Guinea', continent: 'Africa', coords: [9.9456, -9.6966] },
+  { code: 'gw', name: 'Guinea-Bissau', continent: 'Africa', coords: [11.8037, -15.1804] },
+  { code: 'ci', name: 'Ivory Coast', continent: 'Africa', coords: [7.5400, -5.5471] },
+  { code: 'ke', name: 'Kenya', continent: 'Africa', coords: [-0.0236, 37.9062] },
+  { code: 'ls', name: 'Lesotho', continent: 'Africa', coords: [-29.6099, 28.2336], isSmall: true },
+  { code: 'lr', name: 'Liberia', continent: 'Africa', coords: [6.4281, -9.4295] },
+  { code: 'ly', name: 'Libya', continent: 'Africa', coords: [26.3351, 17.2283] },
+  { code: 'mg', name: 'Madagascar', continent: 'Africa', coords: [-18.7669, 46.8691] },
+  { code: 'mw', name: 'Malawi', continent: 'Africa', coords: [-13.2543, 34.3015] },
+  { code: 'ml', name: 'Mali', continent: 'Africa', coords: [17.5707, -3.9962] },
+  { code: 'mr', name: 'Mauritania', continent: 'Africa', coords: [21.0079, -10.9408] },
+  { code: 'mu', name: 'Mauritius', continent: 'Africa', coords: [-20.3484, 57.5522], isSmall: true },
+  { code: 'ma', name: 'Morocco', continent: 'Africa', coords: [31.7917, -7.0926] },
+  { code: 'mz', name: 'Mozambique', continent: 'Africa', coords: [-18.6657, 35.5296] },
+  { code: 'na', name: 'Namibia', continent: 'Africa', coords: [-22.9576, 18.4904] },
+  { code: 'ne', name: 'Niger', continent: 'Africa', coords: [17.6078, 8.0817] },
+  { code: 'ng', name: 'Nigeria', continent: 'Africa', coords: [9.0820, 8.6753] },
+  { code: 'rw', name: 'Rwanda', continent: 'Africa', coords: [-1.9403, 29.8739], isSmall: true },
+  { code: 'st', name: 'Sao Tome and Principe', continent: 'Africa', coords: [0.1864, 6.6131], isSmall: true },
+  { code: 'sn', name: 'Senegal', continent: 'Africa', coords: [14.4974, -14.4524] },
+  { code: 'sc', name: 'Seychelles', continent: 'Africa', coords: [-4.6796, 55.4920], isSmall: true },
+  { code: 'sl', name: 'Sierra Leone', continent: 'Africa', coords: [8.4606, -11.7799] },
+  { code: 'so', name: 'Somalia', continent: 'Africa', coords: [5.1521, 46.1996] },
+  { code: 'za', name: 'South Africa', continent: 'Africa', coords: [-30.5595, 22.9375] },
+  { code: 'ss', name: 'South Sudan', continent: 'Africa', coords: [6.8770, 31.3070] },
+  { code: 'sd', name: 'Sudan', continent: 'Africa', coords: [12.8628, 30.2176] },
+  { code: 'tz', name: 'Tanzania', continent: 'Africa', coords: [-6.3690, 34.8888] },
+  { code: 'tg', name: 'Togo', continent: 'Africa', coords: [8.6195, 0.8248] },
+  { code: 'tn', name: 'Tunisia', continent: 'Africa', coords: [33.8869, 9.5375] },
+  { code: 'ug', name: 'Uganda', continent: 'Africa', coords: [1.3733, 32.2903] },
+  { code: 'zm', name: 'Zambia', continent: 'Africa', coords: [-13.1339, 27.8493] },
+  { code: 'zw', name: 'Zimbabwe', continent: 'Africa', coords: [-19.0154, 29.1549] },
 
   // --- Asia (49 Sovereign Countries) ---
-  { code: 'af', name: 'Afghanistan', continent: 'Asia' },
-  { code: 'am', name: 'Armenia', continent: 'Asia' },
-  { code: 'az', name: 'Azerbaijan', continent: 'Asia' },
-  { code: 'bh', name: 'Bahrain', continent: 'Asia' },
-  { code: 'bd', name: 'Bangladesh', continent: 'Asia' },
-  { code: 'bt', name: 'Bhutan', continent: 'Asia' },
-  { code: 'bn', name: 'Brunei', continent: 'Asia' },
-  { code: 'kh', name: 'Cambodia', continent: 'Asia' },
-  { code: 'cn', name: 'China', continent: 'Asia' },
-  { code: 'cy', name: 'Cyprus', continent: 'Asia' },
-  { code: 'ge', name: 'Georgia', continent: 'Asia' },
-  { code: 'in', name: 'India', continent: 'Asia' },
-  { code: 'id', name: 'Indonesia', continent: 'Asia' },
-  { code: 'ir', name: 'Iran', continent: 'Asia' },
-  { code: 'iq', name: 'Iraq', continent: 'Asia' },
-  { code: 'il', name: 'Israel', continent: 'Asia' },
-  { code: 'jp', name: 'Japan', continent: 'Asia' },
-  { code: 'jo', name: 'Jordan', continent: 'Asia' },
-  { code: 'kz', name: 'Kazakhstan', continent: 'Asia' },
-  { code: 'kw', name: 'Kuwait', continent: 'Asia' },
-  { code: 'kg', name: 'Kyrgyzstan', continent: 'Asia' },
-  { code: 'la', name: 'Laos', continent: 'Asia' },
-  { code: 'lb', name: 'Lebanon', continent: 'Asia' },
-  { code: 'my', name: 'Malaysia', continent: 'Asia' },
-  { code: 'mv', name: 'Maldives', continent: 'Asia' },
-  { code: 'mn', name: 'Mongolia', continent: 'Asia' },
-  { code: 'mm', name: 'Myanmar', continent: 'Asia' },
-  { code: 'np', name: 'Nepal', continent: 'Asia' },
-  { code: 'kp', name: 'North Korea', continent: 'Asia' },
-  { code: 'om', name: 'Oman', continent: 'Asia' },
-  { code: 'pk', name: 'Pakistan', continent: 'Asia' },
-  { code: 'ps', name: 'Palestine', continent: 'Asia' },
-  { code: 'ph', name: 'Philippines', continent: 'Asia' },
-  { code: 'qa', name: 'Qatar', continent: 'Asia' },
-  { code: 'sa', name: 'Saudi Arabia', continent: 'Asia' },
-  { code: 'sg', name: 'Singapore', continent: 'Asia' },
-  { code: 'kr', name: 'South Korea', continent: 'Asia' },
-  { code: 'lk', name: 'Sri Lanka', continent: 'Asia' },
-  { code: 'sy', name: 'Syria', continent: 'Asia' },
-  { code: 'tw', name: 'Taiwan', continent: 'Asia' },
-  { code: 'tj', name: 'Tajikistan', continent: 'Asia' },
-  { code: 'th', name: 'Thailand', continent: 'Asia' },
-  { code: 'tl', name: 'Timor-Leste', continent: 'Asia' },
-  { code: 'tr', name: 'Turkey', continent: 'Asia' },
-  { code: 'tm', name: 'Turkmenistan', continent: 'Asia' },
-  { code: 'ae', name: 'United Arab Emirates', continent: 'Asia' },
-  { code: 'uz', name: 'Uzbekistan', continent: 'Asia' },
-  { code: 'vn', name: 'Vietnam', continent: 'Asia' },
-  { code: 'ye', name: 'Yemen', continent: 'Asia' },
+  { code: 'af', name: 'Afghanistan', continent: 'Asia', coords: [33.9391, 67.7100] },
+  { code: 'am', name: 'Armenia', continent: 'Asia', coords: [40.0691, 45.0382], isSmall: true },
+  { code: 'az', name: 'Azerbaijan', continent: 'Asia', coords: [40.1431, 47.5769] },
+  { code: 'bh', name: 'Bahrain', continent: 'Asia', coords: [26.0667, 50.5577], isSmall: true },
+  { code: 'bd', name: 'Bangladesh', continent: 'Asia', coords: [23.6850, 90.3563] },
+  { code: 'bt', name: 'Bhutan', continent: 'Asia', coords: [27.5142, 90.4336], isSmall: true },
+  { code: 'bn', name: 'Brunei', continent: 'Asia', coords: [4.5353, 114.7277], isSmall: true },
+  { code: 'kh', name: 'Cambodia', continent: 'Asia', coords: [12.5657, 104.9910] },
+  { code: 'cn', name: 'China', continent: 'Asia', coords: [35.8617, 104.1954] },
+  { code: 'cy', name: 'Cyprus', continent: 'Asia', coords: [35.1264, 33.4299], isSmall: true },
+  { code: 'ge', name: 'Georgia', continent: 'Asia', coords: [42.3154, 43.3569] },
+  { code: 'in', name: 'India', continent: 'Asia', coords: [20.5937, 78.9629] },
+  { code: 'id', name: 'Indonesia', continent: 'Asia', coords: [-0.7893, 113.9213] },
+  { code: 'ir', name: 'Iran', continent: 'Asia', coords: [32.4279, 53.6880] },
+  { code: 'iq', name: 'Iraq', continent: 'Asia', coords: [33.2232, 43.6793] },
+  { code: 'il', name: 'Israel', continent: 'Asia', coords: [31.0461, 34.8516], isSmall: true },
+  { code: 'jp', name: 'Japan', continent: 'Asia', coords: [36.2048, 138.2529] },
+  { code: 'jo', name: 'Jordan', continent: 'Asia', coords: [30.5852, 36.2384] },
+  { code: 'kz', name: 'Kazakhstan', continent: 'Asia', coords: [48.0196, 66.9237] },
+  { code: 'kw', name: 'Kuwait', continent: 'Asia', coords: [29.3117, 47.4818], isSmall: true },
+  { code: 'kg', name: 'Kyrgyzstan', continent: 'Asia', coords: [41.2044, 74.7661] },
+  { code: 'la', name: 'Laos', continent: 'Asia', coords: [19.8563, 102.4955] },
+  { code: 'lb', name: 'Lebanon', continent: 'Asia', coords: [33.8547, 35.8623], isSmall: true },
+  { code: 'my', name: 'Malaysia', continent: 'Asia', coords: [4.2105, 101.9758] },
+  { code: 'mv', name: 'Maldives', continent: 'Asia', coords: [3.2028, 73.2207], isSmall: true },
+  { code: 'mn', name: 'Mongolia', continent: 'Asia', coords: [46.8625, 103.8467] },
+  { code: 'mm', name: 'Myanmar', continent: 'Asia', coords: [21.9162, 95.9560] },
+  { code: 'np', name: 'Nepal', continent: 'Asia', coords: [28.3949, 84.1240] },
+  { code: 'kp', name: 'North Korea', continent: 'Asia', coords: [40.3399, 127.5101] },
+  { code: 'om', name: 'Oman', continent: 'Asia', coords: [21.4735, 55.9754] },
+  { code: 'pk', name: 'Pakistan', continent: 'Asia', coords: [30.3753, 69.3451] },
+  { code: 'ps', name: 'Palestine', continent: 'Asia', coords: [31.9522, 35.2332], isSmall: true },
+  { code: 'ph', name: 'Philippines', continent: 'Asia', coords: [12.8797, 121.7740] },
+  { code: 'qa', name: 'Qatar', continent: 'Asia', coords: [25.3548, 51.1839], isSmall: true },
+  { code: 'sa', name: 'Saudi Arabia', continent: 'Asia', coords: [23.8859, 45.0792] },
+  { code: 'sg', name: 'Singapore', continent: 'Asia', coords: [1.3521, 103.8198], isSmall: true },
+  { code: 'kr', name: 'South Korea', continent: 'Asia', coords: [35.9078, 127.7669] },
+  { code: 'lk', name: 'Sri Lanka', continent: 'Asia', coords: [7.8731, 80.7718] },
+  { code: 'sy', name: 'Syria', continent: 'Asia', coords: [34.8021, 38.9968] },
+  { code: 'tw', name: 'Taiwan', continent: 'Asia', coords: [23.6978, 120.9605] },
+  { code: 'tj', name: 'Tajikistan', continent: 'Asia', coords: [38.8610, 71.2761] },
+  { code: 'th', name: 'Thailand', continent: 'Asia', coords: [15.8700, 100.9925] },
+  { code: 'tl', name: 'Timor-Leste', continent: 'Asia', coords: [-8.8742, 125.7275], isSmall: true },
+  { code: 'tr', name: 'Turkey', continent: 'Asia', coords: [38.9637, 35.2433] },
+  { code: 'tm', name: 'Turkmenistan', continent: 'Asia', coords: [38.9697, 59.5563] },
+  { code: 'ae', name: 'United Arab Emirates', continent: 'Asia', coords: [23.4241, 53.8478] },
+  { code: 'uz', name: 'Uzbekistan', continent: 'Asia', coords: [41.3775, 64.5853] },
+  { code: 'vn', name: 'Vietnam', continent: 'Asia', coords: [14.0583, 108.2772] },
+  { code: 'ye', name: 'Yemen', continent: 'Asia', coords: [15.5527, 48.5164] },
 
   // --- Europe (45 Sovereign Countries) ---
-  { code: 'al', name: 'Albania', continent: 'Europe' },
-  { code: 'ad', name: 'Andorra', continent: 'Europe' },
-  { code: 'at', name: 'Austria', continent: 'Europe' },
-  { code: 'by', name: 'Belarus', continent: 'Europe' },
-  { code: 'be', name: 'Belgium', continent: 'Europe' },
-  { code: 'ba', name: 'Bosnia and Herzegovina', continent: 'Europe' },
-  { code: 'bg', name: 'Bulgaria', continent: 'Europe' },
-  { code: 'hr', name: 'Croatia', continent: 'Europe' },
-  { code: 'cz', name: 'Czech Republic', continent: 'Europe' },
-  { code: 'dk', name: 'Denmark', continent: 'Europe' },
-  { code: 'ee', name: 'Estonia', continent: 'Europe' },
-  { code: 'fi', name: 'Finland', continent: 'Europe' },
-  { code: 'fr', name: 'France', continent: 'Europe' },
-  { code: 'de', name: 'Germany', continent: 'Europe' },
-  { code: 'gr', name: 'Greece', continent: 'Europe' },
-  { code: 'hu', name: 'Hungary', continent: 'Europe' },
-  { code: 'is', name: 'Iceland', continent: 'Europe' },
-  { code: 'ie', name: 'Ireland', continent: 'Europe' },
-  { code: 'it', name: 'Italy', continent: 'Europe' },
-  { code: 'xk', name: 'Kosovo', continent: 'Europe' },
-  { code: 'lv', name: 'Latvia', continent: 'Europe' },
-  { code: 'li', name: 'Liechtenstein', continent: 'Europe' },
-  { code: 'lt', name: 'Lithuania', continent: 'Europe' },
-  { code: 'lu', name: 'Luxembourg', continent: 'Europe' },
-  { code: 'mt', name: 'Malta', continent: 'Europe' },
-  { code: 'md', name: 'Moldova', continent: 'Europe' },
-  { code: 'mc', name: 'Monaco', continent: 'Europe' },
-  { code: 'me', name: 'Montenegro', continent: 'Europe' },
-  { code: 'nl', name: 'Netherlands', continent: 'Europe' },
-  { code: 'mk', name: 'North Macedonia', continent: 'Europe' },
-  { code: 'no', name: 'Norway', continent: 'Europe' },
-  { code: 'pl', name: 'Poland', continent: 'Europe' },
-  { code: 'pt', name: 'Portugal', continent: 'Europe' },
-  { code: 'ro', name: 'Romania', continent: 'Europe' },
-  { code: 'ru', name: 'Russia', continent: 'Europe' },
-  { code: 'sm', name: 'San Marino', continent: 'Europe' },
-  { code: 'rs', name: 'Serbia', continent: 'Europe' },
-  { code: 'sk', name: 'Slovakia', continent: 'Europe' },
-  { code: 'si', name: 'Slovenia', continent: 'Europe' },
-  { code: 'es', name: 'Spain', continent: 'Europe' },
-  { code: 'se', name: 'Sweden', continent: 'Europe' },
-  { code: 'ch', name: 'Switzerland', continent: 'Europe' },
-  { code: 'ua', name: 'Ukraine', continent: 'Europe' },
-  { code: 'gb', name: 'United Kingdom', continent: 'Europe' },
-  { code: 'va', name: 'Vatican City', continent: 'Europe' },
+  { code: 'al', name: 'Albania', continent: 'Europe', coords: [41.1533, 20.1683] },
+  { code: 'ad', name: 'Andorra', continent: 'Europe', coords: [42.5063, 1.5218], isSmall: true },
+  { code: 'at', name: 'Austria', continent: 'Europe', coords: [47.5162, 14.5501] },
+  { code: 'by', name: 'Belarus', continent: 'Europe', coords: [53.7098, 27.9534] },
+  { code: 'be', name: 'Belgium', continent: 'Europe', coords: [50.5039, 4.4699] },
+  { code: 'ba', name: 'Bosnia and Herzegovina', continent: 'Europe', coords: [43.9159, 17.6791] },
+  { code: 'bg', name: 'Bulgaria', continent: 'Europe', coords: [42.7339, 25.4858] },
+  { code: 'hr', name: 'Croatia', continent: 'Europe', coords: [45.1000, 15.2000] },
+  { code: 'cz', name: 'Czech Republic', continent: 'Europe', coords: [49.8175, 15.4730] },
+  { code: 'dk', name: 'Denmark', continent: 'Europe', coords: [56.2639, 9.5018] },
+  { code: 'ee', name: 'Estonia', continent: 'Europe', coords: [58.5953, 25.0136] },
+  { code: 'fi', name: 'Finland', continent: 'Europe', coords: [61.9241, 25.7482] },
+  { code: 'fr', name: 'France', continent: 'Europe', coords: [46.2276, 2.2137] },
+  { code: 'de', name: 'Germany', continent: 'Europe', coords: [51.1657, 10.4515] },
+  { code: 'gr', name: 'Greece', continent: 'Europe', coords: [39.0742, 21.8243] },
+  { code: 'hu', name: 'Hungary', continent: 'Europe', coords: [47.1625, 19.5033] },
+  { code: 'is', name: 'Iceland', continent: 'Europe', coords: [64.9631, -19.0208] },
+  { code: 'ie', name: 'Ireland', continent: 'Europe', coords: [53.1424, -7.6921] },
+  { code: 'it', name: 'Italy', continent: 'Europe', coords: [41.8719, 12.5674] },
+  { code: 'xk', name: 'Kosovo', continent: 'Europe', coords: [42.6026, 20.9030] },
+  { code: 'lv', name: 'Latvia', continent: 'Europe', coords: [56.8796, 24.6032] },
+  { code: 'li', name: 'Liechtenstein', continent: 'Europe', coords: [47.1660, 9.5554], isSmall: true },
+  { code: 'lt', name: 'Lithuania', continent: 'Europe', coords: [55.1694, 23.8813] },
+  { code: 'lu', name: 'Luxembourg', continent: 'Europe', coords: [49.8153, 6.1296], isSmall: true },
+  { code: 'mt', name: 'Malta', continent: 'Europe', coords: [35.9375, 14.3754], isSmall: true },
+  { code: 'md', name: 'Moldova', continent: 'Europe', coords: [47.4116, 28.3699] },
+  { code: 'mc', name: 'Monaco', continent: 'Europe', coords: [43.7384, 7.4246], isSmall: true },
+  { code: 'me', name: 'Montenegro', continent: 'Europe', coords: [42.7087, 19.3744] },
+  { code: 'nl', name: 'Netherlands', continent: 'Europe', coords: [52.1326, 5.2913] },
+  { code: 'mk', name: 'North Macedonia', continent: 'Europe', coords: [41.6086, 21.7453] },
+  { code: 'no', name: 'Norway', continent: 'Europe', coords: [60.4720, 8.4689] },
+  { code: 'pl', name: 'Poland', continent: 'Europe', coords: [51.9194, 19.1451] },
+  { code: 'pt', name: 'Portugal', continent: 'Europe', coords: [39.3999, -8.2245] },
+  { code: 'ro', name: 'Romania', continent: 'Europe', coords: [45.9432, 24.9668] },
+  { code: 'ru', name: 'Russia', continent: 'Europe', coords: [61.5240, 105.3188] },
+  { code: 'sm', name: 'San Marino', continent: 'Europe', coords: [43.9424, 12.4578], isSmall: true },
+  { code: 'rs', name: 'Serbia', continent: 'Europe', coords: [44.0165, 21.0059] },
+  { code: 'sk', name: 'Slovakia', continent: 'Europe', coords: [48.6690, 19.6990] },
+  { code: 'si', name: 'Slovenia', continent: 'Europe', coords: [46.1512, 14.9955] },
+  { code: 'es', name: 'Spain', continent: 'Europe', coords: [40.4637, -3.7492] },
+  { code: 'se', name: 'Sweden', continent: 'Europe', coords: [60.1282, 18.6435] },
+  { code: 'ch', name: 'Switzerland', continent: 'Europe', coords: [46.8182, 8.2275] },
+  { code: 'ua', name: 'Ukraine', continent: 'Europe', coords: [48.3794, 31.1656] },
+  { code: 'gb', name: 'United Kingdom', continent: 'Europe', coords: [55.3781, -3.4360] },
+  { code: 'va', name: 'Vatican City', continent: 'Europe', coords: [41.9029, 12.4534], isSmall: true },
 
   // --- North America & Caribbean (23 Sovereign Countries) ---
-  { code: 'ag', name: 'Antigua and Barbuda', continent: 'North America' },
-  { code: 'bs', name: 'Bahamas', continent: 'North America' },
-  { code: 'bb', name: 'Barbados', continent: 'North America' },
-  { code: 'bz', name: 'Belize', continent: 'North America' },
-  { code: 'ca', name: 'Canada', continent: 'North America' },
-  { code: 'cr', name: 'Costa Rica', continent: 'North America' },
-  { code: 'cu', name: 'Cuba', continent: 'North America' },
-  { code: 'dm', name: 'Dominica', continent: 'North America' },
-  { code: 'do', name: 'Dominican Republic', continent: 'North America' },
-  { code: 'sv', name: 'El Salvador', continent: 'North America' },
-  { code: 'gd', name: 'Grenada', continent: 'North America' },
-  { code: 'gt', name: 'Guatemala', continent: 'North America' },
-  { code: 'ht', name: 'Haiti', continent: 'North America' },
-  { code: 'hn', name: 'Honduras', continent: 'North America' },
-  { code: 'jm', name: 'Jamaica', continent: 'North America' },
-  { code: 'mx', name: 'Mexico', continent: 'North America' },
-  { code: 'ni', name: 'Nicaragua', continent: 'North America' },
-  { code: 'pa', name: 'Panama', continent: 'North America' },
-  { code: 'kn', name: 'Saint Kitts and Nevis', continent: 'North America' },
-  { code: 'lc', name: 'Saint Lucia', continent: 'North America' },
-  { code: 'vc', name: 'Saint Vincent and the Grenadines', continent: 'North America' },
-  { code: 'tt', name: 'Trinidad and Tobago', continent: 'North America' },
-  { code: 'us', name: 'United States', continent: 'North America' },
+  { code: 'ag', name: 'Antigua and Barbuda', continent: 'North America', coords: [17.0608, -61.7964], isSmall: true },
+  { code: 'bs', name: 'Bahamas', continent: 'North America', coords: [25.0343, -77.3963] },
+  { code: 'bb', name: 'Barbados', continent: 'North America', coords: [13.1939, -59.5432], isSmall: true },
+  { code: 'bz', name: 'Belize', continent: 'North America', coords: [17.1899, -88.4976] },
+  { code: 'ca', name: 'Canada', continent: 'North America', coords: [56.1304, -106.3468] },
+  { code: 'cr', name: 'Costa Rica', continent: 'North America', coords: [9.7489, -83.7534] },
+  { code: 'cu', name: 'Cuba', continent: 'North America', coords: [21.5218, -77.7812] },
+  { code: 'dm', name: 'Dominica', continent: 'North America', coords: [15.4150, -61.3710], isSmall: true },
+  { code: 'do', name: 'Dominican Republic', continent: 'North America', coords: [18.7357, -70.1627] },
+  { code: 'sv', name: 'El Salvador', continent: 'North America', coords: [13.7942, -88.8965] },
+  { code: 'gd', name: 'Grenada', continent: 'North America', coords: [12.1165, -61.6790], isSmall: true },
+  { code: 'gt', name: 'Guatemala', continent: 'North America', coords: [15.7835, -90.2308] },
+  { code: 'ht', name: 'Haiti', continent: 'North America', coords: [18.9712, -72.2852] },
+  { code: 'hn', name: 'Honduras', continent: 'North America', coords: [15.2000, -86.2419] },
+  { code: 'jm', name: 'Jamaica', continent: 'North America', coords: [18.1096, -77.2975], isSmall: true },
+  { code: 'mx', name: 'Mexico', continent: 'North America', coords: [23.6345, -102.5528] },
+  { code: 'ni', name: 'Nicaragua', continent: 'North America', coords: [12.8654, -85.2072] },
+  { code: 'pa', name: 'Panama', continent: 'North America', coords: [8.5380, -80.7821] },
+  { code: 'kn', name: 'Saint Kitts and Nevis', continent: 'North America', coords: [17.3578, -62.7830], isSmall: true },
+  { code: 'lc', name: 'Saint Lucia', continent: 'North America', coords: [13.9094, -60.9789], isSmall: true },
+  { code: 'vc', name: 'Saint Vincent and the Grenadines', continent: 'North America', coords: [13.2528, -61.1971], isSmall: true },
+  { code: 'tt', name: 'Trinidad and Tobago', continent: 'North America', coords: [10.6918, -61.2225], isSmall: true },
+  { code: 'us', name: 'United States', continent: 'North America', coords: [37.0902, -95.7129] },
 
   // --- South America (12 Sovereign Countries) ---
-  { code: 'ar', name: 'Argentina', continent: 'South America' },
-  { code: 'bo', name: 'Bolivia', continent: 'South America' },
-  { code: 'br', name: 'Brazil', continent: 'South America' },
-  { code: 'cl', name: 'Chile', continent: 'South America' },
-  { code: 'co', name: 'Colombia', continent: 'South America' },
-  { code: 'ec', name: 'Ecuador', continent: 'South America' },
-  { code: 'gy', name: 'Guyana', continent: 'South America' },
-  { code: 'py', name: 'Paraguay', continent: 'South America' },
-  { code: 'pe', name: 'Peru', continent: 'South America' },
-  { code: 'sr', name: 'Suriname', continent: 'South America' },
-  { code: 'uy', name: 'Uruguay', continent: 'South America' },
-  { code: 've', name: 'Venezuela', continent: 'South America' },
+  { code: 'ar', name: 'Argentina', continent: 'South America', coords: [-38.4161, -63.6167] },
+  { code: 'bo', name: 'Bolivia', continent: 'South America', coords: [-16.2902, -63.5887] },
+  { code: 'br', name: 'Brazil', continent: 'South America', coords: [-14.2350, -51.9253] },
+  { code: 'cl', name: 'Chile', continent: 'South America', coords: [-35.6751, -71.5430] },
+  { code: 'co', name: 'Colombia', continent: 'South America', coords: [4.5709, -74.2973] },
+  { code: 'ec', name: 'Ecuador', continent: 'South America', coords: [-1.8312, -78.1834] },
+  { code: 'gy', name: 'Guyana', continent: 'South America', coords: [4.8604, -58.9302] },
+  { code: 'py', name: 'Paraguay', continent: 'South America', coords: [-23.4425, -58.4438] },
+  { code: 'pe', name: 'Peru', continent: 'South America', coords: [-9.1899, -75.0152] },
+  { code: 'sr', name: 'Suriname', continent: 'South America', coords: [3.9193, -56.0278] },
+  { code: 'uy', name: 'Uruguay', continent: 'South America', coords: [-32.5228, -55.7658] },
+  { code: 've', name: 'Venezuela', continent: 'South America', coords: [6.4238, -66.5897] },
 
   // --- Australia & Oceania (14 Sovereign Countries) ---
-  { code: 'au', name: 'Australia', continent: 'Australia/Oceania' },
-  { code: 'fj', name: 'Fiji', continent: 'Australia/Oceania' },
-  { code: 'ki', name: 'Kiribati', continent: 'Australia/Oceania' },
-  { code: 'mh', name: 'Marshall Islands', continent: 'Australia/Oceania' },
-  { code: 'fm', name: 'Micronesia', continent: 'Australia/Oceania' },
-  { code: 'nr', name: 'Nauru', continent: 'Australia/Oceania' },
-  { code: 'nz', name: 'New Zealand', continent: 'Australia/Oceania' },
-  { code: 'pw', name: 'Palau', continent: 'Australia/Oceania' },
-  { code: 'pg', name: 'Papua New Guinea', continent: 'Australia/Oceania' },
-  { code: 'ws', name: 'Samoa', continent: 'Australia/Oceania' },
-  { code: 'sb', name: 'Solomon Islands', continent: 'Australia/Oceania' },
-  { code: 'to', name: 'Tonga', continent: 'Australia/Oceania' },
-  { code: 'tv', name: 'Tuvalu', continent: 'Australia/Oceania' },
-  { code: 'vu', name: 'Vanuatu', continent: 'Australia/Oceania' }
+  { code: 'au', name: 'Australia', continent: 'Australia/Oceania', coords: [-25.2744, 133.7751] },
+  { code: 'fj', name: 'Fiji', continent: 'Australia/Oceania', coords: [-17.7134, 178.0650], isSmall: true },
+  { code: 'ki', name: 'Kiribati', continent: 'Australia/Oceania', coords: [1.4518, 172.9717], isSmall: true },
+  { code: 'mh', name: 'Marshall Islands', continent: 'Australia/Oceania', coords: [7.1315, 171.1845], isSmall: true },
+  { code: 'fm', name: 'Micronesia', continent: 'Australia/Oceania', coords: [7.4256, 150.5508], isSmall: true },
+  { code: 'nr', name: 'Nauru', continent: 'Australia/Oceania', coords: [-0.5228, 166.9315], isSmall: true },
+  { code: 'nz', name: 'New Zealand', continent: 'Australia/Oceania', coords: [-40.9006, 174.8860] },
+  { code: 'pw', name: 'Palau', continent: 'Australia/Oceania', coords: [7.5150, 134.5825], isSmall: true },
+  { code: 'pg', name: 'Papua New Guinea', continent: 'Australia/Oceania', coords: [-6.3150, 143.9555] },
+  { code: 'ws', name: 'Samoa', continent: 'Australia/Oceania', coords: [-13.7590, -172.1046], isSmall: true },
+  { code: 'sb', name: 'Solomon Islands', continent: 'Australia/Oceania', coords: [-9.6457, 160.1562], isSmall: true },
+  { code: 'to', name: 'Tonga', continent: 'Australia/Oceania', coords: [-21.1790, -175.1982], isSmall: true },
+  { code: 'tv', name: 'Tuvalu', continent: 'Australia/Oceania', coords: [-7.1095, 177.6493], isSmall: true },
+  { code: 'vu', name: 'Vanuatu', continent: 'Australia/Oceania', coords: [-15.3767, 166.9592], isSmall: true }
 ];
+
+// Fast Country to Continent Lookup Dictionary
+const COUNTRY_TO_CONTINENT = {};
+WORLD_FLAGS.forEach(c => {
+  COUNTRY_TO_CONTINENT[c.name.toLowerCase()] = c.continent;
+});
 
 const SEED_QUESTIONS = [
   {
@@ -734,9 +740,10 @@ class GeoQuizApp {
     // Leaflet Seterra-Style Map Pointing Session
     this.mapSession = {
       active: false,
-      scope: 'Europe',
+      scope: 'Continents',
       leafletMap: null,
       geoJsonLayer: null,
+      markerGroup: null,
       cachedWorldGeoJson: null,
       targets: [],
       currentTargetIndex: 0,
@@ -746,7 +753,9 @@ class GeoQuizApp {
       secondsElapsed: 0,
       timerInterval: null,
       countryLayersByName: {},
-      hintInterval: null
+      beaconMarkersByName: {},
+      hintInterval: null,
+      snapshots: []
     };
 
     this.init();
@@ -1157,6 +1166,7 @@ class GeoQuizApp {
     if (subviewName === 'studentDashboard') this.renderStudentDashboard();
     if (subviewName === 'adminOverview') this.renderAdminOverview();
     if (subviewName === 'adminQuestionBank') this.renderQuestionBank();
+    if (subviewName === 'adminStudentMonitoring') this.renderAdminOverview();
   }
 
   /* ==========================================================================
@@ -1350,7 +1360,7 @@ class GeoQuizApp {
   }
 
   /* ==========================================================================
-     HIGH-PRECISION SETERRA-STYLE MAP POINTING (LEAFLET + REAL COUNTRY GEOJSON)
+     HIGH-PRECISION SETERRA MAP POINTING (WITH CONTINENT ISOLATION & BEACONS)
      ========================================================================== */
   normalizeName(name) {
     if (!name) return '';
@@ -1382,7 +1392,6 @@ class GeoQuizApp {
   async fetchWorldGeoJson() {
     if (this.mapSession.cachedWorldGeoJson) return this.mapSession.cachedWorldGeoJson;
 
-    // Fast and reliable international vector GeoJSON CDNs with auto-fallback
     const urls = [
       'https://cdn.jsdelivr.net/gh/vasturiano/three-globe@2.31.0/example/country-polygons/ne_110m_admin_0_countries.geojson',
       'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson'
@@ -1441,20 +1450,21 @@ class GeoQuizApp {
 
     document.getElementById('mapLoadingSpinner').classList.add('hidden');
 
-    // Build target country list
-    let eligibleCountries = [];
-    if (scope === 'Whole World') {
-      eligibleCountries = WORLD_FLAGS.map(f => f.name);
-    } else if (scope === 'Continents') {
-      eligibleCountries = [
+    // Build target challenge list
+    let eligibleTargets = [];
+    if (scope === 'Continents') {
+      eligibleTargets = [
         'Europe', 'Asia', 'Africa', 'North America', 
         'South America', 'Australia/Oceania', 'Antarctica'
       ];
+    } else if (scope === 'Whole World') {
+      eligibleTargets = WORLD_FLAGS.map(f => f.name);
     } else {
-      eligibleCountries = WORLD_FLAGS.filter(f => f.continent === scope).map(f => f.name);
+      // Continent-wise country list (e.g. Asia -> ONLY 49 Asian countries!)
+      eligibleTargets = WORLD_FLAGS.filter(f => f.continent === scope).map(f => f.name);
     }
 
-    const shuffled = [...eligibleCountries].sort(() => 0.5 - Math.random());
+    const shuffled = [...eligibleTargets].sort(() => 0.5 - Math.random());
     const targetCount = countVal === 'all' ? shuffled.length : Math.min(parseInt(countVal, 10), shuffled.length);
     const selectedTargets = shuffled.slice(0, targetCount);
 
@@ -1466,11 +1476,17 @@ class GeoQuizApp {
     this.mapSession.totalCompleted = 0;
     this.mapSession.correctPoints = 0;
     this.mapSession.countryLayersByName = {};
+    this.mapSession.beaconMarkersByName = {};
+    this.mapSession.snapshots = [];
 
-    // Remove previous GeoJSON layer
+    // Remove previous GeoJSON layer & Markers
     if (this.mapSession.geoJsonLayer) {
       this.mapSession.leafletMap.removeLayer(this.mapSession.geoJsonLayer);
     }
+    if (this.mapSession.markerGroup) {
+      this.mapSession.leafletMap.removeLayer(this.mapSession.markerGroup);
+    }
+    this.mapSession.markerGroup = L.layerGroup().addTo(this.mapSession.leafletMap);
 
     // Default Landmass Styling (Seterra Colors from Image 2)
     const defaultStyle = {
@@ -1481,8 +1497,15 @@ class GeoQuizApp {
       fillOpacity: 1
     };
 
-    // Render interactive countries
+    // Filter GeoJSON to show ONLY the chosen continent's countries when a continent is selected!
     this.mapSession.geoJsonLayer = L.geoJSON(geoJsonData, {
+      filter: (feature) => {
+        if (scope === 'Whole World' || scope === 'Continents') return true;
+        const rawName = feature.properties.NAME || feature.properties.ADMIN || feature.properties.name || feature.properties.admin || '';
+        const continentOfCountry = COUNTRY_TO_CONTINENT[this.normalizeName(rawName)];
+        // Keep ONLY countries in this continent!
+        return continentOfCountry === scope;
+      },
       style: () => defaultStyle,
       onEachFeature: (feature, layer) => {
         const rawName = feature.properties.NAME || feature.properties.ADMIN || feature.properties.name || feature.properties.admin || '';
@@ -1502,12 +1525,51 @@ class GeoQuizApp {
         });
 
         layer.on('click', () => {
-          this.handleMapCountryClick(rawName, layer);
+          this.handleMapClick(rawName, layer);
         });
       }
     }).addTo(this.mapSession.leafletMap);
 
-    // Auto-focus camera on target region
+    // Create Seterra-Style Target Beacons for Small Island Countries & Microstates
+    const countriesInScope = (scope === 'Whole World' || scope === 'Continents')
+      ? WORLD_FLAGS
+      : WORLD_FLAGS.filter(f => f.continent === scope);
+
+    countriesInScope.forEach(c => {
+      if (c.coords && c.isSmall) {
+        const normName = this.normalizeName(c.name);
+        const marker = L.circleMarker(c.coords, {
+          radius: 7,
+          fillColor: '#21794b',
+          color: '#ffffff',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 1,
+          className: 'small-country-pin'
+        });
+
+        marker.on('click', () => {
+          this.handleMapClick(c.name, marker);
+        });
+
+        marker.on('mouseover', () => {
+          if (!marker.isCompleted) {
+            marker.setStyle({ fillColor: '#2ea466', radius: 9 });
+          }
+        });
+
+        marker.on('mouseout', () => {
+          if (!marker.isCompleted) {
+            marker.setStyle({ fillColor: '#21794b', radius: 7 });
+          }
+        });
+
+        marker.addTo(this.mapSession.markerGroup);
+        this.mapSession.beaconMarkersByName[normName] = marker;
+      }
+    });
+
+    // Auto-focus and zoom to the selected continent or region
     this.focusMapRegion(scope);
 
     this.updateMapMissionBar();
@@ -1554,17 +1616,96 @@ class GeoQuizApp {
     }, 1000);
   }
 
-  handleMapCountryClick(clickedRawName, layer) {
-    if (!this.mapSession.active || layer.isCompleted) return;
+  handleMapClick(clickedRawName, element) {
+    if (!this.mapSession.active || element.isCompleted) return;
 
     const targetName = this.mapSession.targets[this.mapSession.currentTargetIndex];
     const normalizedTarget = this.normalizeName(targetName);
     const normalizedClicked = this.normalizeName(clickedRawName);
 
+    // Case 1: Continent Selection Mode (e.g. Target: "Asia")
+    if (this.mapSession.scope === 'Continents') {
+      const clickedContinent = COUNTRY_TO_CONTINENT[normalizedClicked] || clickedRawName;
+      const isCorrectContinent = (clickedContinent.toLowerCase() === targetName.toLowerCase());
+
+      if (isCorrectContinent) {
+        // Success: Highlight all countries in this continent!
+        WORLD_FLAGS.filter(f => f.continent === targetName).forEach(f => {
+          const norm = this.normalizeName(f.name);
+          const layer = this.mapSession.countryLayersByName[norm];
+          if (layer) {
+            layer.isCompleted = true;
+            layer.setStyle({ fillColor: '#15803d', weight: 1.5, color: '#ffffff', fillOpacity: 1 });
+          }
+          const beacon = this.mapSession.beaconMarkersByName[norm];
+          if (beacon) {
+            beacon.isCompleted = true;
+            beacon.setStyle({ fillColor: '#15803d', color: '#ffffff' });
+          }
+        });
+
+        if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
+
+        const pts = this.mapSession.attemptsOnCurrent === 0 ? 1 : 0.5;
+        this.mapSession.correctPoints += pts;
+        this.mapSession.totalCompleted++;
+
+        this.mapSession.snapshots.push({
+          questionText: `Locate continent: ${targetName}`,
+          selectedAnswer: `Found in ${this.mapSession.attemptsOnCurrent + 1} try`,
+          correctAnswer: targetName,
+          isCorrect: (this.mapSession.attemptsOnCurrent === 0)
+        });
+
+        this.showMapToast(`✅ Correct! You found ${targetName}`, 'success');
+        this.advanceMapTarget();
+      } else {
+        // Wrong continent clicked
+        this.mapSession.attemptsOnCurrent++;
+        element.setStyle({ fillColor: '#dc2626', color: '#ffffff' });
+        setTimeout(() => {
+          if (!element.isCompleted) {
+            element.setStyle({ fillColor: '#21794b', color: '#a2cad8' });
+          }
+        }, 500);
+
+        this.showMapToast(`That was ${clickedContinent}, try again!`, 'warning');
+
+        if (this.mapSession.attemptsOnCurrent >= 2) {
+          // Pulse the entire correct continent
+          let toggle = false;
+          if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
+          this.mapSession.hintInterval = setInterval(() => {
+            toggle = !toggle;
+            WORLD_FLAGS.filter(f => f.continent === targetName).forEach(f => {
+              const layer = this.mapSession.countryLayersByName[this.normalizeName(f.name)];
+              if (layer && !layer.isCompleted) {
+                layer.setStyle({ fillColor: toggle ? '#f59e0b' : '#dc2626', color: '#ffffff' });
+              }
+            });
+          }, 400);
+        }
+      }
+      return;
+    }
+
+    // Case 2: Country Selection Mode (e.g. Target: "Bahrain" or "France")
     if (normalizedClicked === normalizedTarget) {
-      // Correct Match!
-      layer.isCompleted = true;
-      layer.setStyle({ fillColor: '#15803d', weight: 1.5, color: '#ffffff', fillOpacity: 1 });
+      // Correct country hit!
+      element.isCompleted = true;
+      element.setStyle({ fillColor: '#15803d', weight: 1.5, color: '#ffffff', fillOpacity: 1 });
+
+      // If there is an associated polygon or pin, complete both
+      const associatedBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
+      if (associatedBeacon) {
+        associatedBeacon.isCompleted = true;
+        associatedBeacon.setStyle({ fillColor: '#15803d', color: '#ffffff' });
+      }
+      const associatedPolygon = this.mapSession.countryLayersByName[normalizedTarget];
+      if (associatedPolygon) {
+        associatedPolygon.isCompleted = true;
+        associatedPolygon.setStyle({ fillColor: '#15803d', color: '#ffffff' });
+      }
 
       if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
 
@@ -1572,33 +1713,45 @@ class GeoQuizApp {
       this.mapSession.correctPoints += pts;
       this.mapSession.totalCompleted++;
 
+      this.mapSession.snapshots.push({
+        questionText: `Locate country: ${targetName}`,
+        selectedAnswer: `Found in ${this.mapSession.attemptsOnCurrent + 1} try`,
+        correctAnswer: targetName,
+        isCorrect: (this.mapSession.attemptsOnCurrent === 0)
+      });
+
       this.showMapToast(`✅ Correct! ${targetName}`, 'success');
       this.advanceMapTarget();
     } else {
-      // Incorrect Click
+      // Wrong country hit
       this.mapSession.attemptsOnCurrent++;
 
-      // Flash Red
-      layer.setStyle({ fillColor: '#dc2626', weight: 2, color: '#ffffff' });
+      element.setStyle({ fillColor: '#dc2626', color: '#ffffff' });
       setTimeout(() => {
-        if (!layer.isCompleted) {
-          layer.setStyle({ fillColor: '#21794b', weight: 1.2, color: '#a2cad8', fillOpacity: 1 });
+        if (!element.isCompleted) {
+          element.setStyle({ fillColor: '#21794b', color: '#a2cad8' });
         }
       }, 500);
 
       this.showMapToast(`That was ${clickedRawName}, try again!`, 'warning');
 
-      // 3rd Miss: Pulse the target country
+      // 3rd Miss: Pulse the target country polygon and beacon pin
       if (this.mapSession.attemptsOnCurrent >= 2) {
         const targetLayer = this.mapSession.countryLayersByName[normalizedTarget];
-        if (targetLayer) {
-          let toggle = false;
-          if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
-          this.mapSession.hintInterval = setInterval(() => {
-            toggle = !toggle;
-            targetLayer.setStyle({ fillColor: toggle ? '#f59e0b' : '#dc2626', weight: 2.5, color: '#ffffff' });
-          }, 400);
-        }
+        const targetBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
+        let toggle = false;
+
+        if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
+        this.mapSession.hintInterval = setInterval(() => {
+          toggle = !toggle;
+          const pulseColor = toggle ? '#f59e0b' : '#dc2626';
+          if (targetLayer && !targetLayer.isCompleted) {
+            targetLayer.setStyle({ fillColor: pulseColor, weight: 2.5, color: '#ffffff' });
+          }
+          if (targetBeacon && !targetBeacon.isCompleted) {
+            targetBeacon.setStyle({ fillColor: pulseColor, radius: toggle ? 10 : 7, color: '#ffffff' });
+          }
+        }, 400);
       }
     }
   }
@@ -1613,6 +1766,15 @@ class GeoQuizApp {
   skipMapTarget() {
     if (!this.mapSession.active) return;
     if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
+
+    const targetName = this.mapSession.targets[this.mapSession.currentTargetIndex];
+    this.mapSession.snapshots.push({
+      questionText: `Locate: ${targetName}`,
+      selectedAnswer: 'Skipped',
+      correctAnswer: targetName,
+      isCorrect: false
+    });
+
     this.mapSession.totalCompleted++;
     this.advanceMapTarget();
   }
@@ -1653,7 +1815,7 @@ class GeoQuizApp {
       timestamp: new Date().toISOString(),
       formattedDate: new Date().toLocaleDateString(),
       formattedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      snapshots: []
+      snapshots: this.mapSession.snapshots
     };
 
     await this.storage.saveAttempt(attempt);
@@ -2080,6 +2242,9 @@ class GeoQuizApp {
         <td>${m}m ${s}s</td>
         <td><button class="btn btn-outline-sm btn-view-attempt" data-id="${att.id}">Review</button></td>
       `;
+      tr.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('btn-view-attempt')) this.openAttemptDetailModal(att.id);
+      });
       tbody.appendChild(tr);
     });
 
@@ -2101,7 +2266,7 @@ class GeoQuizApp {
     tbody.innerHTML = '';
 
     if (this.attempts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center">No attempts logged yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center">No attempts logged yet.</td></tr>`;
       return;
     }
 
@@ -2118,6 +2283,7 @@ class GeoQuizApp {
         <td><code>${this.escapeHtml(att.studentId)}</code></td>
         <td><strong>${this.escapeHtml(att.studentName)}</strong></td>
         <td>${roleBadge}</td>
+        <td><span class="badge badge-primary">${att.type || 'Question Quiz'}</span></td>
         <td>${att.continent}</td>
         <td>${att.correctCount} / ${att.totalQuestions}</td>
         <td><strong>${att.accuracyPct}%</strong></td>
@@ -2138,6 +2304,7 @@ class GeoQuizApp {
     });
   }
 
+  // Opens Complete Itemized Review for Q&A, Flag Quizzes & Map Pointing in Admin Console & Student Dash
   openAttemptDetailModal(attemptId) {
     const att = this.attempts.find(a => a.id === attemptId);
     if (!att) return;
@@ -2149,32 +2316,44 @@ class GeoQuizApp {
     const s = att.durationSeconds % 60;
 
     summary.innerHTML = `
-      <div class="stat-box"><span class="stat-label">Date</span><span class="stat-val">${att.formattedDate}</span></div>
-      <div class="stat-box"><span class="stat-label">Type</span><span class="stat-val">${att.type || 'Q&A'}</span></div>
-      <div class="stat-box"><span class="stat-label">Scope</span><span class="stat-val">${att.continent}</span></div>
+      <div class="stat-box"><span class="stat-label">Date & Time</span><span class="stat-val">${att.formattedDate} ${att.formattedTime || ''}</span></div>
+      <div class="stat-box"><span class="stat-label">Module Type</span><span class="stat-val">${att.type || 'Q&A'}</span></div>
+      <div class="stat-box"><span class="stat-label">Target Scope</span><span class="stat-val">${att.continent}</span></div>
       <div class="stat-box"><span class="stat-label">Score</span><span class="stat-val text-success">${att.correctCount} / ${att.totalQuestions} (${att.accuracyPct}%)</span></div>
       <div class="stat-box"><span class="stat-label">Duration</span><span class="stat-val">${m}m ${s}s</span></div>
     `;
 
+    const sectionTitle = document.getElementById('attemptDetailSectionTitle');
+    if (sectionTitle) {
+      if (att.type?.includes('Map')) sectionTitle.textContent = 'Map Locations & Identification Log';
+      else if (att.type?.includes('Flag')) sectionTitle.textContent = 'Flags Identified & Submitted Answers';
+      else sectionTitle.textContent = 'Itemized Question Responses';
+    }
+
     const qList = document.getElementById('attemptModalQuestionsList');
     qList.innerHTML = '';
 
-    (att.snapshots || []).forEach((snap, idx) => {
-      const item = document.createElement('div');
-      item.className = `review-item ${snap.isCorrect ? 'pass' : 'fail'}`;
-      item.innerHTML = `
-        <div class="review-header">
-          <span>#${idx + 1}</span>
-          <span class="badge ${snap.isCorrect ? 'badge-success' : 'badge-danger'}">${snap.isCorrect ? 'Correct' : 'Incorrect'}</span>
-        </div>
-        <div class="review-question">${this.escapeHtml(snap.questionText)}</div>
-        <div class="review-answers">
-          <span>Chosen: <strong>${this.escapeHtml(snap.selectedAnswer || 'Unanswered')}</strong></span>
-          ${!snap.isCorrect ? `<span>Correct: <strong>${this.escapeHtml(snap.correctAnswer)}</strong></span>` : ''}
-        </div>
-      `;
-      qList.appendChild(item);
-    });
+    if (!att.snapshots || att.snapshots.length === 0) {
+      qList.innerHTML = `<div class="text-center text-muted" style="padding: 1.5rem;">Total summary score logged: ${att.correctCount} / ${att.totalQuestions} correct (${att.accuracyPct}%).</div>`;
+    } else {
+      att.snapshots.forEach((snap, idx) => {
+        const item = document.createElement('div');
+        item.className = `review-item ${snap.isCorrect ? 'pass' : 'fail'}`;
+        item.innerHTML = `
+          <div class="review-header">
+            <span>#${idx + 1} (${snap.continent || att.continent})</span>
+            <span class="badge ${snap.isCorrect ? 'badge-success' : 'badge-danger'}">${snap.isCorrect ? 'Correct' : 'Missed'}</span>
+          </div>
+          <div class="review-question">${this.escapeHtml(snap.questionText)}</div>
+          <div class="review-answers">
+            <span>Student Input: <strong>${this.escapeHtml(snap.selectedAnswer || 'Unanswered')}</strong></span>
+            ${!snap.isCorrect ? `<span>Target Location / Key: <strong>${this.escapeHtml(snap.correctAnswer)}</strong></span>` : ''}
+            ${snap.explanation ? `<div class="feedback-source">${this.escapeHtml(snap.explanation)}</div>` : ''}
+          </div>
+        `;
+        qList.appendChild(item);
+      });
+    }
 
     document.getElementById('attemptDetailModal').classList.remove('hidden');
   }
@@ -2228,7 +2407,7 @@ class GeoQuizApp {
     if (this.stagedCsvQuestions.length === 0) return;
     const btn = purgeExisting ? document.getElementById('btnPurgeAndImport') : document.getElementById('btnConfirmImport');
     btn.disabled = true;
-    btn.textContent = purgeExisting ? 'Purging & Saving...' : 'Saving 700+ Questions...';
+    btn.textContent = purgeExisting ? 'Purging & Saving...' : 'Saving Questions...';
 
     const res = await this.storage.saveBatchQuestions(this.stagedCsvQuestions, purgeExisting);
     await this.refreshData();
