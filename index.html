@@ -4,10 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform</title>
-  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Cache-Busting Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=3.2">
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet.js for High-Precision Country Vector Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head>
 <body>
   <!-- Header Navigation -->
@@ -140,24 +148,24 @@
         </div>
       </div>
 
-      <!-- ================= 2. FLAG QUIZ SETUP ================= -->
+      <!-- ================= 2. FLAG QUIZ SETUP (ALL 197 COUNTRIES) ================= -->
       <div id="subViewFlagSetup" class="sub-view-pane hidden">
         <div class="card setup-card">
           <div class="card-header">
-            <h2>🚩 Name That World Flag! (Flag Quiz)</h2>
+            <h2>🚩 Name That World Flag! (197 Sovereign Nations)</h2>
             <p>Select your continent and question count to identify world flags.</p>
           </div>
           <form id="flagSetupForm" class="setup-grid">
             <div class="form-group">
               <label for="flagContinent">Flag Continent Scope</label>
               <select id="flagContinent" class="form-control" required>
-                <option value="Whole World" selected>🌍 Whole World (All Continents)</option>
-                <option value="Asia">Asia</option>
-                <option value="Africa">Africa</option>
-                <option value="Europe">Europe</option>
-                <option value="North America">North America & Caribbean</option>
-                <option value="South America">South America</option>
-                <option value="Australia/Oceania">Australia & Oceania</option>
+                <option value="Whole World" selected>🌍 Whole World (All 197 Flags)</option>
+                <option value="Europe">🏰 Europe (45 Flags)</option>
+                <option value="Asia">🌏 Asia (49 Flags)</option>
+                <option value="Africa">🌍 Africa (54 Flags)</option>
+                <option value="North America">🗽 North America & Caribbean (23 Flags)</option>
+                <option value="South America">🏔️ South America (12 Flags)</option>
+                <option value="Australia/Oceania">🏝️ Australia & Oceania (14 Flags)</option>
               </select>
             </div>
 
@@ -166,8 +174,9 @@
               <select id="flagCount" class="form-control" required>
                 <option value="10">10 Flags</option>
                 <option value="20">20 Flags</option>
-                <option value="35" selected>35 Flags (Challenge)</option>
-                <option value="all">All Available Flags</option>
+                <option value="35" selected>35 Flags (Challenge Mode)</option>
+                <option value="50">50 Flags</option>
+                <option value="all">All Available in Scope</option>
               </select>
             </div>
 
@@ -189,7 +198,7 @@
         </div>
       </div>
 
-      <!-- ================= 3. ACTIVE FLAG ARENA (MATCHES IMAGE 1) ================= -->
+      <!-- ================= 3. ACTIVE FLAG ARENA (IMAGE 1 EXACT DESIGN) ================= -->
       <div id="subViewFlagArena" class="sub-view-pane hidden">
         <div class="flag-quiz-wrapper">
           <div class="flag-quiz-header">
@@ -225,50 +234,60 @@
         </div>
       </div>
 
-      <!-- ================= 4. MAP POINTING SETUP ================= -->
+      <!-- ================= 4. MAP POINTING SETUP (ALL COUNTRIES + ACCURATE MAP) ================= -->
       <div id="subViewMapSetup" class="sub-view-pane hidden">
         <div class="card setup-card">
           <div class="card-header">
-            <h2>🗺️ Map Pointing Challenge (Seterra Style)</h2>
-            <p>Click and locate continents and regions directly on the interactive vector map.</p>
+            <h2>🗺️ Map Pointing Challenge (Accurate Seterra Style)</h2>
+            <p>Locate real-scale countries and continents with interactive zooming and accurate borders.</p>
           </div>
-          <div class="setup-grid">
+          <form id="mapSetupForm" class="setup-grid">
             <div class="form-group full-width">
-              <label>Select Challenge Level</label>
-              <div class="mode-selector">
-                <label class="mode-card">
-                  <input type="radio" name="mapChallengeType" value="continents" checked>
-                  <div class="mode-card-content">
-                    <span class="mode-title">Level 1: The 7 Continents of the World</span>
-                    <span class="mode-desc">Locate North America, South America, Europe, Africa, Asia, Australia, and Antarctica.</span>
-                  </div>
-                </label>
-              </div>
+              <label for="mapScopeSelect">Choose Target Map Region</label>
+              <select id="mapScopeSelect" class="form-control" style="max-width: 420px;" required>
+                <option value="Europe" selected>🏰 Countries of Europe (45 Countries)</option>
+                <option value="Asia">🌏 Countries of Asia (49 Countries)</option>
+                <option value="Africa">🌍 Countries of Africa (54 Countries)</option>
+                <option value="North America">🗽 Countries of North America (23 Countries)</option>
+                <option value="South America">🏔️ Countries of South America (12 Countries)</option>
+                <option value="Australia/Oceania">🏝️ Countries of Oceania (14 Countries)</option>
+                <option value="Whole World">🌍 Countries of the World (Challenge Mode)</option>
+                <option value="Continents">🌐 The 7 Continents of the World</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="mapTargetCountSelect">Target Question Count</label>
+              <select id="mapTargetCountSelect" class="form-control">
+                <option value="all" selected>All Countries in Region</option>
+                <option value="10">10 Random Countries</option>
+                <option value="20">20 Random Countries</option>
+              </select>
             </div>
 
             <div class="form-actions full-width">
-              <button type="button" id="btnStartMapPointing" class="btn btn-primary btn-lg">
-                🗺️ Launch Map Pointing Arena
+              <button type="submit" id="btnStartMapPointing" class="btn btn-primary btn-lg">
+                🗺️ Launch Interactive Map Arena
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
 
-      <!-- ================= 5. ACTIVE MAP POINTING ARENA (MATCHES IMAGE 2) ================= -->
+      <!-- ================= 5. ACTIVE MAP POINTING ARENA (IMAGE 2 EXACT DESIGN) ================= -->
       <div id="subViewMapArena" class="sub-view-pane hidden">
         <div class="map-arena-wrapper">
           <!-- Top Navy Mission Bar -->
           <div class="map-mission-bar">
             <div class="map-stats-left">
-              <span id="mapScoreRatio">0 / 7</span>
+              <span id="mapScoreRatio">0 / 45</span>
               <span class="map-stat-divider">|</span>
               <span id="mapAccuracyPct">0%</span>
             </div>
 
             <div class="map-target-pill">
               <span>Click on</span>
-              <span class="map-target-name" id="mapTargetName">Europe</span>
+              <span class="map-target-name" id="mapTargetName">Loading...</span>
               <button id="btnSkipMapTarget" class="map-btn-skip" title="Skip Target">&#9654;&#10073;</button>
             </div>
 
@@ -279,49 +298,14 @@
           </div>
 
           <!-- Alert / Feedback Overlay -->
-          <div id="mapFeedbackToast" class="map-feedback-toast hidden">That was Africa, try again!</div>
+          <div id="mapFeedbackToast" class="map-feedback-toast hidden">That was France, try again!</div>
 
-          <!-- Interactive SVG World Map Canvas -->
-          <div class="svg-map-container" id="svgMapContainer">
-            <svg id="interactiveWorldSvg" viewBox="0 0 1000 500" class="world-svg">
-              <rect width="1000" height="500" class="ocean-water"></rect>
-
-              <!-- Continents Interactive Vector Paths -->
-              <!-- North America -->
-              <path id="continent-na" class="continent-path" data-name="North America"
-                d="M 120 70 L 210 65 L 280 90 L 320 85 L 340 140 L 290 170 L 230 175 L 210 240 L 250 250 L 270 290 L 250 310 L 220 280 L 190 230 L 150 220 L 130 180 L 100 130 Z M 270 40 L 330 30 L 340 80 L 290 90 Z">
-              </path>
-
-              <!-- South America -->
-              <path id="continent-sa" class="continent-path" data-name="South America"
-                d="M 270 290 L 320 300 L 370 340 L 360 400 L 320 440 L 290 480 L 270 450 L 260 380 L 250 320 Z">
-              </path>
-
-              <!-- Europe -->
-              <path id="continent-eu" class="continent-path" data-name="Europe"
-                d="M 460 120 L 520 100 L 560 130 L 580 180 L 530 200 L 490 220 L 450 200 L 470 160 Z M 430 150 L 460 140 L 450 170 Z">
-              </path>
-
-              <!-- Africa -->
-              <path id="continent-af" class="continent-path" data-name="Africa"
-                d="M 440 210 L 530 200 L 590 260 L 560 330 L 520 400 L 480 370 L 440 300 L 420 250 Z M 570 350 L 590 340 L 580 390 Z">
-              </path>
-
-              <!-- Asia -->
-              <path id="continent-as" class="continent-path" data-name="Asia"
-                d="M 580 90 L 780 70 L 890 110 L 870 200 L 790 250 L 730 250 L 690 320 L 650 290 L 610 260 L 580 180 Z M 720 310 L 820 330 L 790 360 L 730 340 Z M 840 180 L 870 190 L 850 240 Z">
-              </path>
-
-              <!-- Australia / Oceania -->
-              <path id="continent-au" class="continent-path" data-name="Australia/Oceania"
-                d="M 780 350 L 870 340 L 890 410 L 820 430 L 770 400 Z M 900 420 L 920 440 L 890 460 Z">
-              </path>
-
-              <!-- Antarctica -->
-              <path id="continent-an" class="continent-path" data-name="Antarctica"
-                d="M 180 480 L 350 470 L 520 480 L 700 470 L 850 485 L 800 500 L 200 500 Z">
-              </path>
-            </svg>
+          <!-- Leaflet High-Accuracy Map Viewport -->
+          <div id="leafletMapContainer" class="leaflet-map-canvas">
+            <div id="mapLoadingSpinner" class="map-loading-overlay">
+              <div class="spinner"></div>
+              <span>Loading high-precision geography map...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -559,8 +543,8 @@
           <h3>Interactive Modules Quick-Launch</h3>
           <p class="text-muted">Launch any visual module directly as a teacher to verify content and scoring.</p>
           <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-            <button id="btnAdminLaunchFlag" class="btn btn-primary">🚩 Test Flag Quiz</button>
-            <button id="btnAdminLaunchMap" class="btn btn-outline">🗺️ Test Map Pointing</button>
+            <button id="btnAdminLaunchFlag" class="btn btn-primary">🚩 Test Flag Quiz (197 Flags)</button>
+            <button id="btnAdminLaunchMap" class="btn btn-outline">🗺️ Test Map Pointing (All Countries)</button>
           </div>
         </div>
       </div>
@@ -712,7 +696,7 @@
 
   <!-- ==================== MODALS ==================== -->
 
-  <!-- Modal 1: Mandatory Authentication Gate -->
+  <!-- Modal 1: Authentication Gate -->
   <div id="authModal" class="modal-overlay hidden">
     <div class="modal-dialog modal-sm">
       <div class="modal-header">
@@ -943,8 +927,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase Config & App Logic -->
+  <!-- Firebase Config & App Logic (With Cache-Busting Version Query) -->
   <script src="firebase-config.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=3.2"></script>
 </body>
 </html>
