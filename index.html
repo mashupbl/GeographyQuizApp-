@@ -6,7 +6,7 @@
   <title>GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform</title>
   
   <!-- Cache-Busting Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=3.3">
+  <link rel="stylesheet" href="styles.css?v=3.4">
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,9 +62,14 @@
       <!-- ================= 1. STANDARD Q&A SETUP ================= -->
       <div id="subViewQuizSetup" class="sub-view-pane active">
         <div class="card setup-card">
-          <div class="card-header">
-            <h2>Select Assessment Configuration</h2>
-            <p>Select target scope, batch, difficulty, and session mode.</p>
+          <div class="card-header-flex">
+            <div>
+              <h2>Select Assessment Configuration</h2>
+              <p>Select target scope, batch, difficulty, and session mode.</p>
+            </div>
+            <button type="button" class="btn btn-outline-sm btn-open-download-modal">
+              📥 Download Study Q&amp;A Sheet
+            </button>
           </div>
           <form id="quizSetupForm" class="setup-grid">
             <div class="form-group">
@@ -163,9 +168,9 @@
                 <option value="Europe">🏰 Europe (45 Flags)</option>
                 <option value="Asia">🌏 Asia (49 Flags)</option>
                 <option value="Africa">🌍 Africa (54 Flags)</option>
-                <option value="North America">🗽 North America & Caribbean (23 Flags)</option>
+                <option value="North America">🗽 North America &amp; Caribbean (23 Flags)</option>
                 <option value="South America">🏔️ South America (12 Flags)</option>
-                <option value="Australia/Oceania">🏝️ Australia & Oceania (14 Flags)</option>
+                <option value="Australia/Oceania">🏝️ Australia &amp; Oceania (14 Flags)</option>
               </select>
             </div>
 
@@ -274,7 +279,7 @@
         </div>
       </div>
 
-      <!-- ================= 5. ACTIVE MAP POINTING ARENA (IMAGE 2 EXACT DESIGN) ================= -->
+      <!-- ================= 5. ACTIVE MAP POINTING ARENA ================= -->
       <div id="subViewMapArena" class="sub-view-pane hidden">
         <div class="map-arena-wrapper">
           <!-- Top Navy Mission Bar -->
@@ -351,7 +356,7 @@
             <button id="btnPrevQuestion" class="btn btn-outline" disabled>Previous</button>
             <div class="right-buttons">
               <button id="btnNextQuestion" class="btn btn-primary">Next Question</button>
-              <button id="btnSubmitExam" class="btn btn-danger hidden">Finish & Submit</button>
+              <button id="btnSubmitExam" class="btn btn-danger hidden">Finish &amp; Submit</button>
             </div>
           </div>
         </div>
@@ -404,7 +409,7 @@
           <div class="card-header-flex">
             <div>
               <h2>🏆 Top Highscore Leaderboards</h2>
-              <p>Top unique performances across Q&A, Flag Quizzes, and Map Pointing.</p>
+              <p>Top unique performances across Q&amp;A, Flag Quizzes, and Map Pointing.</p>
             </div>
             <button id="btnRefreshLeaderboard" class="btn btn-outline-sm">🔄 Refresh</button>
           </div>
@@ -479,7 +484,7 @@
             <table class="data-table clickable-table">
               <thead>
                 <tr>
-                  <th>Date & Time</th>
+                  <th>Date &amp; Time</th>
                   <th>Type</th>
                   <th>Scope</th>
                   <th>Difficulty</th>
@@ -503,7 +508,7 @@
       <nav class="sub-nav">
         <button class="sub-tab active" data-subview="adminOverview">Platform Overview</button>
         <button class="sub-tab" data-subview="adminQuestionBank">Question Bank Repository</button>
-        <button class="sub-tab" data-subview="adminStudentMonitoring">All Attempts & Audits</button>
+        <button class="sub-tab" data-subview="adminStudentMonitoring">All Attempts &amp; Audits</button>
       </nav>
 
       <!-- Subview: Admin Overview -->
@@ -558,6 +563,7 @@
             </div>
             <div class="button-group">
               <button id="btnOpenCsvModal" class="btn btn-success">📥 CSV Bulk Import</button>
+              <button class="btn btn-outline btn-open-download-modal">📥 Download Study Q&amp;A</button>
               <button id="btnExportCsv" class="btn btn-outline">📤 Export CSV</button>
               <button id="btnOpenAddModal" class="btn btn-primary">➕ Add Question</button>
             </div>
@@ -662,8 +668,8 @@
         <div class="card table-card">
           <div class="card-header-flex">
             <div>
-              <h3>Registered Attempts & Integrity Audit Log</h3>
-              <p class="text-muted">Click 'Review' on any attempt (Q&A, Flag Quiz, or Map Pointing) to inspect answers.</p>
+              <h3>Registered Attempts &amp; Integrity Audit Log</h3>
+              <p class="text-muted">Click 'Review' on any attempt (Q&amp;A, Flag Quiz, or Map Pointing) to inspect answers.</p>
             </div>
             <button id="btnPurgeDuplicateAttempts" class="btn btn-outline-sm" style="color: var(--primary); border-color: var(--primary); font-weight: 700;">
               🧹 Clean Database Duplicates
@@ -673,7 +679,7 @@
             <table class="data-table clickable-table">
               <thead>
                 <tr>
-                  <th>Date & Time</th>
+                  <th>Date &amp; Time</th>
                   <th>User ID</th>
                   <th>Name</th>
                   <th>Role</th>
@@ -805,7 +811,7 @@
       <div class="modal-footer">
         <button id="btnCancelCsvImport" class="btn btn-outline">Cancel</button>
         <button id="btnPurgeAndImport" class="btn btn-purge-danger" disabled title="Deletes all existing questions first, then uploads this new CSV">
-          🗑️ Delete All & Upload Fresh CSV
+          🗑️ Delete All &amp; Upload Fresh CSV
         </button>
         <button id="btnConfirmImport" class="btn btn-primary" disabled>
           ➕ Add to Existing Bank
@@ -814,7 +820,77 @@
     </div>
   </div>
 
-  <!-- Modal 4: Manual Add / Edit Question -->
+  <!-- Modal 4: Download Study Questions (Q&A Format) -->
+  <div id="downloadQuestionsModal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>📥 Download Study Questions (Q&amp;A Format)</h3>
+        <button class="modal-close" id="btnCloseDownloadModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-description">
+          Select target filters to export questions in clean <strong>Q1. Question? Ans. Answer</strong> format.
+        </p>
+
+        <div class="form-group">
+          <label for="dlFilterContinent">Geographic Scope / Continent</label>
+          <select id="dlFilterContinent" class="form-control">
+            <option value="Whole World" selected>🌍 Whole World (All Continents)</option>
+            <option value="Asia">Asia</option>
+            <option value="Africa">Africa</option>
+            <option value="Europe">Europe</option>
+            <option value="North America">North America</option>
+            <option value="South America">South America</option>
+            <option value="Australia/Oceania">Australia/Oceania</option>
+            <option value="Antarctica">Antarctica</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dlFilterBatch">Question Batch / Set</label>
+          <select id="dlFilterBatch" class="form-control">
+            <option value="All" selected>All Questions (All Batches)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dlFilterDifficulty">Difficulty Level</label>
+          <select id="dlFilterDifficulty" class="form-control">
+            <option value="All" selected>All Difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dlFilterTopic">Topic / Category</label>
+          <select id="dlFilterTopic" class="form-control">
+            <option value="All" selected>All Topics</option>
+          </select>
+        </div>
+
+        <div class="card" style="margin-top: 15px; margin-bottom: 0; background: var(--bg-main); border: 1px dashed var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Questions Ready to Export:</span>
+            <span id="dlReadyCountBadge" class="badge badge-success">0 Questions</span>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">
+            Export Layout Preview:<br>
+            <code>Q1. What is the name of the mountain range that includes Mount Everest?</code><br>
+            <code>Ans. The Himalayas.</code>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="btnCancelDownloadModal">Cancel</button>
+        <button type="button" class="btn btn-outline" id="btnCopyDownloadText">📋 Copy Text</button>
+        <button type="button" class="btn btn-primary" id="btnExecuteDownloadTxt">📥 Download (.txt File)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Manual Add / Edit Question -->
   <div id="questionModal" class="modal-overlay hidden">
     <div class="modal-dialog">
       <div class="modal-header">
@@ -930,6 +1006,6 @@
 
   <!-- Firebase Config & App Logic (With Cache-Busting Version Query) -->
   <script src="firebase-config.js"></script>
-  <script src="app.js?v=3.3"></script>
+  <script src="app.js?v=3.4"></script>
 </body>
 </html>

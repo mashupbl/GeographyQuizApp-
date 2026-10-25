@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v3.3 (Continent Selection Mode, Filtered Continents & Admin Review)
+ * Core Engine v3.4 (Zero-Lag Submit & Custom Q&A Study Sheet Export)
  */
 
 'use strict';
@@ -11,7 +11,7 @@ const VALID_CONTINENTS = [
 ];
 
 /* ==========================================================================
-   COMPLETE 197 COUNTRY FLAG & GEOGRAPHY REPOSITORY (ALL SOVEREIGN NATIONS)
+   COMPLETE 197 COUNTRY FLAG & GEOGRAPHY REPOSITORY
    ========================================================================== */
 const WORLD_FLAGS = [
   // --- Africa (54 Sovereign Countries) ---
@@ -462,7 +462,8 @@ class StorageAdapter {
         console.error(e);
       }
     }
-    const list = await this.getAllAttempts();
+    const raw = localStorage.getItem(this.KEY_ATTEMPTS);
+    const list = raw ? JSON.parse(raw) : [];
     const updated = this._deduplicateAttempts([attempt, ...list]);
     localStorage.setItem(this.KEY_ATTEMPTS, JSON.stringify(updated));
     return attempt;
@@ -771,6 +772,7 @@ class GeoQuizApp {
     this.renderAdminOverview();
     this.renderLeaderboard();
     this.updateAvailabilityBadge();
+    this.updateDownloadDialogCounts();
   }
 
   async refreshData() {
@@ -860,6 +862,8 @@ class GeoQuizApp {
 
   populateBatchDropdowns() {
     const batches = Array.from(new Set(this.questions.map(q => q.batch || 'Batch 1'))).sort();
+    
+    // Quiz Setup Batch
     const setupBatch = document.getElementById('setupBatch');
     if (setupBatch) {
       const prev = setupBatch.value;
@@ -873,6 +877,7 @@ class GeoQuizApp {
       if (batches.includes(prev)) setupBatch.value = prev;
     }
 
+    // Admin QB Filter Batch
     const qbFilterBatch = document.getElementById('qbFilterBatch');
     if (qbFilterBatch) {
       const prev = qbFilterBatch.value;
@@ -884,6 +889,20 @@ class GeoQuizApp {
         qbFilterBatch.appendChild(opt);
       });
       if (batches.includes(prev)) qbFilterBatch.value = prev;
+    }
+
+    // Download Modal Batch Dropdown
+    const dlFilterBatch = document.getElementById('dlFilterBatch');
+    if (dlFilterBatch) {
+      const prev = dlFilterBatch.value;
+      dlFilterBatch.innerHTML = '<option value="All">All Questions (All Batches)</option>';
+      batches.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.textContent = `🏷️ ${b}`;
+        dlFilterBatch.appendChild(opt);
+      });
+      if (batches.includes(prev)) dlFilterBatch.value = prev;
     }
   }
 
@@ -922,6 +941,129 @@ class GeoQuizApp {
     } else {
       topicSelect.value = 'All';
     }
+  }
+
+  /* ==========================================================================
+     STUDY SHEET DOWNLOAD MODAL LOGIC (CUSTOM Q&A FORMAT)
+     ========================================================================== */
+  openDownloadModal() {
+    this.populateBatchDropdowns();
+    this.populateDownloadTopicDropdown();
+    this.updateDownloadDialogCounts();
+    document.getElementById('downloadQuestionsModal').classList.remove('hidden');
+  }
+
+  populateDownloadTopicDropdown() {
+    const topicSelect = document.getElementById('dlFilterTopic');
+    if (!topicSelect) return;
+
+    const selectedContinent = document.getElementById('dlFilterContinent')?.value || 'Whole World';
+    const selectedBatch = document.getElementById('dlFilterBatch')?.value || 'All';
+
+    const matchingQuestions = this.questions.filter(q => {
+      const matchCont = (selectedContinent === 'Whole World' || selectedContinent === 'All') 
+        ? true 
+        : q.continent === selectedContinent;
+      const matchBatch = (selectedBatch === 'All') ? true : (q.batch === selectedBatch);
+      return matchCont && matchBatch;
+    });
+
+    const uniqueTopics = Array.from(
+      new Set(matchingQuestions.map(q => q.topic).filter(Boolean))
+    ).sort();
+
+    const previousValue = topicSelect.value;
+    topicSelect.innerHTML = '<option value="All">All Topics</option>';
+
+    uniqueTopics.forEach(top => {
+      const opt = document.createElement('option');
+      opt.value = top;
+      opt.textContent = top;
+      topicSelect.appendChild(opt);
+    });
+
+    if (uniqueTopics.includes(previousValue)) {
+      topicSelect.value = previousValue;
+    } else {
+      topicSelect.value = 'All';
+    }
+  }
+
+  getDownloadFilteredQuestions() {
+    const continent = document.getElementById('dlFilterContinent')?.value || 'Whole World';
+    const batch = document.getElementById('dlFilterBatch')?.value || 'All';
+    const difficulty = document.getElementById('dlFilterDifficulty')?.value || 'All';
+    const topic = document.getElementById('dlFilterTopic')?.value || 'All';
+
+    return this.questions.filter(q => {
+      const matchCont = (continent === 'Whole World' || continent === 'All') ? true : q.continent === continent;
+      const matchBatch = (batch === 'All') ? true : (q.batch || 'Batch 1') === batch;
+      const matchDiff = (difficulty === 'All') ? true : q.difficulty === difficulty;
+      const matchTopic = (topic === 'All') ? true : q.topic === topic;
+      return matchCont && matchBatch && matchDiff && matchTopic;
+    });
+  }
+
+  updateDownloadDialogCounts() {
+    const badge = document.getElementById('dlReadyCountBadge');
+    if (!badge) return;
+    const count = this.getDownloadFilteredQuestions().length;
+    badge.textContent = `${count} Questions`;
+    badge.className = count > 0 ? 'badge badge-success' : 'badge badge-danger';
+  }
+
+  generateFormattedQnAText(questions) {
+    if (!questions || questions.length === 0) return 'No questions found matching criteria.';
+
+    const lines = [];
+    questions.forEach((q, idx) => {
+      // Find full text of the correct answer
+      const key = (q.correctAnswer || 'A').toUpperCase().charAt(0);
+      let ansText = q['option' + key] || q.correctAnswer;
+      if (typeof ansText === 'string') ansText = ansText.trim();
+
+      lines.push(`Q${idx + 1}. ${q.question}`);
+      lines.push(`Ans. ${ansText}`);
+      lines.push(''); // blank line between questions
+    });
+
+    return lines.join('\r\n');
+  }
+
+  downloadQnATextFile() {
+    const questions = this.getDownloadFilteredQuestions();
+    if (questions.length === 0) {
+      this.showToast('No questions found matching the selected filters.', 'warning');
+      return;
+    }
+
+    const content = this.generateFormattedQnAText(questions);
+    const continent = document.getElementById('dlFilterContinent').value.replace(/\s+/g, '_');
+    const batch = document.getElementById('dlFilterBatch').value.replace(/\s+/g, '_');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `GeoQuiz_${continent}_${batch}_Questions.txt`;
+    link.click();
+
+    this.showToast(`Exported ${questions.length} questions in Q&A format!`, 'success');
+    document.getElementById('downloadQuestionsModal').classList.add('hidden');
+  }
+
+  copyQnATextToClipboard() {
+    const questions = this.getDownloadFilteredQuestions();
+    if (questions.length === 0) {
+      this.showToast('No questions found to copy.', 'warning');
+      return;
+    }
+
+    const content = this.generateFormattedQnAText(questions);
+    navigator.clipboard.writeText(content).then(() => {
+      this.showToast(`Copied ${questions.length} formatted questions to clipboard!`, 'success');
+    }).catch(err => {
+      this.showToast('Clipboard copy failed: ' + err, 'error');
+    });
   }
 
   bindEvents() {
@@ -986,6 +1128,37 @@ class GeoQuizApp {
     });
     ['setupDifficulty', 'setupTopic'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', () => this.updateAvailabilityBadge());
+    });
+
+    // Download Modal Listeners
+    document.querySelectorAll('.btn-open-download-modal').forEach(btn => {
+      btn.addEventListener('click', () => this.openDownloadModal());
+    });
+    document.getElementById('btnCloseDownloadModal')?.addEventListener('click', () => {
+      document.getElementById('downloadQuestionsModal').classList.add('hidden');
+    });
+    document.getElementById('btnCancelDownloadModal')?.addEventListener('click', () => {
+      document.getElementById('downloadQuestionsModal').classList.add('hidden');
+    });
+    document.getElementById('dlFilterContinent')?.addEventListener('change', () => {
+      this.populateDownloadTopicDropdown();
+      this.updateDownloadDialogCounts();
+    });
+    document.getElementById('dlFilterBatch')?.addEventListener('change', () => {
+      this.populateDownloadTopicDropdown();
+      this.updateDownloadDialogCounts();
+    });
+    document.getElementById('dlFilterDifficulty')?.addEventListener('change', () => {
+      this.updateDownloadDialogCounts();
+    });
+    document.getElementById('dlFilterTopic')?.addEventListener('change', () => {
+      this.updateDownloadDialogCounts();
+    });
+    document.getElementById('btnExecuteDownloadTxt')?.addEventListener('click', () => {
+      this.downloadQnATextFile();
+    });
+    document.getElementById('btnCopyDownloadText')?.addEventListener('click', () => {
+      this.copyQnATextToClipboard();
     });
 
     // Standard Quiz Launch & Actions
@@ -1221,11 +1394,9 @@ class GeoQuizApp {
     document.getElementById('flagCurrentIndex').textContent = currentIndex + 1;
     document.getElementById('flagTimesUpLabel').classList.remove('active');
 
-    // Load High-Res Vector Flag Image from flagcdn
     const img = document.getElementById('flagDisplayImg');
     img.src = `https://flagcdn.com/w640/${current.code}.png`;
 
-    // 4 Options: 1 Correct + 3 Distractors from the same continent or world
     const poolForDistractors = WORLD_FLAGS.filter(f => f.code !== current.code);
     const distractors = poolForDistractors
       .sort(() => 0.5 - Math.random())
@@ -1284,7 +1455,6 @@ class GeoQuizApp {
       isCorrect
     });
 
-    // Style buttons matching Image 1
     document.querySelectorAll('.flag-option-btn').forEach(btn => {
       btn.disabled = true;
       if (btn.textContent === correctName) {
@@ -1328,7 +1498,8 @@ class GeoQuizApp {
     }
   }
 
-  async finalizeFlagQuiz() {
+  // Instant optimistic submit for Flag Quiz
+  finalizeFlagQuiz() {
     if (this.flagSession.timerInterval) clearInterval(this.flagSession.timerInterval);
 
     const total = this.flagSession.items.length;
@@ -1354,9 +1525,14 @@ class GeoQuizApp {
       snapshots: this.flagSession.snapshots
     };
 
-    await this.storage.saveAttempt(attempt);
-    await this.refreshData();
+    // Instant local UI render
+    this.attempts.unshift(attempt);
     this.renderResultsScreen(attempt);
+    this.renderLeaderboard();
+    this.renderStudentDashboard();
+
+    // Async background database save
+    this.storage.saveAttempt(attempt).catch(err => console.error('Background flag attempt save error:', err));
   }
 
   /* ==========================================================================
@@ -1450,7 +1626,6 @@ class GeoQuizApp {
 
     document.getElementById('mapLoadingSpinner').classList.add('hidden');
 
-    // Build target challenge list
     let eligibleTargets = [];
     if (scope === 'Continents') {
       eligibleTargets = [
@@ -1460,7 +1635,6 @@ class GeoQuizApp {
     } else if (scope === 'Whole World') {
       eligibleTargets = WORLD_FLAGS.map(f => f.name);
     } else {
-      // Continent-wise country list (e.g. Asia -> ONLY 49 Asian countries!)
       eligibleTargets = WORLD_FLAGS.filter(f => f.continent === scope).map(f => f.name);
     }
 
@@ -1479,7 +1653,6 @@ class GeoQuizApp {
     this.mapSession.beaconMarkersByName = {};
     this.mapSession.snapshots = [];
 
-    // Remove previous GeoJSON layer & Markers
     if (this.mapSession.geoJsonLayer) {
       this.mapSession.leafletMap.removeLayer(this.mapSession.geoJsonLayer);
     }
@@ -1488,22 +1661,20 @@ class GeoQuizApp {
     }
     this.mapSession.markerGroup = L.layerGroup().addTo(this.mapSession.leafletMap);
 
-    // Default Landmass Styling (Seterra Colors from Image 2)
     const defaultStyle = {
-      fillColor: '#21794b', // Rich Forest Green
+      fillColor: '#21794b',
       weight: 1.2,
       opacity: 1,
-      color: '#a2cad8',   // Borders matching ocean blue
+      color: '#a2cad8',
       fillOpacity: 1
     };
 
-    // Filter GeoJSON to show ONLY the chosen continent's countries when a continent is selected!
+    // Filter GeoJSON to isolate selected continent
     this.mapSession.geoJsonLayer = L.geoJSON(geoJsonData, {
       filter: (feature) => {
         if (scope === 'Whole World' || scope === 'Continents') return true;
         const rawName = feature.properties.NAME || feature.properties.ADMIN || feature.properties.name || feature.properties.admin || '';
         const continentOfCountry = COUNTRY_TO_CONTINENT[this.normalizeName(rawName)];
-        // Keep ONLY countries in this continent!
         return continentOfCountry === scope;
       },
       style: () => defaultStyle,
@@ -1530,7 +1701,7 @@ class GeoQuizApp {
       }
     }).addTo(this.mapSession.leafletMap);
 
-    // Create Seterra-Style Target Beacons for Small Island Countries & Microstates
+    // Island & Microstate Beacons
     const countriesInScope = (scope === 'Whole World' || scope === 'Continents')
       ? WORLD_FLAGS
       : WORLD_FLAGS.filter(f => f.continent === scope);
@@ -1569,9 +1740,7 @@ class GeoQuizApp {
       }
     });
 
-    // Auto-focus and zoom to the selected continent or region
     this.focusMapRegion(scope);
-
     this.updateMapMissionBar();
     this.startMapTimer();
   }
@@ -1623,13 +1792,12 @@ class GeoQuizApp {
     const normalizedTarget = this.normalizeName(targetName);
     const normalizedClicked = this.normalizeName(clickedRawName);
 
-    // Case 1: Continent Selection Mode (e.g. Target: "Asia")
+    // Continents Selection Mode
     if (this.mapSession.scope === 'Continents') {
       const clickedContinent = COUNTRY_TO_CONTINENT[normalizedClicked] || clickedRawName;
       const isCorrectContinent = (clickedContinent.toLowerCase() === targetName.toLowerCase());
 
       if (isCorrectContinent) {
-        // Success: Highlight all countries in this continent!
         WORLD_FLAGS.filter(f => f.continent === targetName).forEach(f => {
           const norm = this.normalizeName(f.name);
           const layer = this.mapSession.countryLayersByName[norm];
@@ -1652,7 +1820,7 @@ class GeoQuizApp {
 
         this.mapSession.snapshots.push({
           questionText: `Locate continent: ${targetName}`,
-          selectedAnswer: `Found in ${this.mapSession.attemptsOnCurrent + 1} try`,
+          selectedAnswer: `Identified in ${this.mapSession.attemptsOnCurrent + 1} attempt(s)`,
           correctAnswer: targetName,
           isCorrect: (this.mapSession.attemptsOnCurrent === 0)
         });
@@ -1660,7 +1828,6 @@ class GeoQuizApp {
         this.showMapToast(`✅ Correct! You found ${targetName}`, 'success');
         this.advanceMapTarget();
       } else {
-        // Wrong continent clicked
         this.mapSession.attemptsOnCurrent++;
         element.setStyle({ fillColor: '#dc2626', color: '#ffffff' });
         setTimeout(() => {
@@ -1672,7 +1839,6 @@ class GeoQuizApp {
         this.showMapToast(`That was ${clickedContinent}, try again!`, 'warning');
 
         if (this.mapSession.attemptsOnCurrent >= 2) {
-          // Pulse the entire correct continent
           let toggle = false;
           if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
           this.mapSession.hintInterval = setInterval(() => {
@@ -1689,13 +1855,11 @@ class GeoQuizApp {
       return;
     }
 
-    // Case 2: Country Selection Mode (e.g. Target: "Bahrain" or "France")
+    // Country Selection Mode
     if (normalizedClicked === normalizedTarget) {
-      // Correct country hit!
       element.isCompleted = true;
       element.setStyle({ fillColor: '#15803d', weight: 1.5, color: '#ffffff', fillOpacity: 1 });
 
-      // If there is an associated polygon or pin, complete both
       const associatedBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
       if (associatedBeacon) {
         associatedBeacon.isCompleted = true;
@@ -1715,7 +1879,7 @@ class GeoQuizApp {
 
       this.mapSession.snapshots.push({
         questionText: `Locate country: ${targetName}`,
-        selectedAnswer: `Found in ${this.mapSession.attemptsOnCurrent + 1} try`,
+        selectedAnswer: `Identified in ${this.mapSession.attemptsOnCurrent + 1} attempt(s)`,
         correctAnswer: targetName,
         isCorrect: (this.mapSession.attemptsOnCurrent === 0)
       });
@@ -1723,7 +1887,6 @@ class GeoQuizApp {
       this.showMapToast(`✅ Correct! ${targetName}`, 'success');
       this.advanceMapTarget();
     } else {
-      // Wrong country hit
       this.mapSession.attemptsOnCurrent++;
 
       element.setStyle({ fillColor: '#dc2626', color: '#ffffff' });
@@ -1735,7 +1898,6 @@ class GeoQuizApp {
 
       this.showMapToast(`That was ${clickedRawName}, try again!`, 'warning');
 
-      // 3rd Miss: Pulse the target country polygon and beacon pin
       if (this.mapSession.attemptsOnCurrent >= 2) {
         const targetLayer = this.mapSession.countryLayersByName[normalizedTarget];
         const targetBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
@@ -1790,7 +1952,8 @@ class GeoQuizApp {
     }
   }
 
-  async finalizeMapPointing() {
+  // Instant optimistic submit for Map Pointing
+  finalizeMapPointing() {
     if (this.mapSession.timerInterval) clearInterval(this.mapSession.timerInterval);
     if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
     this.mapSession.active = false;
@@ -1818,9 +1981,14 @@ class GeoQuizApp {
       snapshots: this.mapSession.snapshots
     };
 
-    await this.storage.saveAttempt(attempt);
-    await this.refreshData();
+    // Instant local UI render
+    this.attempts.unshift(attempt);
     this.renderResultsScreen(attempt);
+    this.renderLeaderboard();
+    this.renderStudentDashboard();
+
+    // Async background database save
+    this.storage.saveAttempt(attempt).catch(err => console.error('Background map attempt save error:', err));
   }
 
   exitMapPointing() {
@@ -1831,7 +1999,7 @@ class GeoQuizApp {
   }
 
   /* ==========================================================================
-     STANDARD Q&A QUIZ MODULE
+     STANDARD Q&A QUIZ MODULE (ZERO-LAG SUBMIT)
      ========================================================================== */
   getEligibleQuestions(continent, difficulty, topic, batch = 'All') {
     return this.questions.filter(q => {
@@ -2060,7 +2228,8 @@ class GeoQuizApp {
     this.finalizeAssessment(false);
   }
 
-  async finalizeAssessment(isTimeout = false) {
+  // Instant optimistic submit: zero UI freeze, background Firestore save
+  finalizeAssessment(isTimeout = false) {
     if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
 
     if (this.quizSession.sessionFinalized) return;
@@ -2112,11 +2281,16 @@ class GeoQuizApp {
       snapshots
     };
 
-    await this.storage.saveAttempt(attemptRecord);
-    await this.refreshData();
-
+    // Instant local memory update and view switch (<50ms!)
+    this.attempts.unshift(attemptRecord);
     this.renderResultsScreen(attemptRecord);
     this.renderLeaderboard();
+    this.renderStudentDashboard();
+
+    // Background asynchronous database write
+    this.storage.saveAttempt(attemptRecord).catch(err => {
+      console.error('Background attempt save failed:', err);
+    });
   }
 
   renderResultsScreen(att) {
@@ -2304,7 +2478,6 @@ class GeoQuizApp {
     });
   }
 
-  // Opens Complete Itemized Review for Q&A, Flag Quizzes & Map Pointing in Admin Console & Student Dash
   openAttemptDetailModal(attemptId) {
     const att = this.attempts.find(a => a.id === attemptId);
     if (!att) return;
@@ -2316,8 +2489,8 @@ class GeoQuizApp {
     const s = att.durationSeconds % 60;
 
     summary.innerHTML = `
-      <div class="stat-box"><span class="stat-label">Date & Time</span><span class="stat-val">${att.formattedDate} ${att.formattedTime || ''}</span></div>
-      <div class="stat-box"><span class="stat-label">Module Type</span><span class="stat-val">${att.type || 'Q&A'}</span></div>
+      <div class="stat-box"><span class="stat-label">Date &amp; Time</span><span class="stat-val">${att.formattedDate} ${att.formattedTime || ''}</span></div>
+      <div class="stat-box"><span class="stat-label">Module Type</span><span class="stat-val">${att.type || 'Q&amp;A'}</span></div>
       <div class="stat-box"><span class="stat-label">Target Scope</span><span class="stat-val">${att.continent}</span></div>
       <div class="stat-box"><span class="stat-label">Score</span><span class="stat-val text-success">${att.correctCount} / ${att.totalQuestions} (${att.accuracyPct}%)</span></div>
       <div class="stat-box"><span class="stat-label">Duration</span><span class="stat-val">${m}m ${s}s</span></div>
@@ -2416,6 +2589,7 @@ class GeoQuizApp {
     this.renderQuestionBank();
     this.renderAdminOverview();
     this.updateAvailabilityBadge();
+    this.updateDownloadDialogCounts();
 
     btn.disabled = false;
     btn.textContent = purgeExisting ? '🗑️ Delete All & Upload Fresh CSV' : '➕ Add to Existing Bank';
@@ -2578,6 +2752,7 @@ class GeoQuizApp {
     this.renderQuestionBank();
     this.renderAdminOverview();
     this.updateAvailabilityBadge();
+    this.updateDownloadDialogCounts();
 
     document.getElementById('questionModal').classList.add('hidden');
     this.showToast(`Saved question ${id}`, 'success');
@@ -2592,6 +2767,7 @@ class GeoQuizApp {
       this.renderQuestionBank();
       this.renderAdminOverview();
       this.updateAvailabilityBadge();
+      this.updateDownloadDialogCounts();
       this.showToast(`Deleted question ${id}`, 'info');
     }
   }

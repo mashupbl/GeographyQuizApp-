@@ -477,7 +477,6 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   border-radius: 4px;
 }
 
-/* 2x2 Option Buttons matching Image 1 */
 .flag-options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -524,7 +523,6 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   font-weight: 700;
 }
 
-/* Dark Navy Next Button matching Image 1 */
 .flag-footer-action {
   width: 100%;
   display: flex;
@@ -658,7 +656,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
 .leaflet-map-canvas {
   width: 100%;
   height: 580px;
-  background-color: #a2cad8 !important; /* Exact ocean blue from Image 2 */
+  background-color: #a2cad8 !important;
   position: relative;
 }
 
@@ -694,7 +692,6 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   to { fill: #dc2626 !important; }
 }
 
-/* Small Island / Microstate Beacon Pin Styles */
 .small-country-pin {
   cursor: pointer;
   transition: all 0.2s ease;
