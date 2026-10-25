@@ -6,7 +6,7 @@
   <title>GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform</title>
   
   <!-- Cache-Busting Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=3.4">
+  <link rel="stylesheet" href="styles.css?v=3.5">
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -153,7 +153,7 @@
         </div>
       </div>
 
-      <!-- ================= 2. FLAG QUIZ SETUP (ALL 197 COUNTRIES) ================= -->
+      <!-- ================= 2. FLAG QUIZ SETUP ================= -->
       <div id="subViewFlagSetup" class="sub-view-pane hidden">
         <div class="card setup-card">
           <div class="card-header">
@@ -203,7 +203,7 @@
         </div>
       </div>
 
-      <!-- ================= 3. ACTIVE FLAG ARENA (IMAGE 1 EXACT DESIGN) ================= -->
+      <!-- ================= 3. ACTIVE FLAG ARENA ================= -->
       <div id="subViewFlagArena" class="sub-view-pane hidden">
         <div class="flag-quiz-wrapper">
           <div class="flag-quiz-header">
@@ -244,12 +244,12 @@
         <div class="card setup-card">
           <div class="card-header">
             <h2>🗺️ Map Pointing Challenge (Seterra Style)</h2>
-            <p>Locate real-scale countries and continents. Choosing a continent isolates and shows only that continent!</p>
+            <p>Locate real-scale countries and continents with attempt-based colors (Yellow &rarr; Amber &rarr; Orange &rarr; Red).</p>
           </div>
           <form id="mapSetupForm" class="setup-grid">
             <div class="form-group full-width">
               <label for="mapScopeSelect">Choose Target Map Region</label>
-              <select id="mapScopeSelect" class="form-control" style="max-width: 440px;" required>
+              <select id="mapScopeSelect" class="form-control" style="max-width: 450px;" required>
                 <option value="Continents" selected>🌐 The 7 Continents of the World (Continent Selection)</option>
                 <option value="Asia">🌏 Countries of Asia (49 Asian Countries Only)</option>
                 <option value="Europe">🏰 Countries of Europe (45 European Countries Only)</option>
@@ -304,6 +304,14 @@
 
           <!-- Alert / Feedback Overlay -->
           <div id="mapFeedbackToast" class="map-feedback-toast hidden">That was Europe, try again!</div>
+
+          <!-- Color Legend Guide Bar -->
+          <div class="map-color-legend">
+            <span class="legend-item"><span class="legend-color-dot" style="background:#facc15;"></span> 1st Try: Yellow (100%)</span>
+            <span class="legend-item"><span class="legend-color-dot" style="background:#d97706;"></span> 2nd Try: Amber (50%)</span>
+            <span class="legend-item"><span class="legend-color-dot" style="background:#ea580c;"></span> 3rd Try: Orange (25%)</span>
+            <span class="legend-item"><span class="legend-color-dot" style="background:#dc2626;"></span> Missed: Red (0%)</span>
+          </div>
 
           <!-- Leaflet High-Accuracy Map Viewport -->
           <div id="leafletMapContainer" class="leaflet-map-canvas">
@@ -1006,6 +1014,6 @@
 
   <!-- Firebase Config & App Logic (With Cache-Busting Version Query) -->
   <script src="firebase-config.js"></script>
-  <script src="app.js?v=3.4"></script>
+  <script src="app.js?v=3.5"></script>
 </body>
 </html>

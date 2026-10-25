@@ -639,7 +639,7 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
 
 .map-feedback-toast {
   position: absolute;
-  top: 75px;
+  top: 85px;
   right: 25px;
   background: #ffffff;
   color: #0f172a;
@@ -652,10 +652,39 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   z-index: 1000;
 }
 
+/* Color Legend Bar directly below Mission Bar */
+.map-color-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.4rem 1rem;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-bottom: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid #ffffff;
+}
+
 /* Leaflet Canvas Viewport */
 .leaflet-map-canvas {
   width: 100%;
-  height: 580px;
+  height: 560px;
   background-color: #a2cad8 !important;
   position: relative;
 }
@@ -688,8 +717,8 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
 }
 
 @keyframes pulseHint {
-  from { fill: #f59e0b !important; }
-  to { fill: #dc2626 !important; }
+  from { fill: #facc15 !important; }
+  to { fill: #ea580c !important; }
 }
 
 .small-country-pin {
@@ -1149,4 +1178,5 @@ h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
   .action-bar-top { flex-direction: column; }
   .button-group { flex-wrap: wrap; }
   .leaflet-map-canvas { height: 440px; }
+  .map-color-legend { gap: 0.75rem; font-size: 0.75rem; }
 }

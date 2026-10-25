@@ -1,6 +1,6 @@
 /**
  * GeoQuiz Explorer 🌍 | Institutional Geography Learning Platform
- * Core Engine v3.4 (Zero-Lag Submit & Custom Q&A Study Sheet Export)
+ * Core Engine v3.5 (Attempt-Based Colors: Yellow -> Amber -> Orange -> Red)
  */
 
 'use strict';
@@ -738,7 +738,7 @@ class GeoQuizApp {
       snapshots: []
     };
 
-    // Leaflet Seterra-Style Map Pointing Session
+    // Leaflet Seterra-Style Map Pointing Session (Attempt-Based Colors)
     this.mapSession = {
       active: false,
       scope: 'Continents',
@@ -863,7 +863,6 @@ class GeoQuizApp {
   populateBatchDropdowns() {
     const batches = Array.from(new Set(this.questions.map(q => q.batch || 'Batch 1'))).sort();
     
-    // Quiz Setup Batch
     const setupBatch = document.getElementById('setupBatch');
     if (setupBatch) {
       const prev = setupBatch.value;
@@ -877,7 +876,6 @@ class GeoQuizApp {
       if (batches.includes(prev)) setupBatch.value = prev;
     }
 
-    // Admin QB Filter Batch
     const qbFilterBatch = document.getElementById('qbFilterBatch');
     if (qbFilterBatch) {
       const prev = qbFilterBatch.value;
@@ -891,7 +889,6 @@ class GeoQuizApp {
       if (batches.includes(prev)) qbFilterBatch.value = prev;
     }
 
-    // Download Modal Batch Dropdown
     const dlFilterBatch = document.getElementById('dlFilterBatch');
     if (dlFilterBatch) {
       const prev = dlFilterBatch.value;
@@ -1017,14 +1014,13 @@ class GeoQuizApp {
 
     const lines = [];
     questions.forEach((q, idx) => {
-      // Find full text of the correct answer
       const key = (q.correctAnswer || 'A').toUpperCase().charAt(0);
       let ansText = q['option' + key] || q.correctAnswer;
       if (typeof ansText === 'string') ansText = ansText.trim();
 
       lines.push(`Q${idx + 1}. ${q.question}`);
       lines.push(`Ans. ${ansText}`);
-      lines.push(''); // blank line between questions
+      lines.push('');
     });
 
     return lines.join('\r\n');
@@ -1067,7 +1063,6 @@ class GeoQuizApp {
   }
 
   bindEvents() {
-    // Portal Navigation
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         const portal = e.target.dataset.portal;
@@ -1080,7 +1075,6 @@ class GeoQuizApp {
       });
     });
 
-    // Sub Navigation
     document.querySelectorAll('.sub-nav .sub-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         const subview = e.target.dataset.subview;
@@ -1089,7 +1083,6 @@ class GeoQuizApp {
       });
     });
 
-    // Auth Actions
     document.getElementById('btnAuthAction')?.addEventListener('click', () => {
       if (this.currentUser) this.handleLogout();
       else this.openAuthModal();
@@ -1103,7 +1096,6 @@ class GeoQuizApp {
       this.handleLoginSubmit();
     });
 
-    // Custom Count Input Reveal
     const countSelect = document.getElementById('setupCount');
     const customCountInput = document.getElementById('setupCustomCount');
     countSelect?.addEventListener('change', () => {
@@ -1117,7 +1109,6 @@ class GeoQuizApp {
     });
     customCountInput?.addEventListener('input', () => this.updateAvailabilityBadge());
 
-    // Filter Change Handlers
     document.getElementById('setupContinent')?.addEventListener('change', () => {
       this.populateTopicDropdown();
       this.updateAvailabilityBadge();
@@ -1498,7 +1489,6 @@ class GeoQuizApp {
     }
   }
 
-  // Instant optimistic submit for Flag Quiz
   finalizeFlagQuiz() {
     if (this.flagSession.timerInterval) clearInterval(this.flagSession.timerInterval);
 
@@ -1525,18 +1515,16 @@ class GeoQuizApp {
       snapshots: this.flagSession.snapshots
     };
 
-    // Instant local UI render
     this.attempts.unshift(attempt);
     this.renderResultsScreen(attempt);
     this.renderLeaderboard();
     this.renderStudentDashboard();
 
-    // Async background database save
     this.storage.saveAttempt(attempt).catch(err => console.error('Background flag attempt save error:', err));
   }
 
   /* ==========================================================================
-     HIGH-PRECISION SETERRA MAP POINTING (WITH CONTINENT ISOLATION & BEACONS)
+     HIGH-PRECISION SETERRA MAP POINTING (YELLOW -> AMBER -> ORANGE -> RED)
      ========================================================================== */
   normalizeName(name) {
     if (!name) return '';
@@ -1602,7 +1590,6 @@ class GeoQuizApp {
     document.getElementById('subViewMapArena').classList.remove('hidden');
     document.getElementById('mapLoadingSpinner').classList.remove('hidden');
 
-    // Initialize Leaflet Map
     if (!this.mapSession.leafletMap) {
       this.mapSession.leafletMap = L.map('leafletMapContainer', {
         center: [20, 0],
@@ -1614,7 +1601,6 @@ class GeoQuizApp {
       });
     }
 
-    // Load GeoJSON data
     let geoJsonData;
     try {
       geoJsonData = await this.fetchWorldGeoJson();
@@ -1661,11 +1647,12 @@ class GeoQuizApp {
     }
     this.mapSession.markerGroup = L.layerGroup().addTo(this.mapSession.leafletMap);
 
+    // Neutral Clean Base Landmass Styling (Clear contrast against ocean blue #a2cad8)
     const defaultStyle = {
-      fillColor: '#21794b',
+      fillColor: '#e2e8f0', // Clean stone/slate
       weight: 1.2,
       opacity: 1,
-      color: '#a2cad8',
+      color: '#94a3b8',   // Crisp coastline border
       fillOpacity: 1
     };
 
@@ -1686,7 +1673,7 @@ class GeoQuizApp {
 
         layer.on('mouseover', () => {
           if (!layer.isCompleted) {
-            layer.setStyle({ fillColor: '#2ea466', weight: 2, color: '#ffffff' });
+            layer.setStyle({ fillColor: '#cbd5e1', weight: 2, color: '#475569' });
           }
         });
         layer.on('mouseout', () => {
@@ -1701,7 +1688,7 @@ class GeoQuizApp {
       }
     }).addTo(this.mapSession.leafletMap);
 
-    // Island & Microstate Beacons
+    // Island & Microstate Beacons with matching neutral base
     const countriesInScope = (scope === 'Whole World' || scope === 'Continents')
       ? WORLD_FLAGS
       : WORLD_FLAGS.filter(f => f.continent === scope);
@@ -1711,8 +1698,8 @@ class GeoQuizApp {
         const normName = this.normalizeName(c.name);
         const marker = L.circleMarker(c.coords, {
           radius: 7,
-          fillColor: '#21794b',
-          color: '#ffffff',
+          fillColor: '#cbd5e1',
+          color: '#475569',
           weight: 2,
           opacity: 1,
           fillOpacity: 1,
@@ -1725,13 +1712,13 @@ class GeoQuizApp {
 
         marker.on('mouseover', () => {
           if (!marker.isCompleted) {
-            marker.setStyle({ fillColor: '#2ea466', radius: 9 });
+            marker.setStyle({ fillColor: '#94a3b8', radius: 9 });
           }
         });
 
         marker.on('mouseout', () => {
           if (!marker.isCompleted) {
-            marker.setStyle({ fillColor: '#21794b', radius: 7 });
+            marker.setStyle({ fillColor: '#cbd5e1', radius: 7 });
           }
         });
 
@@ -1785,60 +1772,113 @@ class GeoQuizApp {
     }, 1000);
   }
 
+  /**
+   * Helper: Resolves color & score multiplier based on number of misses:
+   * 0 misses (1st attempt) -> Bright Golden Yellow (#facc15) [1.0x]
+   * 1 miss   (2nd attempt) -> Dark Amber Yellow    (#d97706) [0.5x]
+   * 2 misses (3rd attempt) -> Burnt Orange         (#ea580c) [0.25x]
+   * 3+ misses (Failed)     -> Crimson Red          (#dc2626) [0.0x]
+   */
+  getAttemptColorAndScore(missCount) {
+    if (missCount === 0) {
+      return { color: '#facc15', pts: 1.0, label: '1st attempt (Yellow)' };
+    } else if (missCount === 1) {
+      return { color: '#d97706', pts: 0.5, label: '2nd attempt (Amber)' };
+    } else if (missCount === 2) {
+      return { color: '#ea580c', pts: 0.25, label: '3rd attempt (Orange)' };
+    } else {
+      return { color: '#dc2626', pts: 0.0, label: 'Failed (Red)' };
+    }
+  }
+
   handleMapClick(clickedRawName, element) {
     if (!this.mapSession.active || element.isCompleted) return;
 
     const targetName = this.mapSession.targets[this.mapSession.currentTargetIndex];
     const normalizedTarget = this.normalizeName(targetName);
     const normalizedClicked = this.normalizeName(clickedRawName);
+    const currentMisses = this.mapSession.attemptsOnCurrent;
 
-    // Continents Selection Mode
+    // ================= Case 1: Continents Mode =================
     if (this.mapSession.scope === 'Continents') {
       const clickedContinent = COUNTRY_TO_CONTINENT[normalizedClicked] || clickedRawName;
       const isCorrectContinent = (clickedContinent.toLowerCase() === targetName.toLowerCase());
 
       if (isCorrectContinent) {
+        const result = this.getAttemptColorAndScore(currentMisses);
+
+        // Highlight all countries in this continent with the attempt color!
         WORLD_FLAGS.filter(f => f.continent === targetName).forEach(f => {
           const norm = this.normalizeName(f.name);
           const layer = this.mapSession.countryLayersByName[norm];
           if (layer) {
             layer.isCompleted = true;
-            layer.setStyle({ fillColor: '#15803d', weight: 1.5, color: '#ffffff', fillOpacity: 1 });
+            layer.setStyle({ fillColor: result.color, weight: 1.5, color: '#ffffff', fillOpacity: 1 });
           }
           const beacon = this.mapSession.beaconMarkersByName[norm];
           if (beacon) {
             beacon.isCompleted = true;
-            beacon.setStyle({ fillColor: '#15803d', color: '#ffffff' });
+            beacon.setStyle({ fillColor: result.color, color: '#ffffff' });
           }
         });
 
         if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
 
-        const pts = this.mapSession.attemptsOnCurrent === 0 ? 1 : 0.5;
-        this.mapSession.correctPoints += pts;
+        this.mapSession.correctPoints += result.pts;
         this.mapSession.totalCompleted++;
 
         this.mapSession.snapshots.push({
           questionText: `Locate continent: ${targetName}`,
-          selectedAnswer: `Identified in ${this.mapSession.attemptsOnCurrent + 1} attempt(s)`,
+          selectedAnswer: result.label,
           correctAnswer: targetName,
-          isCorrect: (this.mapSession.attemptsOnCurrent === 0)
+          isCorrect: (currentMisses === 0)
         });
 
         this.showMapToast(`✅ Correct! You found ${targetName}`, 'success');
         this.advanceMapTarget();
       } else {
+        // Wrong continent clicked
         this.mapSession.attemptsOnCurrent++;
-        element.setStyle({ fillColor: '#dc2626', color: '#ffffff' });
+
+        // Flash Red Pulse
+        element.setStyle({ fillColor: '#ef4444', color: '#ffffff' });
         setTimeout(() => {
           if (!element.isCompleted) {
-            element.setStyle({ fillColor: '#21794b', color: '#a2cad8' });
+            element.setStyle({ fillColor: '#e2e8f0', color: '#94a3b8' });
           }
-        }, 500);
+        }, 400);
 
         this.showMapToast(`That was ${clickedContinent}, try again!`, 'warning');
 
-        if (this.mapSession.attemptsOnCurrent >= 2) {
+        // Check if failed (3 misses reached)
+        if (this.mapSession.attemptsOnCurrent >= 3) {
+          if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
+          const failResult = this.getAttemptColorAndScore(3);
+
+          WORLD_FLAGS.filter(f => f.continent === targetName).forEach(f => {
+            const norm = this.normalizeName(f.name);
+            const layer = this.mapSession.countryLayersByName[norm];
+            if (layer) {
+              layer.isCompleted = true;
+              layer.setStyle({ fillColor: failResult.color, weight: 1.5, color: '#ffffff', fillOpacity: 1 });
+            }
+          });
+
+          this.mapSession.totalCompleted++;
+          this.mapSession.snapshots.push({
+            questionText: `Locate continent: ${targetName}`,
+            selectedAnswer: 'Missed (Revealed in Red)',
+            correctAnswer: targetName,
+            isCorrect: false
+          });
+
+          this.showMapToast(`❌ ${targetName} revealed in Red. Moving to next target...`, 'error');
+          setTimeout(() => this.advanceMapTarget(), 1200);
+          return;
+        }
+
+        // 3rd Try Assistance: Pulse the continent in Amber/Orange
+        if (this.mapSession.attemptsOnCurrent === 2) {
           let toggle = false;
           if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
           this.mapSession.hintInterval = setInterval(() => {
@@ -1846,42 +1886,43 @@ class GeoQuizApp {
             WORLD_FLAGS.filter(f => f.continent === targetName).forEach(f => {
               const layer = this.mapSession.countryLayersByName[this.normalizeName(f.name)];
               if (layer && !layer.isCompleted) {
-                layer.setStyle({ fillColor: toggle ? '#f59e0b' : '#dc2626', color: '#ffffff' });
+                layer.setStyle({ fillColor: toggle ? '#facc15' : '#ea580c', color: '#ffffff' });
               }
             });
-          }, 400);
+          }, 350);
         }
       }
       return;
     }
 
-    // Country Selection Mode
+    // ================= Case 2: Country Mode =================
     if (normalizedClicked === normalizedTarget) {
+      const result = this.getAttemptColorAndScore(currentMisses);
+
       element.isCompleted = true;
-      element.setStyle({ fillColor: '#15803d', weight: 1.5, color: '#ffffff', fillOpacity: 1 });
+      element.setStyle({ fillColor: result.color, weight: 1.5, color: '#ffffff', fillOpacity: 1 });
 
       const associatedBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
       if (associatedBeacon) {
         associatedBeacon.isCompleted = true;
-        associatedBeacon.setStyle({ fillColor: '#15803d', color: '#ffffff' });
+        associatedBeacon.setStyle({ fillColor: result.color, color: '#ffffff' });
       }
       const associatedPolygon = this.mapSession.countryLayersByName[normalizedTarget];
       if (associatedPolygon) {
         associatedPolygon.isCompleted = true;
-        associatedPolygon.setStyle({ fillColor: '#15803d', color: '#ffffff' });
+        associatedPolygon.setStyle({ fillColor: result.color, color: '#ffffff' });
       }
 
       if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
 
-      const pts = this.mapSession.attemptsOnCurrent === 0 ? 1 : 0.5;
-      this.mapSession.correctPoints += pts;
+      this.mapSession.correctPoints += result.pts;
       this.mapSession.totalCompleted++;
 
       this.mapSession.snapshots.push({
         questionText: `Locate country: ${targetName}`,
-        selectedAnswer: `Identified in ${this.mapSession.attemptsOnCurrent + 1} attempt(s)`,
+        selectedAnswer: result.label,
         correctAnswer: targetName,
-        isCorrect: (this.mapSession.attemptsOnCurrent === 0)
+        isCorrect: (currentMisses === 0)
       });
 
       this.showMapToast(`✅ Correct! ${targetName}`, 'success');
@@ -1889,16 +1930,47 @@ class GeoQuizApp {
     } else {
       this.mapSession.attemptsOnCurrent++;
 
-      element.setStyle({ fillColor: '#dc2626', color: '#ffffff' });
+      // Flash Red Pulse for 400ms
+      element.setStyle({ fillColor: '#ef4444', color: '#ffffff' });
       setTimeout(() => {
         if (!element.isCompleted) {
-          element.setStyle({ fillColor: '#21794b', color: '#a2cad8' });
+          element.setStyle({ fillColor: '#e2e8f0', color: '#94a3b8' });
         }
-      }, 500);
+      }, 400);
 
       this.showMapToast(`That was ${clickedRawName}, try again!`, 'warning');
 
-      if (this.mapSession.attemptsOnCurrent >= 2) {
+      // Check if failed (3 misses reached)
+      if (this.mapSession.attemptsOnCurrent >= 3) {
+        if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
+        const failResult = this.getAttemptColorAndScore(3);
+
+        const targetLayer = this.mapSession.countryLayersByName[normalizedTarget];
+        const targetBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
+        if (targetLayer) {
+          targetLayer.isCompleted = true;
+          targetLayer.setStyle({ fillColor: failResult.color, weight: 1.5, color: '#ffffff', fillOpacity: 1 });
+        }
+        if (targetBeacon) {
+          targetBeacon.isCompleted = true;
+          targetBeacon.setStyle({ fillColor: failResult.color, color: '#ffffff' });
+        }
+
+        this.mapSession.totalCompleted++;
+        this.mapSession.snapshots.push({
+          questionText: `Locate country: ${targetName}`,
+          selectedAnswer: 'Missed (Revealed in Red)',
+          correctAnswer: targetName,
+          isCorrect: false
+        });
+
+        this.showMapToast(`❌ ${targetName} revealed in Red. Moving to next target...`, 'error');
+        setTimeout(() => this.advanceMapTarget(), 1200);
+        return;
+      }
+
+      // 3rd Try Assistance: Pulse target polygon and beacon
+      if (this.mapSession.attemptsOnCurrent === 2) {
         const targetLayer = this.mapSession.countryLayersByName[normalizedTarget];
         const targetBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
         let toggle = false;
@@ -1906,14 +1978,14 @@ class GeoQuizApp {
         if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
         this.mapSession.hintInterval = setInterval(() => {
           toggle = !toggle;
-          const pulseColor = toggle ? '#f59e0b' : '#dc2626';
+          const pulseColor = toggle ? '#facc15' : '#ea580c';
           if (targetLayer && !targetLayer.isCompleted) {
             targetLayer.setStyle({ fillColor: pulseColor, weight: 2.5, color: '#ffffff' });
           }
           if (targetBeacon && !targetBeacon.isCompleted) {
             targetBeacon.setStyle({ fillColor: pulseColor, radius: toggle ? 10 : 7, color: '#ffffff' });
           }
-        }, 400);
+        }, 350);
       }
     }
   }
@@ -1930,9 +2002,23 @@ class GeoQuizApp {
     if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
 
     const targetName = this.mapSession.targets[this.mapSession.currentTargetIndex];
+    const normalizedTarget = this.normalizeName(targetName);
+    const failResult = this.getAttemptColorAndScore(3);
+
+    const targetLayer = this.mapSession.countryLayersByName[normalizedTarget];
+    const targetBeacon = this.mapSession.beaconMarkersByName[normalizedTarget];
+    if (targetLayer) {
+      targetLayer.isCompleted = true;
+      targetLayer.setStyle({ fillColor: failResult.color, weight: 1.5, color: '#ffffff' });
+    }
+    if (targetBeacon) {
+      targetBeacon.isCompleted = true;
+      targetBeacon.setStyle({ fillColor: failResult.color, color: '#ffffff' });
+    }
+
     this.mapSession.snapshots.push({
       questionText: `Locate: ${targetName}`,
-      selectedAnswer: 'Skipped',
+      selectedAnswer: 'Skipped (Revealed in Red)',
       correctAnswer: targetName,
       isCorrect: false
     });
@@ -1952,7 +2038,6 @@ class GeoQuizApp {
     }
   }
 
-  // Instant optimistic submit for Map Pointing
   finalizeMapPointing() {
     if (this.mapSession.timerInterval) clearInterval(this.mapSession.timerInterval);
     if (this.mapSession.hintInterval) clearInterval(this.mapSession.hintInterval);
@@ -1981,13 +2066,11 @@ class GeoQuizApp {
       snapshots: this.mapSession.snapshots
     };
 
-    // Instant local UI render
     this.attempts.unshift(attempt);
     this.renderResultsScreen(attempt);
     this.renderLeaderboard();
     this.renderStudentDashboard();
 
-    // Async background database save
     this.storage.saveAttempt(attempt).catch(err => console.error('Background map attempt save error:', err));
   }
 
@@ -2228,7 +2311,6 @@ class GeoQuizApp {
     this.finalizeAssessment(false);
   }
 
-  // Instant optimistic submit: zero UI freeze, background Firestore save
   finalizeAssessment(isTimeout = false) {
     if (this.quizSession.timerInterval) clearInterval(this.quizSession.timerInterval);
 
@@ -2281,13 +2363,11 @@ class GeoQuizApp {
       snapshots
     };
 
-    // Instant local memory update and view switch (<50ms!)
     this.attempts.unshift(attemptRecord);
     this.renderResultsScreen(attemptRecord);
     this.renderLeaderboard();
     this.renderStudentDashboard();
 
-    // Background asynchronous database write
     this.storage.saveAttempt(attemptRecord).catch(err => {
       console.error('Background attempt save failed:', err);
     });
